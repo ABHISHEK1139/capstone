@@ -138,7 +138,10 @@ def eclat(
 
                     new_items_with_tids.append((item_j, inter_tids))
 
-            if new_items_with_tids and pruning_policy.should_continue_length(len(new_prefix)):
+            # extend(new_prefix) records itemsets of length len(new_prefix) + 2,
+            # so it may only run when that length is within max_len. The old
+            # gate (len(new_prefix)) was off by one and mined one level too deep.
+            if new_items_with_tids and pruning_policy.should_continue_length(len(new_prefix) + 1):
                 extend(new_prefix, new_items_with_tids)
                 if pruning_policy.is_degraded:
                     return
