@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest & testing cache
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Model and rule serialization artifacts
+*.joblib
+*.pkl
+
+# LaTeX auxiliary build files (keep .pdf and .tex)
+*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk

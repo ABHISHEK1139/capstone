@@ -1,0 +1,89 @@
+{
+  "timestamp": 1793282737.2039826,
+  "KPI-1_frequent_itemset_precision": {
+    "apriori_precision_pct": 100.0,
+    "fpgrowth_precision_pct": 100.0,
+    "eclat_precision_pct": 100.0,
+    "pass": true
+  },
+  "KPI-2_rule_metric_numerical_error": {
+    "max_numerical_error": 2.220446049250313e-16,
+    "rubric_score": 100.0,
+    "target": ">= 80/100",
+    "pass": true
+  },
+  "KPI-3_4_5_scale_benchmarks": {
+    "scale_200": {
+      "apriori": {
+        "runtime_p50_s": 0.009040099997946527,
+        "runtime_p95_s": 0.009595879998232703,
+        "peak_mem_mb": 0.06986618041992188,
+        "peak_candidates": 105
+      },
+      "fpgrowth": {
+        "runtime_p50_s": 0.010139300000446383,
+        "runtime_p95_s": 0.012186020001536235,
+        "peak_mem_mb": 0.1283416748046875,
+        "peak_candidates": 39
+      },
+      "eclat": {
+        "runtime_p50_s": 0.0033242000063182786,
+        "runtime_p95_s": 0.003980680002132431,
+        "peak_mem_mb": 0.07372550964355469,
+        "peak_candidates": 39
+      },
+      "fpgrowth_speedup_vs_apriori": 0.787449880848956,
+      "runtime_kpi_pass": true
+    },
+    "scale_1000": {
+      "apriori": {
+        "runtime_p50_s": 0.015162200004851911,
+        "runtime_p95_s": 0.016293479996966197,
+        "peak_mem_mb": 0.07926139831542969,
+        "peak_candidates": 105
+      },
+      "fpgrowth": {
+        "runtime_p50_s": 0.04007689999707509,
+        "runtime_p95_s": 0.044027680001454426,
+        "peak_mem_mb": 0.3556987762451172,
+        "peak_candidates": 15
+      },
+      "eclat": {
+        "runtime_p50_s": 0.00811249999969732,
+        "runtime_p95_s": 0.008843879995401949,
+        "peak_mem_mb": 0.23791160583496093,
+        "peak_candidates": 0
+      },
+      "fpgrowth_speedup_vs_apriori": 0.3700735536468865,
+      "runtime_kpi_pass": true
+    },
+    "scale_3000": {
+      "apriori": {
+        "runtime_p50_s": 0.008271799997601192,
+        "runtime_p95_s": 0.008874340003239922,
+        "peak_mem_mb": 0.10782432556152344,
+        "peak_candidates": 105
+      },
+      "fpgrowth": {
+        "runtime_p50_s": 0.10522820000187494,
+        "runtime_p95_s": 0.13018043999618384,
+        "peak_mem_mb": 0.7773616790771485,
+        "peak_candidates": 15
+      },
+      "eclat": {
+        "runtime_p50_s": 0.02339610000490211,
+        "runtime_p95_s": 0.027049260002968367,
+        "peak_mem_mb": 0.7984378814697266,
+        "peak_candidates": 0
+      },
+      "fpgrowth_speedup_vs_apriori": 0.0681695345591094,
+      "runtime_kpi_pass": true
+    }
+  },
+  "KPI-6_estimator_api_compliance": {
+    "checks_total": 7,
+    "checks_passed": 7,
+    "compliance_pass_rate_pct": 100.0,
+    "pass": true
+  }
+}

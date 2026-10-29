@@ -1,0 +1,388 @@
+{
+  "timestamp": "2026-10-29 20:08:26",
+  "hardware": "Intel/AMD x86_64, Windows",
+  "python_version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "groceries": {
+    "stats": {
+      "n_transactions": 9835,
+      "n_unique_items": 169,
+      "avg_transaction_length": 4.41,
+      "min_transaction_length": 1,
+      "max_transaction_length": 32,
+      "density_pct": 2.61,
+      "sparsity_pct": 97.39
+    },
+    "benchmarks": {
+      "min_sup_0.02": {
+        "fpgrowth": {
+          "elapsed_sec": 0.5346,
+          "peak_ram_mb": 12.36,
+          "n_itemsets": 122,
+          "n_rules": 49,
+          "throughput_tx_per_sec": 18395.7
+        },
+        "eclat": {
+          "elapsed_sec": 0.1683,
+          "peak_ram_mb": 3.02,
+          "n_itemsets": 122,
+          "n_rules": 49,
+          "throughput_tx_per_sec": 58421.7
+        },
+        "apriori": {
+          "elapsed_sec": 1.0932,
+          "peak_ram_mb": 2.19,
+          "n_itemsets": 122,
+          "n_rules": 49,
+          "throughput_tx_per_sec": 8996.7
+        }
+      },
+      "min_sup_0.01": {
+        "fpgrowth": {
+          "elapsed_sec": 0.867,
+          "peak_ram_mb": 0.2,
+          "n_itemsets": 333,
+          "n_rules": 170,
+          "throughput_tx_per_sec": 11344.2
+        },
+        "eclat": {
+          "elapsed_sec": 0.2991,
+          "peak_ram_mb": 1.8,
+          "n_itemsets": 333,
+          "n_rules": 170,
+          "throughput_tx_per_sec": 32886.0
+        },
+        "apriori": {
+          "elapsed_sec": 2.0162,
+          "peak_ram_mb": 7.92,
+          "n_itemsets": 333,
+          "n_rules": 170,
+          "throughput_tx_per_sec": 4877.9
+        }
+      }
+    },
+    "top_rules": [
+      {
+        "antecedent": [
+          41
+        ],
+        "consequent": [
+          166,
+          167
+        ],
+        "antecedent_support": 0.05327910523640061,
+        "consequent_support": 0.05602440264361973,
+        "support": 0.010066090493136757,
+        "confidence": 0.18893129770992367,
+        "lift": 3.37230365331597,
+        "leverage": 0.007081160448880861,
+        "conviction": 1.1638663835641019,
+        "zhangs_metric": 0.7430561657819739,
+        "antecedent_names": [
+          "curd"
+        ],
+        "consequent_names": [
+          "whole milk",
+          "yogurt"
+        ]
+      },
+      {
+        "antecedent": [
+          166,
+          167
+        ],
+        "consequent": [
+          41
+        ],
+        "antecedent_support": 0.05602440264361973,
+        "consequent_support": 0.05327910523640061,
+        "support": 0.010066090493136757,
+        "confidence": 0.17967332123411978,
+        "lift": 3.37230365331597,
+        "leverage": 0.007081160448880861,
+        "conviction": 1.1540779048998744,
+        "zhangs_metric": 0.7452171434291209,
+        "antecedent_names": [
+          "whole milk",
+          "yogurt"
+        ],
+        "consequent_names": [
+          "curd"
+        ]
+      },
+      {
+        "antecedent": [
+          124
+        ],
+        "consequent": [
+          31,
+          103
+        ],
+        "antecedent_support": 0.10899847483477376,
+        "consequent_support": 0.02887646161667514,
+        "support": 0.010371123538383325,
+        "confidence": 0.0951492537313433,
+        "lift": 3.295045459323103,
+        "leverage": 0.007223633263540849,
+        "conviction": 1.073241683656623,
+        "zhangs_metric": 0.7817203795817083,
+        "antecedent_names": [
+          "root vegetables"
+        ],
+        "consequent_names": [
+          "citrus fruit",
+          "other vegetables"
+        ]
+      },
+      {
+        "antecedent": [
+          31,
+          103
+        ],
+        "consequent": [
+          124
+        ],
+        "antecedent_support": 0.02887646161667514,
+        "consequent_support": 0.10899847483477376,
+        "support": 0.010371123538383325,
+        "confidence": 0.3591549295774648,
+        "lift": 3.295045459323103,
+        "leverage": 0.007223633263540849,
+        "conviction": 1.3903540282798035,
+        "zhangs_metric": 0.7172249697701297,
+        "antecedent_names": [
+          "citrus fruit",
+          "other vegetables"
+        ],
+        "consequent_names": [
+          "root vegetables"
+        ]
+      },
+      {
+        "antecedent": [
+          103,
+          167
+        ],
+        "consequent": [
+          162
+        ],
+        "antecedent_support": 0.04341637010676157,
+        "consequent_support": 0.07168276563294357,
+        "support": 0.010167768174885612,
+        "confidence": 0.23419203747072598,
+        "lift": 3.2670619695384255,
+        "leverage": 0.007055562691889485,
+        "conviction": 1.2122062968646274,
+        "zhangs_metric": 0.7254092261904761,
+        "antecedent_names": [
+          "other vegetables",
+          "yogurt"
+        ],
+        "consequent_names": [
+          "whipped/sour cream"
+        ]
+      },
+      {
+        "antecedent": [
+          162
+        ],
+        "consequent": [
+          103,
+          167
+        ],
+        "antecedent_support": 0.07168276563294357,
+        "consequent_support": 0.04341637010676157,
+        "support": 0.010167768174885612,
+        "confidence": 0.14184397163120566,
+        "lift": 3.267061969538425,
+        "leverage": 0.007055562691889485,
+        "conviction": 1.1146966265698068,
+        "zhangs_metric": 0.7474972617743701,
+        "antecedent_names": [
+          "whipped/sour cream"
+        ],
+        "consequent_names": [
+          "other vegetables",
+          "yogurt"
+        ]
+      },
+      {
+        "antecedent": [
+          124
+        ],
+        "consequent": [
+          103,
+          158
+        ],
+        "antecedent_support": 0.10899847483477376,
+        "consequent_support": 0.035892221657346214,
+        "support": 0.012302999491611592,
+        "confidence": 0.11287313432835822,
+        "lift": 3.144779819035136,
+        "leverage": 0.008390802072529218,
+        "conviction": 1.0867755398352523,
+        "zhangs_metric": 0.7654450577795634,
+        "antecedent_names": [
+          "root vegetables"
+        ],
+        "consequent_names": [
+          "other vegetables",
+          "tropical fruit"
+        ]
+      },
+      {
+        "antecedent": [
+          103,
+          158
+        ],
+        "consequent": [
+          124
+        ],
+        "antecedent_support": 0.035892221657346214,
+        "consequent_support": 0.10899847483477376,
+        "support": 0.012302999491611592,
+        "confidence": 0.34277620396600567,
+        "lift": 3.144779819035136,
+        "leverage": 0.008390802072529218,
+        "conviction": 1.355704906824676,
+        "zhangs_metric": 0.7074029784140807,
+        "antecedent_names": [
+          "other vegetables",
+          "tropical fruit"
+        ],
+        "consequent_names": [
+          "root vegetables"
+        ]
+      },
+      {
+        "antecedent": [
+          9
+        ],
+        "consequent": [
+          124
+        ],
+        "antecedent_support": 0.05246568378240976,
+        "consequent_support": 0.10899847483477376,
+        "support": 0.017386883579054397,
+        "confidence": 0.3313953488372093,
+        "lift": 3.0403668431100312,
+        "leverage": 0.011668204065608208,
+        "conviction": 1.3326283680732078,
+        "zhangs_metric": 0.7082512053284838,
+        "antecedent_names": [
+          "beef"
+        ],
+        "consequent_names": [
+          "root vegetables"
+        ]
+      },
+      {
+        "antecedent": [
+          124
+        ],
+        "consequent": [
+          9
+        ],
+        "antecedent_support": 0.10899847483477376,
+        "consequent_support": 0.05246568378240976,
+        "support": 0.017386883579054397,
+        "confidence": 0.15951492537313433,
+        "lift": 3.0403668431100312,
+        "leverage": 0.011668204065608208,
+        "conviction": 1.127366023291073,
+        "zhangs_metric": 0.7531887461435741,
+        "antecedent_names": [
+          "root vegetables"
+        ],
+        "consequent_names": [
+          "beef"
+        ]
+      }
+    ]
+  },
+  "chess": {
+    "stats": {
+      "n_transactions": 3196,
+      "n_unique_items": 75,
+      "avg_transaction_length": 37.0,
+      "min_transaction_length": 37,
+      "max_transaction_length": 37,
+      "density_pct": 49.33,
+      "sparsity_pct": 50.67
+    },
+    "benchmarks": {
+      "normal_fpgrowth": {
+        "elapsed_sec": 2.6786,
+        "n_itemsets": 2669,
+        "n_rules": 80121
+      },
+      "normal_eclat": {
+        "elapsed_sec": 2.8775,
+        "n_itemsets": 2669,
+        "n_rules": 80121
+      },
+      "normal_apriori": {
+        "elapsed_sec": 4.4674,
+        "n_itemsets": 2669,
+        "n_rules": 80121
+      },
+      "pruning_stress_test": {
+        "elapsed_sec": 1.0421,
+        "n_itemsets": 1067,
+        "is_degraded": true,
+        "warning_issued": true
+      }
+    }
+  },
+  "retail": {
+    "stats": {
+      "n_transactions": 88162,
+      "n_unique_items": 16470,
+      "avg_transaction_length": 10.31,
+      "min_transaction_length": 1,
+      "max_transaction_length": 76,
+      "density_pct": 0.06,
+      "sparsity_pct": 99.94
+    },
+    "benchmarks": {
+      "min_sup_0.03": {
+        "fpgrowth": {
+          "elapsed_sec": 7.2959,
+          "peak_ram_mb": 13.87,
+          "n_itemsets": 32,
+          "n_rules": 24,
+          "throughput_tx_per_sec": 12083.8
+        },
+        "eclat": {
+          "elapsed_sec": 2.9792,
+          "peak_ram_mb": 10.91,
+          "n_itemsets": 32,
+          "n_rules": 24,
+          "throughput_tx_per_sec": 29592.2
+        },
+        "apriori": {
+          "elapsed_sec": 7.3402,
+          "peak_ram_mb": 0.0,
+          "n_itemsets": 32,
+          "n_rules": 24,
+          "throughput_tx_per_sec": 12010.8
+        }
+      },
+      "min_sup_0.02": {
+        "fpgrowth": {
+          "elapsed_sec": 7.6337,
+          "peak_ram_mb": 0.1,
+          "n_itemsets": 55,
+          "n_rules": 50,
+          "throughput_tx_per_sec": 11549.0
+        },
+        "eclat": {
+          "elapsed_sec": 2.778,
+          "peak_ram_mb": 6.95,
+          "n_itemsets": 55,
+          "n_rules": 50,
+          "throughput_tx_per_sec": 31735.6
+        }
+      }
+    }
+  }
+}
