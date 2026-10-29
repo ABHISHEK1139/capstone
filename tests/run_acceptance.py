@@ -52,15 +52,28 @@ def run_acceptance_suite() -> Dict[str, Any]:
 
     oracle_items = set(ORACLE_FREQUENT_ITEMSETS_0_4.keys())
 
-    kpi1_apriori = 100.0 * len(apriori_items & oracle_items) / len(oracle_items)
-    kpi1_fp = 100.0 * len(fp_items & oracle_items) / len(oracle_items)
-    kpi1_eclat = 100.0 * len(eclat_items & oracle_items) / len(oracle_items)
+    # NOTE: intersection/len(oracle) is RECALL, not precision. The old code
+    # labelled it "precision" while run_benchmarks.py computed precision
+    # (intersection/len(found)) — the two scripts disagreed. Report both.
+    def precision(found):
+        return 100.0 * len(found & oracle_items) / len(found) if found else 0.0
+
+    def recall(found):
+        return 100.0 * len(found & oracle_items) / len(oracle_items) if oracle_items else 0.0
+
+    kpi1_apriori = precision(apriori_items)
+    kpi1_fp = precision(fp_items)
+    kpi1_eclat = precision(eclat_items)
+    rec_apriori = recall(apriori_items)
+    rec_fp = recall(fp_items)
+    rec_eclat = recall(eclat_items)
 
     print(f"  -> KPI-1 Itemset Precision vs Oracle:")
-    print(f"     * Apriori Baseline: {kpi1_apriori:.2f}% (Target: >= 95%)")
-    print(f"     * FP-Growth:        {kpi1_fp:.2f}% (Target: >= 98%)")
-    print(f"     * Eclat (Vertical): {kpi1_eclat:.2f}% (Target: >= 98%)")
+    print(f"     * Apriori Baseline: precision {kpi1_apriori:.2f}%, recall {rec_apriori:.2f}% (Target: >= 95%)")
+    print(f"     * FP-Growth:        precision {kpi1_fp:.2f}%, recall {rec_fp:.2f}% (Target: >= 98%)")
+    print(f"     * Eclat (Vertical): precision {kpi1_eclat:.2f}%, recall {rec_eclat:.2f}% (Target: >= 98%)")
     assert kpi1_apriori == 100.0 and kpi1_fp == 100.0 and kpi1_eclat == 100.0
+    assert rec_apriori == 100.0 and rec_fp == 100.0 and rec_eclat == 100.0
 
     # -------------------------------------------------------------
     # 2. KPI-2: Rule-Metric Numerical Error
@@ -161,6 +174,10 @@ def run_acceptance_suite() -> Dict[str, Any]:
     X_stress = rng.choice([0, 1], size=(50, 18), p=[0.25, 0.75])
     est_nt6 = AssociationRulesEstimator(min_support=0.5, max_candidates=500, on_candidate_explosion="degrade")
     est_nt6.fit(X_stress)
+    # The old script recorded NT-6 as PASS without checking anything; the
+    # degradation flag is the actual acceptance criterion (verified: this
+    # scenario degrades with 501 capped itemsets).
+    assert est_nt6.is_degraded_ is True
     coordinator.record_failure_or_degradation(
         "NT-6", "18-item 75% dense matrix stress test",
         "Candidate generation halted at 500", "Logged telemetry and entered degraded mode", "Residual higher order capped"
@@ -186,21 +203,23 @@ def run_acceptance_suite() -> Dict[str, Any]:
 
     # Speedup ratio
     speedup = apriori_time / fp_time if fp_time > 0 else 1.0
+    kpi4_pass = fp_time <= 0.80 * apriori_time or apriori_time < 0.1
     print(f"  -> Apriori Runtime (N=1000): {apriori_time:.4f} s")
     print(f"  -> FP-Growth Runtime (N=1000): {fp_time:.4f} s (Speedup: {speedup:.2f}x)")
-    print(f"  -> KPI-4 Pass Rule (p95 <= 0.80 * O2): {'PASS' if fp_time <= 0.80 * apriori_time or apriori_time < 0.1 else 'PASS (Sub-100ms scale)'}")
+    print(f"  -> KPI-4 Pass Rule (fp <= 0.80 * apriori or apriori < 0.1s): {'PASS' if kpi4_pass else 'FAIL'}")
 
-    # Summary Scorecard
+    # Summary Scorecard — print the values actually measured above, not
+    # hardcoded 100% claims. (KPI-3/5/6 are covered by the NT-1/NT-6
+    # degradation checks and the KPI-6 unit-benchmark script, not re-run here.)
     total_time = time.perf_counter() - suite_start
     print("\n" + "=" * 75)
     print("ACCEPTANCE HARNESS SCORECARD SUMMARY")
     print("=" * 75)
-    print(f"  * KPI-1 (Precision vs Oracle):       100.0%       [PASS]")
-    print(f"  * KPI-2 (Numerical Error Rubric):    100.0/100    [PASS]")
-    print(f"  * KPI-3 (Candidate Bounding):        Protected    [PASS]")
-    print(f"  * KPI-4 (Runtime Speedup):           {speedup:.2f}x faster [PASS]")
-    print(f"  * KPI-5 (Peak Memory Governor):      Compliant    [PASS]")
-    print(f"  * KPI-6 (Estimator API Compliance):  100.0%       [PASS]")
+    print(f"  * KPI-1 (Precision vs Oracle):       Apriori {kpi1_apriori:.1f}%, FP {kpi1_fp:.1f}%, Eclat {kpi1_eclat:.1f}%")
+    print(f"  * KPI-1 (Recall vs Oracle):          Apriori {rec_apriori:.1f}%, FP {rec_fp:.1f}%, Eclat {rec_eclat:.1f}%")
+    print(f"  * KPI-2 (Numerical Error Rubric):    {kpi2_rubric}/100 (max err {max_num_error:.2e})")
+    print(f"  * KPI-3 (Candidate Bounding):        NT-1/NT-6 degraded mode asserted [PASS]")
+    print(f"  * KPI-4 (Runtime Speedup):           {speedup:.2f}x [{'PASS' if kpi4_pass else 'FAIL'}]")
     print(f"  * Negative Tests (NT-1..NT-6):       6/6 Passed   [PASS]")
     print(f"  * Total Execution Time:              {total_time:.2f} seconds")
     print("=" * 75)
@@ -211,10 +230,10 @@ def run_acceptance_suite() -> Dict[str, Any]:
         "status": "PASS",
         "execution_time_s": total_time,
         "negative_tests_passed": 6,
-        "kpi1_precision_pct": 100.0,
-        "kpi2_rubric_score": 100.0,
+        "kpi1_precision_pct": min(kpi1_apriori, kpi1_fp, kpi1_eclat),
+        "kpi1_recall_pct": min(rec_apriori, rec_fp, rec_eclat),
+        "kpi2_rubric_score": kpi2_rubric,
         "kpi4_speedup": speedup,
-        "kpi6_compliance_pct": 100.0,
         "audit_trail": coordinator.get_audit_trail(),
     }
 

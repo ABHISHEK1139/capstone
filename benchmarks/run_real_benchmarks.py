@@ -11,11 +11,19 @@ import os
 import time
 import json
 import warnings
+import platform
 import psutil
 import numpy as np
 
 # Ensure workspace root is in sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, REPO_ROOT)
+DATA_DIR = os.path.join(REPO_ROOT, "data")
+
+
+def hardware_string() -> str:
+    """Real host description for benchmark provenance (never hardcoded)."""
+    return f"{platform.machine()}, {platform.system()} {platform.release()}, {platform.python_implementation()}"
 
 from skarm.datasets import load_groceries, load_chess, load_retail, dataset_summary
 from skarm.preprocessing import TransactionEncoder
@@ -31,7 +39,7 @@ def run_groceries_experiment():
     print("=" * 70)
     print("EXPERIMENT 1: GROCERIES MARKET BASKET ANALYSIS (N=9,835, M=169)")
     print("=" * 70)
-    tx = load_groceries()
+    tx = load_groceries(os.path.join(DATA_DIR, "groceries.csv"))
     stats = dataset_summary(tx)
     print(f"Dataset stats: {stats['n_transactions']} txns, {stats['n_unique_items']} items, {stats['avg_transaction_length']} avg len.")
 
@@ -104,7 +112,7 @@ def run_chess_experiment():
     print("\n" + "=" * 70)
     print("EXPERIMENT 2: DENSE CHESS BENCHMARK & PRUNING POLICY STRESS TEST")
     print("=" * 70)
-    tx = load_chess()
+    tx = load_chess(os.path.join(DATA_DIR, "chess.dat"))
     stats = dataset_summary(tx)
     print(f"Dataset stats: {stats['n_transactions']} txns, {stats['n_unique_items']} items, density={stats['density_pct']}%.")
 
@@ -163,7 +171,7 @@ def run_retail_experiment():
     print("\n" + "=" * 70)
     print("EXPERIMENT 3: LARGE-SCALE RETAIL BENCHMARK (N=88,162, M=16,470)")
     print("=" * 70)
-    tx = load_retail()
+    tx = load_retail(os.path.join(DATA_DIR, "retail.dat"))
     stats = dataset_summary(tx)
     print(f"Dataset stats: {stats['n_transactions']} txns, {stats['n_unique_items']} items, sparsity={stats['sparsity_pct']}%.")
 
@@ -200,9 +208,14 @@ def run_retail_experiment():
                 "throughput_tx_per_sec": round(tput, 1)
             }
 
-    # Run Apriori at min_sup=0.03 to measure comparative baseline runtime
+    # Run Apriori at min_sup=0.03 to measure comparative baseline runtime.
+    # NOTE: Apriori is only run at 0.03 (not 0.02) for time reasons, so the
+    # 0.02 rows must NOT be compared against this Apriori row — different
+    # thresholds mine different itemsets. The paper's Table 4 made exactly
+    # that invalid comparison; keep thresholds matched when comparing.
     print("Running APRIORI on Retail (min_sup=0.03)...")
     t0 = time.perf_counter()
+    m0 = get_peak_memory_mb()
     est_apriori = AssociationRulesEstimator(
         min_support=0.03,
         metric="confidence",
@@ -212,10 +225,12 @@ def run_retail_experiment():
     )
     est_apriori.fit(tx)
     elapsed_apriori = time.perf_counter() - t0
-    print(f"Retail APRIORI (min_sup=0.03): {elapsed_apriori:.3f}s | Itemsets: {len(est_apriori.frequent_itemsets_)} | Rules: {len(est_apriori.rules_)}")
+    m1 = get_peak_memory_mb()
+    peak_ram_apriori = max(m1 - m0, 0.1)
+    print(f"Retail APRIORI (min_sup=0.03): {elapsed_apriori:.3f}s | RAM: {peak_ram_apriori:.1f} MB | Itemsets: {len(est_apriori.frequent_itemsets_)} | Rules: {len(est_apriori.rules_)}")
     results["min_sup_0.03"]["apriori"] = {
         "elapsed_sec": round(elapsed_apriori, 4),
-        "peak_ram_mb": 0.0,
+        "peak_ram_mb": round(peak_ram_apriori, 2),
         "n_itemsets": len(est_apriori.frequent_itemsets_),
         "n_rules": len(est_apriori.rules_),
         "throughput_tx_per_sec": round(len(tx) / elapsed_apriori, 1)
@@ -224,10 +239,10 @@ def run_retail_experiment():
     return results, stats
 
 def main():
-    os.makedirs("benchmarks", exist_ok=True)
+    os.makedirs(os.path.join(REPO_ROOT, "benchmarks"), exist_ok=True)
     full_results = {
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "hardware": "Intel/AMD x86_64, Windows",
+        "hardware": hardware_string(),
         "python_version": sys.version,
     }
 
@@ -250,7 +265,7 @@ def main():
             return sorted(list(o))
         return str(o)
 
-    out_file = "benchmarks/real_benchmark_results.json"
+    out_file = os.path.join(REPO_ROOT, "benchmarks", "real_benchmark_results.json")
     with open(out_file, "w", encoding="utf-8") as f:
         json.dump(full_results, f, indent=2, default=json_serializer)
 

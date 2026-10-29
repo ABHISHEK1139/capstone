@@ -6,10 +6,13 @@ import sys
 import os
 import time
 import json
+import platform
 import psutil
 import numpy as np
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, REPO_ROOT)
+DATA_DIR = os.path.join(REPO_ROOT, "data")
 
 from skarm.datasets import load_market_basket, load_mushroom, dataset_summary
 from skarm.estimator import AssociationRulesEstimator
@@ -23,7 +26,7 @@ def test_market_basket():
     print("=" * 75)
     print("TEST 1: MARKET BASKET OPTIMISATION DATASET (N=7,501)")
     print("=" * 75)
-    tx = load_market_basket("data/market_basket.csv")
+    tx = load_market_basket(os.path.join(DATA_DIR, "market_basket.csv"))
     summary = dataset_summary(tx)
     print(f"Stats: {summary['n_transactions']:,} txns, {summary['n_unique_items']} items, avg len {summary['avg_transaction_length']}, density {summary['density_pct']}%\n")
 
@@ -91,7 +94,7 @@ def test_mushroom():
     print("\n" + "=" * 75)
     print("TEST 2: MUSHROOM BENCHMARK DATASET (N=8,124, 119 ATTRIBUTES)")
     print("=" * 75)
-    tx = load_mushroom("data/mushroom.dat")
+    tx = load_mushroom(os.path.join(DATA_DIR, "mushroom.dat"))
     summary = dataset_summary(tx)
     print(f"Stats: {summary['n_transactions']:,} txns, {summary['n_unique_items']} items, avg len {summary['avg_transaction_length']}, density {summary['density_pct']}%\n")
 
@@ -137,7 +140,7 @@ def main():
 
     all_res = {
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "hardware": "Intel/AMD x86_64, Windows",
+        "hardware": f"{platform.machine()}, {platform.system()} {platform.release()}",
         "market_basket": res_market,
         "mushroom": res_mushroom,
     }
@@ -153,7 +156,7 @@ def main():
             return sorted(list(o))
         return str(o)
 
-    out_file = "benchmarks/new_datasets_results.json"
+    out_file = os.path.join(REPO_ROOT, "benchmarks", "new_datasets_results.json")
     with open(out_file, "w", encoding="utf-8") as f:
         json.dump(all_res, f, indent=2, default=json_serializer)
     print(f"\n[SUCCESS] New real dataset testing complete! Results saved to {out_file}")

@@ -38,15 +38,28 @@ def evaluate_kpi1_precision() -> Dict[str, Any]:
 
     oracle_set = set(ORACLE_FREQUENT_ITEMSETS_0_4.keys())
 
-    prec_apriori = 100.0 * len(apriori_items.intersection(oracle_set)) / len(apriori_items) if apriori_items else 0.0
-    prec_fp = 100.0 * len(fp_items.intersection(oracle_set)) / len(fp_items) if fp_items else 0.0
-    prec_eclat = 100.0 * len(eclat_items.intersection(oracle_set)) / len(eclat_items) if eclat_items else 0.0
+    def precision(found):
+        return 100.0 * len(found.intersection(oracle_set)) / len(found) if found else 0.0
+
+    def recall(found):
+        return 100.0 * len(found.intersection(oracle_set)) / len(oracle_set) if oracle_set else 0.0
+
+    prec_apriori, prec_fp, prec_eclat = precision(apriori_items), precision(fp_items), precision(eclat_items)
+    rec_apriori, rec_fp, rec_eclat = recall(apriori_items), recall(fp_items), recall(eclat_items)
 
     return {
         "apriori_precision_pct": prec_apriori,
         "fpgrowth_precision_pct": prec_fp,
         "eclat_precision_pct": prec_eclat,
-        "pass": prec_fp >= 100.0 and prec_apriori >= 100.0,
+        "apriori_recall_pct": rec_apriori,
+        "fpgrowth_recall_pct": rec_fp,
+        "eclat_recall_pct": rec_eclat,
+        # The old pass condition silently omitted Eclat, and precision alone
+        # cannot catch a miner that misses oracle itemsets, so both
+        # precision and recall of all three engines must be 100%.
+        "pass": all(p >= 100.0 and r >= 100.0 for p, r in [
+            (prec_apriori, rec_apriori), (prec_fp, rec_fp), (prec_eclat, rec_eclat),
+        ]),
     }
 
 
@@ -78,8 +91,10 @@ def evaluate_kpi2_numerical_error() -> Dict[str, Any]:
         rubric_score = 90.0
     elif max_err < 1e-4:
         rubric_score = 75.0
-    else:
+    elif max_err < 1e-2:
         rubric_score = 50.0
+    else:
+        rubric_score = 0.0
 
     return {
         "max_numerical_error": max_err,
@@ -106,7 +121,8 @@ def evaluate_runtime_and_memory_scales(scales: List[int] = [200, 1000, 5000]) ->
 
             # Run 5 trials per scale
             for trial in range(5):
-                tracemalloc.start()
+                if not tracemalloc.is_tracing():
+                    tracemalloc.start()
                 tracemalloc.reset_peak()
                 t0 = time.perf_counter()
 
@@ -142,8 +158,13 @@ def evaluate_runtime_and_memory_scales(scales: List[int] = [200, 1000, 5000]) ->
 
 def evaluate_kpi6_api_compliance() -> Dict[str, Any]:
     """KPI-6: Estimator API compliance pass rate (%)."""
+    from sklearn.base import BaseEstimator
+
     checks = [
-        ("BaseEstimator inheritance", issubclass(AssociationRulesEstimator, pd.core.base.PandasObject) is False),
+        # The old check ("not a PandasObject") was vacuous: it passed for
+        # any class that is not a pandas object and never tested sklearn
+        # compliance at all.
+        ("BaseEstimator inheritance", issubclass(AssociationRulesEstimator, BaseEstimator)),
         ("get_params implementation", hasattr(AssociationRulesEstimator(), "get_params")),
         ("set_params implementation", hasattr(AssociationRulesEstimator(), "set_params")),
         ("fit returns self", isinstance(AssociationRulesEstimator(min_support=0.5).fit([[1, 0]]), AssociationRulesEstimator)),
