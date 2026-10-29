@@ -66,12 +66,15 @@ class TransactionEncoder(BaseEstimator, TransformerMixin):
         has_transactions = False
         for transaction in X:
             has_transactions = True
-            if not hasattr(transaction, "__iter__") or isinstance(transaction, (str, bytes)):
-                # If transaction itself is a string/bytes, treat as iterable of individual characters or raise?
-                # Usually a transaction is a list/tuple/set of item strings.
-                if isinstance(transaction, (str, bytes)):
-                    unique_items.add(transaction)
-                    continue
+            if isinstance(transaction, (str, bytes)):
+                # A bare string/bytes transaction is a single item, not an
+                # iterable of characters (transform must agree with fit).
+                unique_items.add(transaction)
+                continue
+            if not hasattr(transaction, "__iter__"):
+                raise ValueError(
+                    f"Each transaction must be an iterable of items, got {type(transaction).__name__!r}."
+                )
             for item in transaction:
                 unique_items.add(item)
 
@@ -118,6 +121,10 @@ class TransactionEncoder(BaseEstimator, TransformerMixin):
             indptr = [0]
             indices = []
             for transaction in transactions:
+                # A bare string/bytes transaction is a single item (as in fit),
+                # not an iterable of characters.
+                if isinstance(transaction, (str, bytes)):
+                    transaction = [transaction]
                 # Deduplicate items within transaction (NT-2 requirement)
                 seen_indices = set()
                 for item in transaction:
@@ -140,6 +147,8 @@ class TransactionEncoder(BaseEstimator, TransformerMixin):
         else:
             matrix = np.zeros((n_samples, n_features), dtype=self.dtype)
             for row_idx, transaction in enumerate(transactions):
+                if isinstance(transaction, (str, bytes)):
+                    transaction = [transaction]
                 for item in transaction:
                     if item in self.item_to_idx_:
                         col_idx = self.item_to_idx_[item]
@@ -150,7 +159,10 @@ class TransactionEncoder(BaseEstimator, TransformerMixin):
 
     def fit_transform(self, X: Iterable[Iterable[Any]], y: Optional[Any] = None) -> Union[np.ndarray, sparse.csr_matrix]:
         """Fit to data, then transform it."""
-        return self.fit(X, y).transform(X)
+        # Materialize first: a one-shot iterable (e.g. a generator) would be
+        # exhausted by fit(), leaving transform() with zero transactions.
+        transactions = list(X)
+        return self.fit(transactions, y).transform(transactions)
 
     def inverse_transform(self, X: Union[np.ndarray, sparse.csr_matrix]) -> List[List[Any]]:
         """Transform binary matrix back to transactions.

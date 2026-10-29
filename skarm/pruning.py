@@ -32,7 +32,8 @@ class PruningPolicy:
     max_len : int or None, default=None
         Maximum itemset length to discover.
     min_support : float, default=0.1
-        Minimum support threshold. Must be in (0.0, 1.0].
+        Minimum support threshold. Must be in [0.0, 1.0] (0.0 is allowed
+        by design and mines every subset; see NT-4).
     on_candidate_explosion : {'raise', 'truncate', 'degrade'}, default='degrade'
         Action when candidate count exceeds max_candidates:
         - 'raise': Raise CandidateExplosionError immediately.

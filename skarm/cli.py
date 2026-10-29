@@ -6,7 +6,7 @@ import json
 import pandas as pd
 from skarm.estimator import AssociationRulesEstimator
 from skarm.explorer import RuleExplorer
-from skarm.datasets import load_groceries, load_chess, load_retail, load_market_basket, load_mushroom, load_fimi_dat, dataset_summary
+from skarm.datasets import load_groceries, load_chess, load_retail, load_market_basket, load_mushroom, load_fimi_dat, load_transactions, dataset_summary
 
 
 def main():
@@ -33,32 +33,35 @@ def main():
     transactions = None
     dataset_name = "Synthetic Demonstration"
 
-    if args.dataset == "groceries" or (args.input_csv and "groceries" in args.input_csv.lower()):
+    # An explicit --dataset always wins. The old code let a filename
+    # substring override it (e.g. --dataset retail with an input path
+    # containing "groceries" silently loaded groceries instead).
+    if args.dataset == "groceries":
         dataset_name = "Groceries Market Basket"
         path = args.input_csv if args.input_csv else "data/groceries.csv"
         transactions = load_groceries(path)
-    elif args.dataset == "chess" or (args.input_dat and "chess" in args.input_dat.lower()):
+    elif args.dataset == "chess":
         dataset_name = "Chess Benchmark (Dense)"
         path = args.input_dat if args.input_dat else "data/chess.dat"
         transactions = load_chess(path)
-    elif args.dataset == "retail" or (args.input_dat and "retail" in args.input_dat.lower()):
+    elif args.dataset == "retail":
         dataset_name = "Retail Benchmark (Sparse 88k)"
         path = args.input_dat if args.input_dat else "data/retail.dat"
         transactions = load_retail(path)
-    elif args.dataset == "market_basket" or (args.input_csv and "market" in args.input_csv.lower()):
+    elif args.dataset == "market_basket":
         dataset_name = "Market Basket Optimisation (7,501 txns)"
         path = args.input_csv if args.input_csv else "data/market_basket.csv"
         transactions = load_market_basket(path)
-    elif args.dataset == "mushroom" or (args.input_dat and "mushroom" in args.input_dat.lower()):
+    elif args.dataset == "mushroom":
         dataset_name = "Mushroom Benchmark (Dense 8,124 txns)"
         path = args.input_dat if args.input_dat else "data/mushroom.dat"
         transactions = load_mushroom(path)
     elif args.input_csv:
         dataset_name = os.path.basename(args.input_csv)
-        transactions = load_groceries(args.input_csv)
+        transactions = load_transactions(args.input_csv)
     elif args.input_dat:
         dataset_name = os.path.basename(args.input_dat)
-        transactions = load_fimi_dat(args.input_dat)
+        transactions = load_transactions(args.input_dat)
     elif args.demo or not (args.dataset or args.input_csv or args.input_dat):
         dataset_name = "Synthetic Demonstration"
         transactions = [

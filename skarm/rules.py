@@ -82,6 +82,14 @@ def association_rules(
     if metric not in valid_metrics:
         raise ValueError(f"Unknown metric '{metric}'. Choose from {valid_metrics}")
 
+    if feature_names is not None and frequent_itemsets:
+        max_idx = max(max(itemset) for itemset in frequent_itemsets)
+        if max_idx >= len(feature_names):
+            raise ValueError(
+                f"feature_names has length {len(feature_names)} but itemset index {max_idx} "
+                "is out of range; feature_names must cover every item index."
+            )
+
     records = []
 
     # Filter itemsets with size >= 2
@@ -153,13 +161,16 @@ def association_rules(
 
     df = pd.DataFrame(records)
 
-    # Deterministic sorting (NT-5): sort by metric descending, then support descending, then antecedent/consequent
-    df.sort_values(
+    # Deterministic sorting (NT-5): stable sort by metric descending, then
+    # support descending. Stability preserves the deterministic generation
+    # order (itemset length, then sorted item indices) for exact ties, which
+    # the default unstable quicksort does not guarantee.
+    df = df.sort_values(
         by=[metric, "support"],
         ascending=[False, False],
-        inplace=True,
+        kind="stable",
     )
-    df.reset_index(drop=True, inplace=True)
+    df = df.reset_index(drop=True)
 
     # Add named antecedent/consequent if feature_names provided
     if feature_names is not None:

@@ -49,12 +49,18 @@ class RuleExplorer:
     def summary_statistics(self) -> Dict[str, Any]:
         """Compute comprehensive rule summary statistics."""
         if self.rules_df.empty:
+            # Same keys as the non-empty branch: callers must not get a
+            # KeyError for min_lift/avg_leverage/avg_zhangs_metric just
+            # because no rules were mined.
             return {
                 "rule_count": 0,
                 "avg_confidence": 0.0,
                 "avg_lift": 0.0,
                 "avg_support": 0.0,
                 "max_lift": 0.0,
+                "min_lift": 0.0,
+                "avg_leverage": 0.0,
+                "avg_zhangs_metric": 0.0,
             }
 
         return {

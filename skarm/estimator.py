@@ -119,6 +119,11 @@ class AssociationRulesEstimator(BaseEstimator):
         """
         self._validate_parameters()
 
+        # A DataFrame of 0/1 indicators is a matrix, not an iterable of
+        # transactions (iterating it would yield column names).
+        if isinstance(X, pd.DataFrame):
+            X = X.to_numpy()
+
         # Handle raw iterables of transactions vs pre-encoded matrices
         if isinstance(X, (np.ndarray, sparse.spmatrix)):
             X_matrix = X
@@ -210,8 +215,15 @@ class AssociationRulesEstimator(BaseEstimator):
         """
         check_is_fitted(self, attributes=["rules_", "columns_"])
 
+        if isinstance(X, pd.DataFrame):
+            X = X.to_numpy()
+        # Materialize one-shot iterables (e.g. generators) so the empty-rules
+        # path and the transaction loop both see the same transactions.
+        if not isinstance(X, (np.ndarray, sparse.spmatrix)):
+            X = list(X)
+
         if self.rules_.empty:
-            return [[] for _ in range(len(X) if hasattr(X, "__len__") else 0)]
+            return [[] for _ in range(len(X))]
 
         # Prepare transactions as set of indices
         if self.encoder_ is not None and not isinstance(X, (np.ndarray, sparse.spmatrix)):
@@ -255,9 +267,13 @@ class AssociationRulesEstimator(BaseEstimator):
     def transform(self, X: Union[Iterable[Iterable[Any]], np.ndarray, sparse.csr_matrix]) -> np.ndarray:
         """Transform transactions into binary vector of triggered rule firings."""
         check_is_fitted(self, attributes=["rules_"])
+        if isinstance(X, pd.DataFrame):
+            X = X.to_numpy()
+        if not isinstance(X, (np.ndarray, sparse.spmatrix)):
+            X = list(X)
         n_rules = len(self.rules_)
         if n_rules == 0:
-            n_samples = len(X) if hasattr(X, "__len__") else 0
+            n_samples = len(X)
             return np.zeros((n_samples, 0), dtype=bool)
 
         # Pre-extract antecedents
@@ -303,8 +319,8 @@ class AssociationRulesEstimator(BaseEstimator):
             })
         df = pd.DataFrame(records)
         if not df.empty:
-            df.sort_values(by=["length", "support"], ascending=[True, False], inplace=True)
-            df.reset_index(drop=True, inplace=True)
+            df = df.sort_values(by=["length", "support"], ascending=[True, False], kind="stable")
+            df = df.reset_index(drop=True)
         else:
             df = pd.DataFrame(columns=["itemsets", "length", "support"])
         return df
