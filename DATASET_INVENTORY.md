@@ -20,6 +20,30 @@ also downloaded that day). `OnlineRetail.zip` (23,715,478 bytes)
 is retained in the same folder as the provenance archive for `online_retail.dat`
 and is **not** counted as a dataset.
 
+## PENDING UPLOAD — note for the next agent (written 2026-10-29)
+
+Two datasets in this inventory are **NOT yet in the repo's `data/` folder**
+(`https://github.com/ABHISHEK1139/capstone/tree/main/data`), because they
+exceed GitHub's 25 MB browser-upload limit. **Do not try to upload them
+through the GitHub web UI — it will reject them.** Download them from the
+source URLs below, verify the transaction counts by parsing, and push them
+with Git LFS (or a direct git push from a machine with repo credentials).
+After they land, update this section to say they are in the repo.
+
+| File | Size (bytes) | Transactions | Source URL | Verify after download |
+|---|---|---|---|---|
+| accidents.dat | 35,509,834 | 340,183 | https://raw.githubusercontent.com/HamiciRyadh/data-mining-close/main/datasets/accidents.dat | First line is a header `340183 468` — exclude it from counts; expect 340,183 transactions, 468 items |
+| kosarak.dat | 32,029,467 | 990,002 | https://media.githubusercontent.com/media/caph1993/mle-of-randomized-response/main/mle_vs_inv_python/data/kosarak.dat.txt | Expect 990,002 transactions, 41,270 items. NOTE: this file is Git-LFS-backed in its source repo — the `raw.githubusercontent` URL returns only the LFS pointer, so use the `media.githubusercontent` URL above |
+
+Also in flight (2026-10-29): the other 19 new files (connect, pumsb,
+pumsb_star, Kosarak.txt, BMS-POS, BMS-WebView-1, BMS-WebView-2, T10I4D100K,
+online_retail, online_retail_ii, adult_census, docword_nips, docword_enron,
+tic_tac_toe, balance_scale, car_evaluation, synthetic_sparse_2000,
+synthetic_dense_5000, generate_synthetic.py) were being uploaded to `data/`
+via a browser task that was waiting on a GitHub sign-in. Before re-uploading
+anything, check the `data/` folder listing — if those files are already
+there, do not upload duplicates.
+
 ## Datasets
 
 | # | Dataset | File | Source URL | Size (bytes) | N transactions | M unique items | Avg length | Density % | Format notes  | Licence | Access date | Owner / custodian | Transformations |
