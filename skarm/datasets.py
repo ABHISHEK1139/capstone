@@ -42,6 +42,14 @@ def load_retail(filepath: str = "data/retail.dat") -> List[List[str]]:
     """Load the Retail dataset (sparse benchmark, 88,162 transactions)."""
     return load_fimi_dat(filepath)
 
+def load_market_basket(filepath: str = "data/market_basket.csv") -> List[List[str]]:
+    """Load the Market Basket Optimization dataset (7,501 retail transactions)."""
+    return load_groceries(filepath)
+
+def load_mushroom(filepath: str = "data/mushroom.dat") -> List[List[str]]:
+    """Load the Mushroom dataset (dense benchmark, 8,124 transactions, 119 attributes)."""
+    return load_fimi_dat(filepath)
+
 def dataset_summary(transactions: List[List[str]]) -> Dict[str, Any]:
     """Compute structural metrics of a transactional dataset."""
     num_tx = len(transactions)

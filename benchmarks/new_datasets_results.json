@@ -1,0 +1,294 @@
+{
+  "timestamp": "2026-10-29 20:26:08",
+  "hardware": "Intel/AMD x86_64, Windows",
+  "market_basket": {
+    "summary": {
+      "n_transactions": 7501,
+      "n_unique_items": 119,
+      "avg_transaction_length": 3.91,
+      "min_transaction_length": 1,
+      "max_transaction_length": 20,
+      "density_pct": 3.29,
+      "sparsity_pct": 96.71
+    },
+    "benchmarks": {
+      "fpgrowth": {
+        "elapsed_sec": 0.3471,
+        "peak_ram_mb": 7.09,
+        "n_itemsets": 54,
+        "n_rules": 27,
+        "throughput_tx_per_sec": 21609.2
+      },
+      "eclat": {
+        "elapsed_sec": 0.149,
+        "peak_ram_mb": 3.08,
+        "n_itemsets": 54,
+        "n_rules": 27,
+        "throughput_tx_per_sec": 50346.7
+      },
+      "apriori": {
+        "elapsed_sec": 0.4381,
+        "peak_ram_mb": 4.67,
+        "n_itemsets": 54,
+        "n_rules": 27,
+        "throughput_tx_per_sec": 17122.6
+      }
+    },
+    "top_rules": [
+      {
+        "antecedent": [
+          99
+        ],
+        "consequent": [
+          54
+        ],
+        "antecedent_support": 0.17411011865084655,
+        "consequent_support": 0.09825356619117451,
+        "support": 0.03919477403012932,
+        "confidence": 0.22511485451761104,
+        "lift": 2.2911621760333793,
+        "leverage": 0.022087833962715117,
+        "conviction": 1.1637162475833263,
+        "zhangs_metric": 0.6823431228827286,
+        "antecedent_names": [
+          "spaghetti"
+        ],
+        "consequent_names": [
+          "ground beef"
+        ]
+      },
+      {
+        "antecedent": [
+          54
+        ],
+        "consequent": [
+          99
+        ],
+        "antecedent_support": 0.09825356619117451,
+        "consequent_support": 0.17411011865084655,
+        "support": 0.03919477403012932,
+        "confidence": 0.3989145183175034,
+        "lift": 2.291162176033379,
+        "leverage": 0.022087833962715117,
+        "conviction": 1.3739973872558149,
+        "zhangs_metric": 0.6249431765609852,
+        "antecedent_names": [
+          "ground beef"
+        ],
+        "consequent_names": [
+          "spaghetti"
+        ]
+      },
+      {
+        "antecedent": [
+          80
+        ],
+        "consequent": [
+          99
+        ],
+        "antecedent_support": 0.0658578856152513,
+        "consequent_support": 0.17411011865084655,
+        "support": 0.022930275963204905,
+        "confidence": 0.3481781376518219,
+        "lift": 1.999758201015556,
+        "leverage": 0.01146375168463962,
+        "conviction": 1.267048451510813,
+        "zhangs_metric": 0.5351857444880701,
+        "antecedent_names": [
+          "olive oil"
+        ],
+        "consequent_names": [
+          "spaghetti"
+        ]
+      },
+      {
+        "antecedent": [
+          99
+        ],
+        "consequent": [
+          80
+        ],
+        "antecedent_support": 0.17411011865084655,
+        "consequent_support": 0.0658578856152513,
+        "support": 0.022930275963204905,
+        "confidence": 0.13169984686064318,
+        "lift": 1.9997582010155557,
+        "leverage": 0.01146375168463962,
+        "conviction": 1.0758285726512185,
+        "zhangs_metric": 0.6053343844435686,
+        "antecedent_names": [
+          "spaghetti"
+        ],
+        "consequent_names": [
+          "olive oil"
+        ]
+      },
+      {
+        "antecedent": [
+          71
+        ],
+        "consequent": [
+          98
+        ],
+        "antecedent_support": 0.23836821757099053,
+        "consequent_support": 0.05052659645380616,
+        "support": 0.023063591521130515,
+        "confidence": 0.09675615212527965,
+        "lift": 1.9149548735929356,
+        "leverage": 0.01101965678450801,
+        "conviction": 1.051181700025136,
+        "zhangs_metric": 0.6273300220873396,
+        "antecedent_names": [
+          "mineral water"
+        ],
+        "consequent_names": [
+          "soup"
+        ]
+      },
+      {
+        "antecedent": [
+          98
+        ],
+        "consequent": [
+          71
+        ],
+        "antecedent_support": 0.05052659645380616,
+        "consequent_support": 0.23836821757099053,
+        "support": 0.023063591521130515,
+        "confidence": 0.45646437994722955,
+        "lift": 1.9149548735929356,
+        "leverage": 0.01101965678450801,
+        "conviction": 1.4012545900028865,
+        "zhangs_metric": 0.5032205021321218,
+        "antecedent_names": [
+          "soup"
+        ],
+        "consequent_names": [
+          "mineral water"
+        ]
+      },
+      {
+        "antecedent": [
+          48
+        ],
+        "consequent": [
+          70
+        ],
+        "antecedent_support": 0.09532062391681109,
+        "consequent_support": 0.12958272230369283,
+        "support": 0.023596853752832957,
+        "confidence": 0.24755244755244757,
+        "lift": 1.9103815937149273,
+        "leverage": 0.011244947814006083,
+        "conviction": 1.1567813263064306,
+        "zhangs_metric": 0.526754984089876,
+        "antecedent_names": [
+          "frozen vegetables"
+        ],
+        "consequent_names": [
+          "milk"
+        ]
+      },
+      {
+        "antecedent": [
+          70
+        ],
+        "consequent": [
+          48
+        ],
+        "antecedent_support": 0.12958272230369283,
+        "consequent_support": 0.09532062391681109,
+        "support": 0.023596853752832957,
+        "confidence": 0.1820987654320988,
+        "lift": 1.9103815937149273,
+        "leverage": 0.011244947814006083,
+        "conviction": 1.1060985579281253,
+        "zhangs_metric": 0.5474895576709907,
+        "antecedent_names": [
+          "milk"
+        ],
+        "consequent_names": [
+          "frozen vegetables"
+        ]
+      },
+      {
+        "antecedent": [
+          14
+        ],
+        "consequent": [
+          36
+        ],
+        "antecedent_support": 0.0871883748833489,
+        "consequent_support": 0.17970937208372217,
+        "support": 0.02879616051193174,
+        "confidence": 0.33027522935779813,
+        "lift": 1.8378297443715457,
+        "leverage": 0.013127592408644938,
+        "conviction": 1.224817512916086,
+        "zhangs_metric": 0.49942391639485245,
+        "antecedent_names": [
+          "burgers"
+        ],
+        "consequent_names": [
+          "eggs"
+        ]
+      },
+      {
+        "antecedent": [
+          36
+        ],
+        "consequent": [
+          14
+        ],
+        "antecedent_support": 0.17970937208372217,
+        "consequent_support": 0.0871883748833489,
+        "support": 0.02879616051193174,
+        "confidence": 0.1602373887240356,
+        "lift": 1.8378297443715457,
+        "leverage": 0.013127592408644938,
+        "conviction": 1.0869876949268955,
+        "zhangs_metric": 0.5557541939794498,
+        "antecedent_names": [
+          "eggs"
+        ],
+        "consequent_names": [
+          "burgers"
+        ]
+      }
+    ]
+  },
+  "mushroom": {
+    "summary": {
+      "n_transactions": 8124,
+      "n_unique_items": 119,
+      "avg_transaction_length": 23.0,
+      "min_transaction_length": 23,
+      "max_transaction_length": 23,
+      "density_pct": 19.33,
+      "sparsity_pct": 80.67
+    },
+    "benchmarks": {
+      "fpgrowth": {
+        "elapsed_sec": 0.8638,
+        "peak_ram_mb": 11.89,
+        "n_itemsets": 565,
+        "n_rules": 3302,
+        "throughput_tx_per_sec": 9404.6
+      },
+      "eclat": {
+        "elapsed_sec": 0.6534,
+        "peak_ram_mb": 0.1,
+        "n_itemsets": 565,
+        "n_rules": 3302,
+        "throughput_tx_per_sec": 12433.6
+      },
+      "apriori": {
+        "elapsed_sec": 1.5319,
+        "peak_ram_mb": 2.43,
+        "n_itemsets": 565,
+        "n_rules": 3302,
+        "throughput_tx_per_sec": 5303.3
+      }
+    }
+  }
+}

@@ -12,6 +12,8 @@ DATASETS = {
     "groceries.csv": "https://raw.githubusercontent.com/stedy/Machine-Learning-with-R-datasets/master/groceries.csv",
     "chess.dat": "https://raw.githubusercontent.com/SarraLKSC/Minning-patterns-in-data/master/chess.dat",
     "retail.dat": "https://raw.githubusercontent.com/ihewro/Apriori/master/retail.dat",
+    "market_basket.csv": "https://raw.githubusercontent.com/sharmaroshan/Market-Basket-Analysis/master/Market_Basket_Optimisation.csv",
+    "mushroom.dat": "https://raw.githubusercontent.com/hyperair/fptree/master/datasets/mushroom.dat",
 }
 
 def download_file(name: str, url: str, target_dir: str = "data"):

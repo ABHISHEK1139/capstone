@@ -6,7 +6,7 @@ import json
 import pandas as pd
 from skarm.estimator import AssociationRulesEstimator
 from skarm.explorer import RuleExplorer
-from skarm.datasets import load_groceries, load_chess, load_retail, load_fimi_dat, dataset_summary
+from skarm.datasets import load_groceries, load_chess, load_retail, load_market_basket, load_mushroom, load_fimi_dat, dataset_summary
 
 
 def main():
@@ -19,7 +19,7 @@ def main():
     parser.add_argument("--metric", choices=["confidence", "lift", "support", "leverage", "conviction", "zhangs_metric"], default="confidence")
     parser.add_argument("--min-metric", type=float, default=None)
     parser.add_argument("--max-candidates", type=int, default=100000)
-    parser.add_argument("--dataset", choices=["groceries", "chess", "retail"], default=None, help="Use standard real-world benchmark dataset")
+    parser.add_argument("--dataset", choices=["groceries", "chess", "retail", "market_basket", "mushroom"], default=None, help="Use standard real-world benchmark dataset")
     parser.add_argument("--input-csv", type=str, help="Path to CSV containing comma-separated transaction items")
     parser.add_argument("--input-dat", type=str, help="Path to .dat file containing space-separated transaction items")
     parser.add_argument("--output-json", type=str, help="Path to save discovered rules in JSON format")
@@ -45,6 +45,14 @@ def main():
         dataset_name = "Retail Benchmark (Sparse 88k)"
         path = args.input_dat if args.input_dat else "data/retail.dat"
         transactions = load_retail(path)
+    elif args.dataset == "market_basket" or (args.input_csv and "market" in args.input_csv.lower()):
+        dataset_name = "Market Basket Optimisation (7,501 txns)"
+        path = args.input_csv if args.input_csv else "data/market_basket.csv"
+        transactions = load_market_basket(path)
+    elif args.dataset == "mushroom" or (args.input_dat and "mushroom" in args.input_dat.lower()):
+        dataset_name = "Mushroom Benchmark (Dense 8,124 txns)"
+        path = args.input_dat if args.input_dat else "data/mushroom.dat"
+        transactions = load_mushroom(path)
     elif args.input_csv:
         dataset_name = os.path.basename(args.input_csv)
         transactions = load_groceries(args.input_csv)
