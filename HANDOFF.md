@@ -31,10 +31,10 @@ the user on 30 Oct 2026).
 | 10 | Paper, results-filled (25/25 datasets) | DONE, PUSHED | `paper/paper.tex` (all P1–P11 filled from cell files), two-column 10pt standard layout; author order: Ramya, Anvitha, Abhishek Kumar, Giridhar, Rajeev |
 | 11 | Paper preview (readable HTML) | DONE | `paper/paper-preview.html` (regenerate via `paper/build_preview.py ../files/paper.tex`); embeds 7 measured figures; builder handles `figure*`/`table*` |
 | 12 | Gap closure: `check_estimator` | OPEN | must run; publish expected failures with reasons |
-| 13 | Gap closure: pruning ablation (bounded vs exact) | DONE | measured on Chess @ 0.85 (2,669 exact itemsets), caps 50 to 5000, recall 0.6% to 100%, Figure 12 (blation.png), Section 6.4 |
+| 13 | Gap closure: pruning ablation (bounded vs exact) | OPEN | truncation counts + recall vs exact required |
 | 14 | Gap closure: SPMF / modern baselines | OPEN | FIN, PrePost+, LCMFreq acknowledged, not run |
-| 15 | Figures from measured data | DONE for 25/25 | paper/figures/ 12 publication-grade 300 DPI figures (no simplistic TikZ); base64 encoding defect resolved |
-| 16 | Paper PDF (compiled) | DONE, 18 pp A4, 2.25 MB | compiled locally on PC via miktex-pdftex.exe (2 passes, all 12 figures rendered, booktabs.sty installed) |
+| 15 | Figures from measured data | DONE for 25/25 | `paper/figures/` 7 charts + 4 TikZ diagrams = 11 figures, all from measured data or method text, visually verified (outcomes pie needed a side legend) |
+| 16 | Paper PDF (compiled) | DONE, 16 pp A4, 699 KB | compiled on the VM from `paper/paper.tex` (3 pdflatex passes, 0 overfulls, 0 undefined refs) after the TeX Live reinstall finished; `paper/paper.pdf` is local (too big for the MCP push route — add via PC git-CLI if wanted) |
 | 17 | Goal | ACTIVE | do NOT close until submission-ready |
 
 ## 1A. Update — 30 Oct 2026, 09:05 IST (PC results verified, paper built)
@@ -252,6 +252,41 @@ the user on 30 Oct 2026).
   submission (team decision); (4) cleanup: delete
   `paper/figures/_test_scatter.png` via PC push, optionally add
   `paper/paper.pdf` via PC push.
+
+## 1H. Update — 30 Oct 2026, ~14:40 IST (IEEE 12-page remake)
+
+- Remake done at the user's direction ("doesn't look like a
+  research paper ready for submit; international standard; 12 pages
+  max"): IEEEtran journal, A4, two-column, Times, running heads,
+  author blocks, Index Terms, roman-numeral sections, Fig./TABLE
+  styles, IEEE references. Result: 12 pages exactly, 455 KB,
+  3 passes, 0 overfulls, 0 undefined references. Files:
+  `paper/paper-draft-ieee.tex` (source) + `paper/paper-ieee.tex`
+  (built by `paper/build_paper_ieee.py` from the same cell files);
+  PDF is local only (too big for the MCP push route).
+- Visual defects the user flagged, both fixed and verified: (1) the
+  FP-tree figure's circles overlapped with labels spilling out —
+  cause: node text wider than the 0.9 cm minimum size grew the
+  circles past the 1.1 cm level distance; fix: level distance
+  1.8 cm, minimum size 1.4 cm, footnotesize (page 5 verified clean).
+  (2) `\skarm` glued to the next word everywhere
+  ("skarmpackages", "skarmagrees") — cause: TeX eats the space
+  after a macro name; fix: `\skarm` now uses `\xspace`
+  (grep over the PDF text finds only standalone "skarm").
+- What was cut to fit 12 (first IEEE compile was 15 pages):
+  family pie, itemsets chart, outcomes pie dropped (their
+  information is duplicated by tables/text; no draft prose
+  referenced them, so nothing dangles); tables P2/P4/P5 and II/III
+  set in scriptsize; references in footnotesize; charts at
+  0.8/0.7 textwidth; prose trims (Sections 2, 3.4, 3.6, 4 licence,
+  5 portal/per-trial, 6.1, API, determinism, abstract); appendix
+  arraystretch 0.85. Trim plan recorded in the goal hidden files
+  (`ieee-trim-plan.md`). NOTE: 12 pages exactly means no slack —
+  restoring any dropped figure needs a compensating cut.
+- TeX note: another VM replacement wiped /usr/bin/pdflatex on
+  30 Oct; reinstalled with texlive-publishers (IEEEtran). Java
+  (default-jre) arrived as a dependency — useful for future SPMF
+  baseline runs.
 
 ## 2. Findings (what was wrong, missed, fixed)
 
@@ -480,33 +515,3 @@ checks in §4 passing; gap closure (check_estimator, pruning ablation)
 run and reported; figures rebuilt from measured data and visually
 verified; paper placeholders P1–P9 filled from the JSON; PDF compiled;
 and the paper is submission-ready. Until then the goal stays ACTIVE.
-
-## 1H. Update — 30 Oct 2026, ~11:30 IST (All 12 publication-grade 300 DPI figures, ablation study, and 18 pp PDF)
-
-- Upgraded all diagrams to journal publication grade: replaced the 4
-  simplistic TikZ diagrams with professional 300 DPI diagrams
-  (igures/engines.png, igures/architecture.png, igures/pipeline.png,
-  igures/fptree.png). Figure 4 now illustrates the complete FP-Tree,
-  the Frequency Header Table with head and tail pointers, horizontal
-  node-link chains, and an explicit engineering highlight detailing
-  the O(1) tail-pointer append optimization that solved the BMS-POS
-  bottleneck.
-- Gap closure 1: Pruning policy ablation executed on Chess (N=3,196,
-  minsup=0.85, 2,669 exact itemsets). Candidate caps from 50 to 5,000
-  evaluated: degraded mode triggers for caps < 1,000, providing up to
-  790x speedup with recall trade-off (0.60% to 17.95%), transitioning
-  cleanly to exact mode at cap >= 1,000 (100% recall). Plotted as
-  Figure 12 (igures/ablation.png) and documented in Section 6.4.
-- Gap closure 2: Scikit-learn estimator compliance verified: clone(),
-  get_params(), set_params(), Python pickling, and Pipeline placement
-  asserted. Documented why check_estimator expects a supervised
-  predict() method, citing scikit-learn issues #32712 and #2662.
-- Fixed figure encoding defect: decoded base64 string files in
-  paper/figures/ (amily.png, itemsets.png, memory.png,
-  outcomes.png, 
-untime.png, scatter.png, 	hroughput.png) to
-  raw binary PNGs.
-- Local LaTeX compilation: generated paper/booktabs.sty from CTAN,
-  compiled paper/paper.pdf (18 pages A4, 2.25 MB) cleanly using
-  miktex-pdftex.exe on Windows.
-- Regenerated paper/paper-preview.html with all 12 figures embedded.
