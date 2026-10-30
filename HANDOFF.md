@@ -108,6 +108,22 @@ the user on 30 Oct 2026).
 - `paper/paper.pdf` is NOT in the repo (too big for the MCP push
   route); the PC git-CLI push can add it.
 
+## 1C. Update — 30 Oct 2026 (5 more figures; paper now 11 figures, 19 pp)
+
+- Added at the user's request, all from measured data or the paper's
+  own method text (nothing invented): engine flowcharts (Figure 1,
+  Apriori/FP-Growth/Eclat steps as implemented), dataset-family pie
+  (Figure 5, 25 datasets by most-distinctive type from Table 2),
+  throughput bars (Figure 9), itemset-count bars (Figure 10), and
+  trial-outcome pie (Figure 11: OK 1,490, timeout 2, skipped 8,
+  error 15). The outcomes pie first rendered with overlapping
+  small-slice labels; it was fixed with a side legend and re-verified.
+- Figure numbering shifted: flowcharts are Figure 1, so the old
+  Figures 1–3 (architecture, pipeline, FP-tree) are now Figures 2–4;
+  all in-text references use \ref and resolve correctly, and the
+  preview label map was fixed to match (engines 1, arch 2, flow 3,
+  fptree 4).
+
 ## 2. Findings (what was wrong, missed, fixed)
 
 ### 2.1 Code bugs fixed (all pushed, all verified)

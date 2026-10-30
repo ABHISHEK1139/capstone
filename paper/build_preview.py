@@ -17,8 +17,10 @@ LABEL_MAP = {
     "sec:limitations": "7", "app:repro": "A",
     "tab:metrics": "1", "tab:data": "2", "tab:thr": "3",
     "tab:timing": "4", "tab:correctness": "5", "tab:skips": "6",
-    "fig:arch": "1", "fig:flow": "2", "fig:fptree": "3",
-    "fig:runtime": "4", "fig:memory": "5", "fig:scatter": "6",
+    "fig:engines": "1", "fig:arch": "2", "fig:flow": "3", "fig:fptree": "4",
+    "fig:family": "5",
+    "fig:runtime": "6", "fig:memory": "7", "fig:scatter": "8",
+    "fig:throughput": "9", "fig:itemsets": "10", "fig:outcomes": "11",
 }
 
 MATH_MAP = [
