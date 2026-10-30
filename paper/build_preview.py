@@ -8,16 +8,16 @@ canonical paper once results are filled in.
 """
 import re
 import sys
-import os
 
-SRC = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(os.path.abspath(__file__)), "paper.tex")
-DST = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(os.path.abspath(__file__)), "paper-preview.html")
+SRC = sys.argv[1] if len(sys.argv) > 1 else "/home/hatch/workspace/goals/capstone-paper-to-journal-quality/files/paper-draft.tex"
+DST = "/home/hatch/workspace/goals/capstone-paper-to-journal-quality/files/paper-preview.html"
 
 LABEL_MAP = {
     "sec:methods": "3", "sec:data": "4", "sec:setup": "5",
     "sec:limitations": "7", "app:repro": "A",
     "tab:metrics": "1", "tab:data": "2", "tab:thr": "3",
     "tab:timing": "4", "tab:correctness": "5", "tab:skips": "6",
+    "tab:timingfull": "7", "app:timing": "B",
     "fig:engines": "1", "fig:arch": "2", "fig:flow": "3", "fig:fptree": "4",
     "fig:family": "5",
     "fig:runtime": "6", "fig:memory": "7", "fig:scatter": "8",
@@ -176,14 +176,16 @@ def main():
     ab = re.search(r"\\begin\{abstract\}(.*?)\\end\{abstract\}", raw, flags=re.S)
     abstract = ab.group(1) if ab else ""
     raw = re.sub(r"\\maketitle", "", raw)
+    raw = raw.replace("\\twocolumn[", "")
+    raw = re.sub(r"^\\]\s*$", "", raw, count=1, flags=re.M)
     raw = re.sub(r"\\begin\{abstract\}.*?\\end\{abstract\}", "", raw,
                  count=1, flags=re.S)
 
     raw = raw.replace("\\begin{landscape}", "").replace("\\end{landscape}", "")
     # token scan over the body
     token_re = re.compile(
-        r"\\section\*\{|\\section\{|\\subsection\{|\\begin\{table\}|\\begin\{longtable\}|"
-        r"\\begin\{figure\}|\\begin\{itemize\}|\\placeholder\{|\\appendix|"
+        r"\\section\*\{|\\section\{|\\subsection\{|\\begin\{table\*?\}|\\begin\{longtable\}|"
+        r"\\begin\{figure\*?\}|\\begin\{itemize\}|\\placeholder\{|\\appendix|"
         r"\x00BIB\x00")
     out = []
     tab_no = fig_no = 0
@@ -239,8 +241,9 @@ def main():
                        f'campaign results</b><br>{inline(content)}</div>')
             pos = end
             continue
-        if tok == "\\begin{table}":
-            end = raw.index("\\end{table}", m.start()) + len("\\end{table}")
+        if tok in ("\\begin{table}", "\\begin{table*}"):
+            endtok = "\\end{table*}" if tok.endswith("*}") else "\\end{table}"
+            end = raw.index(endtok, m.start()) + len(endtok)
             caption, rows = parse_table(raw[m.start():end])
             tab_no += 1
             html = [f'<table><caption>Table {tab_no}. {caption}</caption>']
@@ -263,8 +266,9 @@ def main():
             out.append("\n".join(html))
             pos = end
             continue
-        if tok == "\\begin{figure}":
-            end = raw.index("\\end{figure}", m.start()) + len("\\end{figure}")
+        if tok in ("\\begin{figure}", "\\begin{figure*}"):
+            endtok = "\\end{figure*}" if tok.endswith("*}") else "\\end{figure}"
+            end = raw.index(endtok, m.start()) + len(endtok)
             env = raw[m.start():end]
             cap = cmd_arg(env, "caption", 0)
             caption = inline(cap[0]) if cap else ""
@@ -334,10 +338,8 @@ code {{ background: #f4f4f4; padding: 0 3px; }}
   margin-bottom: 1.5em; font-family: sans-serif; font-size: 0.92em; }}
 </style></head><body>
 <div class="note"><b>Paper preview</b> — readable rendering of paper.tex
-(results for 23 of 25 datasets, PC campaign 2026-10-30). The compiled PDF
-remains the canonical version once LaTeX is available. The two pending
-datasets (bms_pos, t10i4d100k) are marked in the results section, not
-estimated.</div>
+(complete results for all 25 datasets, PC campaign 2026-10-30, two-column
+journal layout). The compiled PDF remains the canonical version.</div>
 <div class="title">{title}</div>
 <div class="authors">{author_html}</div>
 <div class="abstract"><h1>Abstract</h1>{abstract_html}</div>

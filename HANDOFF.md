@@ -124,6 +124,19 @@ the user on 30 Oct 2026).
   preview label map was fixed to match (engines 1, arch 2, flow 3,
   fptree 4).
 
+## 1E. Update — 30 Oct 2026 (complete 25/25 paper, two-column)
+
+- Paper rebuilt for the COMPLETE campaign (commit 79334222, 1,650
+  records, 25 datasets, 157 correctness pairs, 0 mismatches):
+  two-column 10pt standard article layout, title + abstract spanning
+  both columns, all tables/figures as spanning floats. Main timing
+  table condensed to primary thresholds (fastest skarm engine bolded);
+  the full per-cell table moved to Appendix B (one-column longtable).
+  Headline: Eclat fastest on 20 of 25, FP-Growth on 5, Apriori on none.
+  FP-Growth methods text now describes the tail-pointer header table,
+  with the provenance note in Appendix A. PDF compile was pending a
+  TeX Live reinstall after a VM replacement wiped /usr/bin/pdflatex.
+
 ## 1D. Update — 30 Oct 2026 (author order)
 
 - At the user's instruction, Abhishek Kumar moved to THIRD overall.
