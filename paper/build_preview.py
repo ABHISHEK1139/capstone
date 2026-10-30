@@ -8,9 +8,10 @@ canonical paper once results are filled in.
 """
 import re
 import sys
+import os
 
-SRC = sys.argv[1] if len(sys.argv) > 1 else "/home/hatch/workspace/goals/capstone-paper-to-journal-quality/files/paper-draft.tex"
-DST = "/home/hatch/workspace/goals/capstone-paper-to-journal-quality/files/paper-preview.html"
+SRC = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(os.path.abspath(__file__)), "paper.tex")
+DST = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(os.path.abspath(__file__)), "paper-preview.html")
 
 LABEL_MAP = {
     "sec:methods": "3", "sec:data": "4", "sec:setup": "5",
