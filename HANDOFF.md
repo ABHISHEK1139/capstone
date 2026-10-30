@@ -15,7 +15,7 @@ assistant's. Nothing outward-facing without the user's per-item
 go-ahead (the push of this file plus the paper draft was authorized by
 the user on 30 Oct 2026).
 
-## 1. Status dashboard (as of 30 Oct 2026, ~09:05 IST)
+## 1. Status dashboard (as of 30 Oct 2026, ~11:10 IST)
 
 | # | Item | Status | Evidence |
 |---|---|---|---|
@@ -24,17 +24,17 @@ the user on 30 Oct 2026).
 | 3 | Tests + acceptance harness | DONE | 25/25 tests; NT-1–NT-6 genuinely asserted |
 | 4 | Dataset upload to `data/` | DONE, 26 files | all 25 dataset files + `generate_synthetic.py`; verified by repo listing 30 Oct |
 | 5 | `accidents.dat`, `kosarak.dat` in git | DONE | landed with the PC push (commit `73d44df`); no longer missing |
-| 6 | Benchmark campaign, VM agent | RUNNING (backup only) | 18/25 datasets, 1,280 records at last check; KNOWN correctness gap (only 12 pairs compared); do NOT merge its records into the paper |
-| 7 | Benchmark campaign, PC (Windows, 12 workers) | DONE 23/25, PUSHED | commit `73d44df`: `benchmarks/campaign_results.json` (1,515 records) + `benchmarks/cells/` (23 files); missing: bms_pos, t10i4d100k |
+| 6 | Benchmark campaign, VM agent | RUNNING (backup only) | 21/25 datasets, 1,532 records at last check (~11:10 IST); KNOWN correctness gap (resume skipped most trial-0 comparisons); do NOT merge its records into the paper; STOP once the 25/25 PDF is verified |
+| 7 | Benchmark campaign, PC (Windows, 12 workers) | DONE 25/25, PUSHED | commit `79334222`: `benchmarks/campaign_results.json` (1,650 records, `incomplete: false`) + `benchmarks/cells/` (25 files); old 1,515 records verified byte-identical; nothing missing |
 | 8 | Threshold ladder (25 datasets) | DONE, PUSHED | `benchmarks/thresholds.json`, commit `6a76b6f` |
 | 9 | Parallel PC script + sequential script fix | DONE, PUSHED | `benchmarks/run_pc_campaign.py`, commit `6a76b6f` |
-| 10 | Paper, results-filled (23/25 datasets) | DONE | `paper/paper.tex` (all P1–P9 filled from cell files); `paper/paper-draft.tex` kept as the pre-results draft |
-| 11 | Paper preview (readable HTML) | DONE | `paper/paper-preview.html` (regenerate via `paper/build_preview.py ../files/paper.tex`); embeds 3 measured figures |
+| 10 | Paper, results-filled (25/25 datasets) | DONE, PUSHED | `paper/paper.tex` (all P1–P11 filled from cell files), two-column 10pt standard layout; author order: Ramya, Anvitha, Abhishek Kumar, Giridhar, Rajeev |
+| 11 | Paper preview (readable HTML) | DONE | `paper/paper-preview.html` (regenerate via `paper/build_preview.py ../files/paper.tex`); embeds 7 measured figures; builder handles `figure*`/`table*` |
 | 12 | Gap closure: `check_estimator` | OPEN | must run; publish expected failures with reasons |
 | 13 | Gap closure: pruning ablation (bounded vs exact) | OPEN | truncation counts + recall vs exact required |
 | 14 | Gap closure: SPMF / modern baselines | OPEN | FIN, PrePost+, LCMFreq acknowledged, not run |
-| 15 | Figures from measured data | DONE for 23/25 | `paper/figures/` runtime, memory, itemsets-vs-rules charts; regenerate after the last 2 datasets |
-| 16 | Paper PDF (compiled) | OPEN | no LaTeX engine on the VM; compile on PC after the last 2 datasets land |
+| 15 | Figures from measured data | DONE for 25/25 | `paper/figures/` 7 charts + 4 TikZ diagrams = 11 figures, all from measured data or method text, visually verified (outcomes pie needed a side legend) |
+| 16 | Paper PDF (compiled) | PENDING TeX reinstall | `paper/paper.tex` pushed and verified back from git (67,245 chars, twocolumn, "Across 25 datasets"); compile blocked: a VM replacement wiped `/usr/bin/pdflatex`; TeX Live reinstall running since ~10:55 IST |
 | 17 | Goal | ACTIVE | do NOT close until submission-ready |
 
 ## 1A. Update — 30 Oct 2026, 09:05 IST (PC results verified, paper built)
@@ -145,6 +145,79 @@ the user on 30 Oct 2026).
   (He was previously fourth overall, third among the students, so
   third overall is the move he asked for.) Supervisor-first from
   30 Oct stands; only his position changed.
+
+## 1F. Update — 30 Oct 2026, ~11:10 IST (PC campaign COMPLETE 25/25; two-column paper pushed)
+
+- PC campaign COMPLETE (user's commit `79334222`, 10:37 IST):
+  `benchmarks/campaign_results.json` now holds 1,650 records
+  (1,617 ok, 6 timeouts, 8 skipped, 19 errors), `incomplete: false`,
+  `missing_datasets: []`, and `benchmarks/cells/` holds all 25
+  checkpoint files. The old 1,515 records were verified byte-identical
+  (status + seconds) against the previous merged file, so the assemble
+  altered nothing; the 135 new records match the two new cell files
+  exactly. No merge from Muse's side was needed.
+- New cells, verified: bms_pos, 95 records at 0.02 (the ladder's only
+  threshold for it), full 30-trial subset protocol, all engines agree
+  (308 itemsets, 489 rules). t10i4d100k, 40 records at 0.01/0.02
+  (ladder thresholds), 5 trials each: Apriori at 0.01 got trial 0
+  through at 592.9 s, then 4 clean 600 s timeouts; mlxtend at 0.01 got
+  1 trial through and 4 MemoryErrors (6.5–13.1 GiB boolean arrays,
+  the known association_rules broadcast pattern), so its 0.01 mean
+  rests on a single trial and the paper says so. Correctness is now
+  42 cells / 157 pairs / 0 mismatches (per cell: 3 skarm pairs + 1
+  skarm-Apriori-vs-mlxtend pair; 35 cells have the mlxtend pair).
+  The 7 cells without an mlxtend pair are the 6 mlxtend failures
+  (3 dense-cap, 3 empty-input) plus accidents@0.5, where mlxtend ran
+  but Apriori timed out — the paper's correctness text says
+  "mlxtend or Apriori did not complete trial 0", not "mlxtend did
+  not". Metadata is identical to the first 23 (same Windows PC run).
+  `CAMPAIGN_REPORT.md` is now a regular readable file (37,204 bytes,
+  states COMPLETE), superseding the 1A symlink note.
+- PROVENANCE (must stay in the paper): repo `skarm/fpgrowth.py` now
+  carries a tail-pointer optimisation (O(1) node-link appends) added
+  with the final two datasets, differing from the code the first 23
+  ran under. It is result-neutral (all correctness pairs agree
+  exactly) and winner-neutral (Eclat wins both new datasets by
+  7–10x), and the methods section + Appendix A now describe the
+  code as it stands. `benchmarks/run_pc_campaign.py` in the repo also
+  differs from the mirror's stale copy only by the Windows watchdog
+  + psutil RSS fallback (the PC run's actual runner); the mirror copy
+  predates that fix.
+- Commit-message caveat: `79334222` mentions a "10-page academic
+  presentation paper", but no such file is in `paper/` — only the
+  unchanged `presentation_slides.md`. If a presentation paper was
+  meant to be added, it is missing.
+- Paper rebuilt + pushed (user's direction 30 Oct 2026: publishable,
+  two-column, standard font/size, shorter): `article` two-column
+  10pt on A4, title + abstract spanning both columns, all tables and
+  figures as spanning floats. Main timing table condensed to primary
+  thresholds only (Table 4, fastest skarm engine bolded per row);
+  the full per-cell table moved to Appendix B (one-column longtable,
+  tight columns, failure notes for partial cells). 11 figures
+  (7 charts + 4 TikZ). Headline: Eclat fastest on 20 of 25, FP-Growth
+  on 5, Apriori on none. Author order: Ramya, Anvitha, Abhishek
+  Kumar, Giridhar, Rajeev. `paper/paper.tex` was verified back from
+  git after pushing (67,245 chars, twocolumn, "Across 25 datasets").
+  The preview builder now handles `figure*`/`table*` and the
+  `\twocolumn[` title wrapper.
+- TeX status: a VM replacement wiped `/usr/bin/pdflatex` (apt
+  installs outside home do not survive replacements); TeX Live
+  reinstall has been running since ~10:55 IST. PDF compile + visual
+  verification + delivery are still pending on it. `paper.pdf` is
+  still NOT in the repo (too big for the MCP push route); the PC
+  git-CLI push can add it.
+- `paper/figures/_test_scatter.png` is STILL in the repo (route-test
+  file, not part of the paper); delete it on a PC push.
+- VM agent: still running as backup only (21/25, 1,532 records at
+  ~11:10 IST). STOP it once the 25/25 PDF is verified; never merge
+  its records.
+- What is really left now: (1) compile the two-column PDF and
+  visually verify title/tables/figures/appendix pages; (2) deliver
+  the PDF; (3) stop the VM agent; (4) gap closure: check_estimator,
+  pruning ablation, SPMF/modern baselines; (5) team confirmations:
+  2 [VERIFY] references, scikit-mine/mlxtend re-check at submission
+  (author order is settled); (6) venue choice + submission (team
+  decision). The goal stays ACTIVE until submission-ready.
 
 ## 2. Findings (what was wrong, missed, fixed)
 
