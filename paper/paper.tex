@@ -850,184 +850,184 @@ One row per dataset $\times$ threshold $\times$ engine, over OK trials
 only; the Note column records failures for partial and empty cells, so
 no trial is hidden. This appendix exists so the main text can stay
 short; the condensed primary-threshold table is Table~\ref{tab:timing}.
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\begin{longtable}{lllrrrrrrrll}
-\caption{Full per-cell timing and output counts. Mean, median (p50) and p95 are over OK trials only.}
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\begin{longtable}{p{3.0cm}llrrrrrrrp{2.4cm}}
+\caption{Full per-cell timing and output counts. Mean, median (p50) and p95 are over OK trials only. Degraded mode never triggered on any cell, so no degraded column is shown.}
 \label{tab:timingfull}\\
 \toprule
-Dataset & Thr & Engine & OK & Mean (s) & p50 & p95 & Peak MB & Items & Rules & Degr & Note \\
+Dataset & Thr & Engine & OK & Mean (s) & p50 & p95 & Peak MB & Items & Rules & Note \\
 \midrule
 \endfirsthead
 \toprule
-Dataset & Thr & Engine & OK & Mean (s) & p50 & p95 & Peak MB & Items & Rules & Degr & Note \\
+Dataset & Thr & Engine & OK & Mean (s) & p50 & p95 & Peak MB & Items & Rules & Note \\
 \midrule
 \endhead
-accidents & 0.5 & apriori & 0 & --- & --- & --- & --- & --- & --- & --- & timeout 600 s \\
-accidents & 0.5 & fpgrowth & 5 & 156.5 & 157.1 & 181.3 & 955.1 & 8057 & 375774 & no & --- \\
-accidents & 0.5 & eclat & 5 & 288.2 & 273.6 & 333.4 & 1738.2 & 8057 & 375774 & no & --- \\
-accidents & 0.5 & mlxtend & 5 & 22.06 & 21.91 & 22.81 & 5494.2 & 8057 & 375774 & no & --- \\
-accidents & 0.6 & apriori & 5 & 473.5 & 475.2 & 478.2 & 1860.6 & 2074 & 54170 & no & --- \\
-accidents & 0.6 & fpgrowth & 5 & 60.92 & 61.31 & 62.38 & 90.38 & 2074 & 54170 & no & --- \\
-accidents & 0.6 & eclat & 5 & 97.93 & 97.65 & 100.3 & 1351.0 & 2074 & 54170 & no & --- \\
-accidents & 0.6 & mlxtend & 5 & 4.76 & 4.75 & 5.00 & 1470.8 & 2074 & 54170 & no & --- \\
-adult\_\allowbreak{}census & 0.05 & apriori & 5 & 76.62 & 70.04 & 105.1 & 957.5 & 11390 & 376953 & no & --- \\
-adult\_\allowbreak{}census & 0.05 & fpgrowth & 5 & 19.04 & 18.84 & 19.83 & 950.9 & 11390 & 376953 & no & --- \\
-adult\_\allowbreak{}census & 0.05 & eclat & 5 & 20.95 & 20.34 & 24.01 & 887.9 & 11390 & 376953 & no & --- \\
-adult\_\allowbreak{}census & 0.05 & mlxtend & 5 & 19.14 & 19.06 & 20.09 & 717.0 & 11390 & 376953 & no & --- \\
-adult\_\allowbreak{}census & 0.1 & apriori & 5 & 23.36 & 20.41 & 31.18 & 160.6 & 3216 & 78167 & no & --- \\
-adult\_\allowbreak{}census & 0.1 & fpgrowth & 5 & 5.53 & 5.55 & 5.58 & 150.6 & 3216 & 78167 & no & --- \\
-adult\_\allowbreak{}census & 0.1 & eclat & 5 & 5.37 & 5.36 & 5.44 & 142.1 & 3216 & 78167 & no & --- \\
-adult\_\allowbreak{}census & 0.1 & mlxtend & 5 & 3.48 & 3.48 & 3.55 & 208.8 & 3216 & 78167 & no & --- \\
-balance\_\allowbreak{}scale & 0.2 & apriori & 5 & 0.033 & 0.032 & 0.039 & 0.064 & 22 & 0 & no & --- \\
-balance\_\allowbreak{}scale & 0.2 & fpgrowth & 5 & 0.032 & 0.031 & 0.033 & 0.066 & 22 & 0 & no & --- \\
-balance\_\allowbreak{}scale & 0.2 & eclat & 5 & 0.009 & 0.008 & 0.012 & 0.170 & 22 & 0 & no & --- \\
-balance\_\allowbreak{}scale & 0.2 & mlxtend & 5 & 0.006 & 0.006 & 0.006 & 0.020 & 22 & 0 & no & --- \\
-balance\_\allowbreak{}scale & 0.3 & apriori & 5 & 0.022 & 0.021 & 0.024 & 0.256 & 2 & 0 & no & --- \\
-balance\_\allowbreak{}scale & 0.3 & fpgrowth & 5 & 0.022 & 0.022 & 0.024 & 0.018 & 2 & 0 & no & --- \\
-balance\_\allowbreak{}scale & 0.3 & eclat & 5 & 0.008 & 0.008 & 0.009 & 0.024 & 2 & 0 & no & --- \\
-balance\_\allowbreak{}scale & 0.3 & mlxtend & 5 & 0.017 & 0.006 & 0.062 & 0.210 & 2 & 0 & no & --- \\
-bms\_\allowbreak{}pos & 0.02 & apriori & 30 & 227.2 & 232.6 & 237.2 & 22.79 & 308 & 489 & no & --- \\
-bms\_\allowbreak{}pos & 0.02 & fpgrowth & 30 & 94.08 & 94.10 & 96.58 & 107.5 & 308 & 489 & no & --- \\
-bms\_\allowbreak{}pos & 0.02 & eclat & 30 & 12.53 & 12.70 & 13.69 & 39.46 & 308 & 489 & no & --- \\
-bms\_\allowbreak{}pos & 0.02 & mlxtend & 5 & 27.43 & 32.49 & 32.89 & 164.5 & 308 & 489 & no & --- \\
-bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.005 & apriori & 5 & 31.15 & 29.17 & 44.22 & 9.97 & 201 & 59 & no & --- \\
-bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.005 & fpgrowth & 5 & 5.31 & 5.24 & 6.58 & 2.92 & 201 & 59 & no & --- \\
-bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.005 & eclat & 5 & 0.860 & 0.875 & 0.985 & 8.52 & 201 & 59 & no & --- \\
-bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.005 & mlxtend & 5 & 2.68 & 2.51 & 3.62 & 1895.9 & 201 & 59 & no & --- \\
-bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.01 & apriori & 5 & 6.85 & 6.85 & 6.94 & 14.66 & 77 & 17 & no & --- \\
-bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.01 & fpgrowth & 5 & 2.30 & 2.29 & 2.36 & 2.47 & 77 & 17 & no & --- \\
-bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.01 & eclat & 5 & 0.377 & 0.379 & 0.388 & 8.23 & 77 & 17 & no & --- \\
-bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.01 & mlxtend & 5 & 0.397 & 0.409 & 0.411 & 401.3 & 77 & 17 & no & --- \\
-bms\_\allowbreak{}webview\_\allowbreak{}2 & 0.005 & apriori & 5 & 64.30 & 63.04 & 70.42 & 14.63 & 408 & 877 & no & --- \\
-bms\_\allowbreak{}webview\_\allowbreak{}2 & 0.005 & fpgrowth & 5 & 7.66 & 6.59 & 10.76 & 2.38 & 408 & 877 & no & --- \\
-bms\_\allowbreak{}webview\_\allowbreak{}2 & 0.005 & eclat & 5 & 1.09 & 1.07 & 1.16 & 9.18 & 408 & 877 & no & --- \\
-bms\_\allowbreak{}webview\_\allowbreak{}2 & 0.005 & mlxtend & 5 & 3.97 & 4.04 & 4.27 & 3423.4 & 408 & 877 & no & --- \\
-bms\_\allowbreak{}webview\_\allowbreak{}2 & 0.01 & apriori & 5 & 12.51 & 11.03 & 16.67 & 16.28 & 81 & 52 & no & --- \\
-bms\_\allowbreak{}webview\_\allowbreak{}2 & 0.01 & fpgrowth & 5 & 4.79 & 4.14 & 7.35 & 1.67 & 81 & 52 & no & --- \\
-bms\_\allowbreak{}webview\_\allowbreak{}2 & 0.01 & eclat & 5 & 0.947 & 0.849 & 1.34 & 2.65 & 81 & 52 & no & --- \\
-bms\_\allowbreak{}webview\_\allowbreak{}2 & 0.01 & mlxtend & 5 & 1.74 & 1.72 & 1.94 & 588.4 & 81 & 52 & no & --- \\
-car\_\allowbreak{}evaluation & 0.2 & apriori & 5 & 0.087 & 0.087 & 0.088 & 0.104 & 31 & 16 & no & --- \\
-car\_\allowbreak{}evaluation & 0.2 & fpgrowth & 5 & 0.112 & 0.110 & 0.119 & 0.260 & 31 & 16 & no & --- \\
-car\_\allowbreak{}evaluation & 0.2 & eclat & 5 & 0.031 & 0.029 & 0.037 & 0.078 & 31 & 16 & no & --- \\
-car\_\allowbreak{}evaluation & 0.2 & mlxtend & 5 & 0.011 & 0.011 & 0.012 & 0.016 & 31 & 16 & no & --- \\
-car\_\allowbreak{}evaluation & 0.3 & apriori & 5 & 0.091 & 0.069 & 0.178 & 10.04 & 12 & 4 & no & --- \\
-car\_\allowbreak{}evaluation & 0.3 & fpgrowth & 5 & 0.073 & 0.071 & 0.079 & 0.016 & 12 & 4 & no & --- \\
-car\_\allowbreak{}evaluation & 0.3 & eclat & 5 & 0.026 & 0.026 & 0.027 & 0.060 & 12 & 4 & no & --- \\
-car\_\allowbreak{}evaluation & 0.3 & mlxtend & 5 & 0.009 & 0.008 & 0.010 & 0.062 & 12 & 4 & no & --- \\
-chess & 0.85 & apriori & 30 & 5.76 & 5.75 & 6.96 & 167.4 & 2669 & 95482 & no & --- \\
-chess & 0.85 & fpgrowth & 30 & 3.49 & 3.45 & 3.85 & 105.7 & 2669 & 95482 & no & --- \\
-chess & 0.85 & eclat & 30 & 3.48 & 3.47 & 3.58 & 93.04 & 2669 & 95482 & no & --- \\
-chess & 0.85 & mlxtend & 5 & 3.50 & 3.52 & 3.57 & 19.94 & 2669 & 95482 & no & --- \\
-connect & 0.95 & apriori & 30 & 87.87 & 88.72 & 110.1 & 304.9 & 2201 & 78376 & no & --- \\
-connect & 0.95 & fpgrowth & 30 & 10.05 & 9.73 & 13.77 & 40.96 & 2201 & 78376 & no & --- \\
-connect & 0.95 & eclat & 30 & 14.22 & 14.30 & 15.30 & 191.0 & 2201 & 78376 & no & --- \\
-connect & 0.95 & mlxtend & 5 & 3.44 & 3.47 & 3.56 & 284.2 & 2201 & 78376 & no & --- \\
-docword\_\allowbreak{}enron & 0.5 & apriori & 5 & 14.75 & 14.36 & 16.45 & 166.6 & 0 & 0 & no & --- \\
-docword\_\allowbreak{}enron & 0.5 & fpgrowth & 5 & 0.446 & 0.445 & 0.455 & 7.64 & 0 & 0 & no & --- \\
-docword\_\allowbreak{}enron & 0.5 & eclat & 5 & 8.37 & 8.04 & 9.49 & 17.74 & 0 & 0 & no & --- \\
-docword\_\allowbreak{}enron & 0.5 & mlxtend & 0 & --- & --- & --- & --- & --- & --- & --- & mlxtend: empty input \\
-docword\_\allowbreak{}enron & 0.7 & apriori & 5 & 14.25 & 14.24 & 14.36 & 191.1 & 0 & 0 & no & --- \\
-docword\_\allowbreak{}enron & 0.7 & fpgrowth & 5 & 0.441 & 0.444 & 0.448 & 1.05 & 0 & 0 & no & --- \\
-docword\_\allowbreak{}enron & 0.7 & eclat & 5 & 7.96 & 7.96 & 7.99 & 17.72 & 0 & 0 & no & --- \\
-docword\_\allowbreak{}enron & 0.7 & mlxtend & 0 & --- & --- & --- & --- & --- & --- & --- & mlxtend: empty input \\
-docword\_\allowbreak{}nips & 0.5 & apriori & 30 & 209.5 & 196.2 & 269.3 & 2672.8 & 31582 & 1148468 & no & --- \\
-docword\_\allowbreak{}nips & 0.5 & fpgrowth & 30 & 81.75 & 81.34 & 85.88 & 2560.6 & 31582 & 1148468 & no & --- \\
-docword\_\allowbreak{}nips & 0.5 & eclat & 30 & 50.23 & 44.48 & 90.98 & 2345.5 & 31582 & 1148468 & no & --- \\
-docword\_\allowbreak{}nips & 0.5 & mlxtend & 5 & 53.91 & 49.35 & 75.60 & 1079.8 & 31582 & 1148468 & no & --- \\
-groceries & 0.01 & apriori & 30 & 2.18 & 2.16 & 2.34 & 1.63 & 333 & 170 & no & --- \\
-groceries & 0.01 & fpgrowth & 30 & 0.871 & 0.871 & 0.938 & 1.15 & 333 & 170 & no & --- \\
-groceries & 0.01 & eclat & 30 & 0.166 & 0.160 & 0.203 & 0.588 & 333 & 170 & no & --- \\
-groceries & 0.01 & mlxtend & 5 & 0.128 & 0.126 & 0.142 & 107.0 & 333 & 170 & no & --- \\
-groceries & 0.02 & apriori & 30 & 1.07 & 1.07 & 1.13 & 0.841 & 122 & 49 & no & --- \\
-groceries & 0.02 & fpgrowth & 30 & 0.686 & 0.682 & 0.762 & 0.759 & 122 & 49 & no & --- \\
-groceries & 0.02 & eclat & 30 & 0.126 & 0.127 & 0.138 & 0.246 & 122 & 49 & no & --- \\
-groceries & 0.02 & mlxtend & 5 & 0.055 & 0.052 & 0.066 & 33.30 & 122 & 49 & no & --- \\
-kosarak & 0.005 & apriori & 0 & --- & --- & --- & --- & --- & --- & --- & timeout 600 s \\
-kosarak & 0.005 & fpgrowth & 5 & 473.9 & 477.5 & 481.2 & 69.29 & 1618 & 5890 & no & --- \\
-kosarak & 0.005 & eclat & 5 & 28.30 & 28.23 & 28.73 & 349.2 & 1618 & 5890 & no & --- \\
-kosarak & 0.01 & apriori & 5 & 250.8 & 249.9 & 253.1 & 690.8 & 383 & 1037 & no & --- \\
-kosarak & 0.01 & fpgrowth & 5 & 198.9 & 199.3 & 203.4 & 76.03 & 383 & 1037 & no & --- \\
-kosarak & 0.01 & eclat & 5 & 21.29 & 21.43 & 22.39 & 277.1 & 383 & 1037 & no & --- \\
-kosarak\_\allowbreak{}spmf & 0.01 & apriori & 5 & 50.47 & 50.58 & 51.34 & 95.81 & 377 & 999 & no & --- \\
-kosarak\_\allowbreak{}spmf & 0.01 & fpgrowth & 5 & 23.02 & 23.25 & 23.60 & 4.61 & 377 & 999 & no & --- \\
-kosarak\_\allowbreak{}spmf & 0.01 & eclat & 5 & 4.24 & 4.25 & 4.32 & 25.35 & 377 & 999 & no & --- \\
-market\_\allowbreak{}basket & 0.02 & apriori & 5 & 0.688 & 0.694 & 0.710 & 0.020 & 103 & 28 & no & --- \\
-market\_\allowbreak{}basket & 0.02 & fpgrowth & 5 & 0.449 & 0.434 & 0.524 & 0.420 & 103 & 28 & no & --- \\
-market\_\allowbreak{}basket & 0.02 & eclat & 5 & 0.089 & 0.088 & 0.102 & 0.020 & 103 & 28 & no & --- \\
-market\_\allowbreak{}basket & 0.02 & mlxtend & 5 & 0.036 & 0.036 & 0.039 & 23.70 & 103 & 28 & no & --- \\
-market\_\allowbreak{}basket & 0.03 & apriori & 5 & 0.449 & 0.425 & 0.556 & 0.026 & 54 & 10 & no & --- \\
-market\_\allowbreak{}basket & 0.03 & fpgrowth & 5 & 0.370 & 0.368 & 0.401 & 0.426 & 54 & 10 & no & --- \\
-market\_\allowbreak{}basket & 0.03 & eclat & 5 & 0.076 & 0.075 & 0.085 & 0.436 & 54 & 10 & no & --- \\
-market\_\allowbreak{}basket & 0.03 & mlxtend & 5 & 0.023 & 0.020 & 0.029 & 8.73 & 54 & 10 & no & --- \\
-mushroom & 0.4 & apriori & 30 & 1.78 & 1.78 & 2.00 & 4.04 & 565 & 7020 & no & --- \\
-mushroom & 0.4 & fpgrowth & 30 & 0.849 & 0.848 & 0.900 & 1.97 & 565 & 7020 & no & --- \\
-mushroom & 0.4 & eclat & 30 & 0.718 & 0.714 & 0.777 & 2.52 & 565 & 7020 & no & --- \\
-mushroom & 0.4 & mlxtend & 5 & 0.298 & 0.292 & 0.338 & 3.91 & 565 & 7020 & no & --- \\
-online\_\allowbreak{}retail & 0.01 & apriori & 5 & 496.5 & 495.0 & 539.7 & 48.06 & 1840 & 2108 & no & --- \\
-online\_\allowbreak{}retail & 0.01 & fpgrowth & 5 & 55.79 & 55.89 & 56.52 & 19.52 & 1840 & 2108 & no & --- \\
-online\_\allowbreak{}retail & 0.01 & eclat & 5 & 4.97 & 4.99 & 5.02 & 5.39 & 1840 & 2108 & no & --- \\
-online\_\allowbreak{}retail & 0.01 & mlxtend & 5 & 85.08 & 82.62 & 108.5 & 9650.3 & 1840 & 2108 & no & --- \\
-online\_\allowbreak{}retail & 0.02 & apriori & 5 & 70.87 & 71.01 & 73.18 & 32.43 & 353 & 151 & no & --- \\
-online\_\allowbreak{}retail & 0.02 & fpgrowth & 5 & 17.99 & 18.07 & 18.17 & 4.78 & 353 & 151 & no & --- \\
-online\_\allowbreak{}retail & 0.02 & eclat & 5 & 1.92 & 1.91 & 1.97 & 4.74 & 353 & 151 & no & --- \\
-online\_\allowbreak{}retail & 0.02 & mlxtend & 5 & 1.99 & 1.98 & 2.12 & 2328.7 & 353 & 151 & no & --- \\
-online\_\allowbreak{}retail\_\allowbreak{}ii & 0.01 & apriori & 5 & 406.1 & 374.1 & 528.6 & 26.67 & 1216 & 911 & no & --- \\
-online\_\allowbreak{}retail\_\allowbreak{}ii & 0.01 & fpgrowth & 5 & 40.37 & 40.72 & 41.07 & 42.66 & 1216 & 911 & no & --- \\
-online\_\allowbreak{}retail\_\allowbreak{}ii & 0.01 & eclat & 5 & 3.90 & 3.93 & 3.96 & 6.40 & 1216 & 911 & no & --- \\
-online\_\allowbreak{}retail\_\allowbreak{}ii & 0.01 & mlxtend & 5 & 42.83 & 41.69 & 50.23 & 9785.3 & 1216 & 911 & no & --- \\
-online\_\allowbreak{}retail\_\allowbreak{}ii & 0.02 & apriori & 5 & 64.11 & 64.14 & 64.94 & 26.09 & 282 & 66 & no & --- \\
-online\_\allowbreak{}retail\_\allowbreak{}ii & 0.02 & fpgrowth & 5 & 15.78 & 15.63 & 16.49 & 3.16 & 282 & 66 & no & --- \\
-online\_\allowbreak{}retail\_\allowbreak{}ii & 0.02 & eclat & 5 & 1.81 & 1.81 & 1.84 & 6.15 & 282 & 66 & no & --- \\
-online\_\allowbreak{}retail\_\allowbreak{}ii & 0.02 & mlxtend & 5 & 2.30 & 2.15 & 2.67 & 1950.6 & 282 & 66 & no & --- \\
-pumsb & 0.9 & apriori & 5 & 332.8 & 323.1 & 374.8 & 87.70 & 2607 & 71474 & no & --- \\
-pumsb & 0.9 & fpgrowth & 5 & 21.34 & 21.23 & 21.74 & 25.96 & 2607 & 71474 & no & --- \\
-pumsb & 0.9 & eclat & 5 & 19.88 & 20.12 & 20.16 & 222.4 & 2607 & 71474 & no & --- \\
-pumsb & 0.9 & mlxtend & 5 & 3.90 & 3.97 & 4.08 & 397.6 & 2607 & 71474 & no & --- \\
-pumsb\_\allowbreak{}star & 0.85 & apriori & 5 & 10.59 & 10.59 & 10.74 & 85.64 & 0 & 0 & no & --- \\
-pumsb\_\allowbreak{}star & 0.85 & fpgrowth & 5 & 0.044 & 0.046 & 0.054 & 0.290 & 0 & 0 & no & --- \\
-pumsb\_\allowbreak{}star & 0.85 & eclat & 5 & 5.69 & 5.70 & 5.81 & 17.49 & 0 & 0 & no & --- \\
-pumsb\_\allowbreak{}star & 0.85 & mlxtend & 0 & --- & --- & --- & --- & --- & --- & --- & mlxtend: empty input \\
-retail & 0.02 & apriori & 30 & 8.44 & 8.43 & 8.65 & 30.09 & 55 & 60 & no & --- \\
-retail & 0.02 & fpgrowth & 30 & 7.28 & 7.28 & 7.46 & 0.559 & 55 & 60 & no & --- \\
-retail & 0.02 & eclat & 30 & 2.58 & 2.36 & 3.52 & 7.43 & 55 & 60 & no & --- \\
-retail & 0.02 & mlxtend & 5 & 31.90 & 32.20 & 36.84 & 2022.8 & 55 & 60 & no & --- \\
-retail & 0.03 & apriori & 30 & 7.29 & 7.28 & 7.41 & 31.77 & 32 & 28 & no & --- \\
-retail & 0.03 & fpgrowth & 30 & 7.21 & 7.23 & 7.58 & 1.06 & 32 & 28 & no & --- \\
-retail & 0.03 & eclat & 30 & 2.39 & 2.37 & 2.55 & 9.24 & 32 & 28 & no & --- \\
-retail & 0.03 & mlxtend & 5 & 15.00 & 14.95 & 15.34 & 2667.7 & 32 & 28 & no & --- \\
-synthetic\_\allowbreak{}dense\_\allowbreak{}5000 & 0.3 & apriori & 5 & 13.67 & 13.62 & 14.23 & 4.93 & 1737 & 5262 & no & --- \\
-synthetic\_\allowbreak{}dense\_\allowbreak{}5000 & 0.3 & fpgrowth & 5 & 55.95 & 57.17 & 58.87 & 16.32 & 1737 & 5262 & no & --- \\
-synthetic\_\allowbreak{}dense\_\allowbreak{}5000 & 0.3 & eclat & 5 & 2.58 & 2.53 & 2.73 & 16.05 & 1737 & 5262 & no & --- \\
-synthetic\_\allowbreak{}dense\_\allowbreak{}5000 & 0.3 & mlxtend & 5 & 0.551 & 0.529 & 0.603 & 380.1 & 1737 & 5262 & no & --- \\
-synthetic\_\allowbreak{}dense\_\allowbreak{}5000 & 0.5 & apriori & 5 & 1.42 & 1.29 & 2.07 & 13.68 & 60 & 20 & no & --- \\
-synthetic\_\allowbreak{}dense\_\allowbreak{}5000 & 0.5 & fpgrowth & 5 & 9.90 & 10.43 & 11.64 & 10.63 & 60 & 20 & no & --- \\
-synthetic\_\allowbreak{}dense\_\allowbreak{}5000 & 0.5 & eclat & 5 & 0.547 & 0.545 & 0.590 & 9.27 & 60 & 20 & no & --- \\
-synthetic\_\allowbreak{}dense\_\allowbreak{}5000 & 0.5 & mlxtend & 5 & 0.025 & 0.026 & 0.027 & 7.38 & 60 & 20 & no & --- \\
-synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.02 & apriori & 5 & 0.441 & 0.445 & 0.473 & 0.826 & 269 & 407 & no & --- \\
-synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.02 & fpgrowth & 5 & 0.325 & 0.277 & 0.544 & 12.73 & 269 & 407 & no & --- \\
-synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.02 & eclat & 5 & 0.085 & 0.089 & 0.097 & 0.264 & 269 & 407 & no & --- \\
-synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.02 & mlxtend & 5 & 0.086 & 0.090 & 0.100 & 3.46 & 269 & 407 & no & --- \\
-synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.05 & apriori & 5 & 0.190 & 0.195 & 0.202 & 0.974 & 77 & 118 & no & --- \\
-synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.05 & fpgrowth & 5 & 0.179 & 0.181 & 0.208 & 0.176 & 77 & 118 & no & --- \\
-synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.05 & eclat & 5 & 0.056 & 0.053 & 0.068 & 0.776 & 77 & 118 & no & --- \\
-synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.05 & mlxtend & 5 & 0.034 & 0.035 & 0.039 & 0.836 & 77 & 118 & no & --- \\
-t10i4d100k & 0.01 & apriori & 1 & 592.9 & 592.9 & 592.9 & 0.000 & 385 & 17 & no & 4 failed: timeout 600 s \\
-t10i4d100k & 0.01 & fpgrowth & 5 & 72.63 & 71.45 & 77.40 & 292.7 & 385 & 17 & no & --- \\
-t10i4d100k & 0.01 & eclat & 5 & 6.49 & 6.39 & 7.53 & 49.25 & 385 & 17 & no & --- \\
-t10i4d100k & 0.01 & mlxtend & 1 & 101.9 & 101.9 & 101.9 & 0.000 & 385 & 17 & no & 4 failed: MemoryError: Unable to allocate 13.1 GiB \\
-t10i4d100k & 0.02 & apriori & 5 & 164.5 & 169.7 & 170.0 & 0.824 & 155 & 0 & no & --- \\
-t10i4d100k & 0.02 & fpgrowth & 5 & 48.41 & 48.07 & 49.81 & 124.5 & 155 & 0 & no & --- \\
-t10i4d100k & 0.02 & eclat & 5 & 4.78 & 4.80 & 5.01 & 23.61 & 155 & 0 & no & --- \\
-t10i4d100k & 0.02 & mlxtend & 5 & 34.40 & 40.95 & 42.95 & 17.31 & 155 & 0 & no & --- \\
-tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.3 & apriori & 30 & 0.069 & 0.071 & 0.085 & 0.038 & 25 & 10 & no & --- \\
-tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.3 & fpgrowth & 30 & 0.102 & 0.100 & 0.138 & 0.253 & 25 & 10 & no & --- \\
-tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.3 & eclat & 30 & 0.024 & 0.023 & 0.031 & 0.059 & 25 & 10 & no & --- \\
-tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.3 & mlxtend & 5 & 0.012 & 0.013 & 0.015 & 0.020 & 25 & 10 & no & --- \\
-tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.5 & apriori & 30 & 0.046 & 0.046 & 0.058 & 0.025 & 1 & 0 & no & --- \\
-tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.5 & fpgrowth & 30 & 0.045 & 0.044 & 0.064 & 0.021 & 1 & 0 & no & --- \\
-tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.5 & eclat & 30 & 0.022 & 0.020 & 0.030 & 0.026 & 1 & 0 & no & --- \\
-tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.5 & mlxtend & 5 & 0.005 & 0.005 & 0.006 & 0.040 & 1 & 0 & no & --- \\
+accidents & 0.5 & apriori & 0 & --- & --- & --- & --- & --- & --- & timeout 600 s \\
+accidents & 0.5 & fpgrowth & 5 & 156.5 & 157.1 & 181.3 & 955.1 & 8057 & 375774 & --- \\
+accidents & 0.5 & eclat & 5 & 288.2 & 273.6 & 333.4 & 1738.2 & 8057 & 375774 & --- \\
+accidents & 0.5 & mlxtend & 5 & 22.06 & 21.91 & 22.81 & 5494.2 & 8057 & 375774 & --- \\
+accidents & 0.6 & apriori & 5 & 473.5 & 475.2 & 478.2 & 1860.6 & 2074 & 54170 & --- \\
+accidents & 0.6 & fpgrowth & 5 & 60.92 & 61.31 & 62.38 & 90.38 & 2074 & 54170 & --- \\
+accidents & 0.6 & eclat & 5 & 97.93 & 97.65 & 100.3 & 1351.0 & 2074 & 54170 & --- \\
+accidents & 0.6 & mlxtend & 5 & 4.76 & 4.75 & 5.00 & 1470.8 & 2074 & 54170 & --- \\
+adult\_\allowbreak{}census & 0.05 & apriori & 5 & 76.62 & 70.04 & 105.1 & 957.5 & 11390 & 376953 & --- \\
+adult\_\allowbreak{}census & 0.05 & fpgrowth & 5 & 19.04 & 18.84 & 19.83 & 950.9 & 11390 & 376953 & --- \\
+adult\_\allowbreak{}census & 0.05 & eclat & 5 & 20.95 & 20.34 & 24.01 & 887.9 & 11390 & 376953 & --- \\
+adult\_\allowbreak{}census & 0.05 & mlxtend & 5 & 19.14 & 19.06 & 20.09 & 717.0 & 11390 & 376953 & --- \\
+adult\_\allowbreak{}census & 0.1 & apriori & 5 & 23.36 & 20.41 & 31.18 & 160.6 & 3216 & 78167 & --- \\
+adult\_\allowbreak{}census & 0.1 & fpgrowth & 5 & 5.53 & 5.55 & 5.58 & 150.6 & 3216 & 78167 & --- \\
+adult\_\allowbreak{}census & 0.1 & eclat & 5 & 5.37 & 5.36 & 5.44 & 142.1 & 3216 & 78167 & --- \\
+adult\_\allowbreak{}census & 0.1 & mlxtend & 5 & 3.48 & 3.48 & 3.55 & 208.8 & 3216 & 78167 & --- \\
+balance\_\allowbreak{}scale & 0.2 & apriori & 5 & 0.033 & 0.032 & 0.039 & 0.064 & 22 & 0 & --- \\
+balance\_\allowbreak{}scale & 0.2 & fpgrowth & 5 & 0.032 & 0.031 & 0.033 & 0.066 & 22 & 0 & --- \\
+balance\_\allowbreak{}scale & 0.2 & eclat & 5 & 0.009 & 0.008 & 0.012 & 0.170 & 22 & 0 & --- \\
+balance\_\allowbreak{}scale & 0.2 & mlxtend & 5 & 0.006 & 0.006 & 0.006 & 0.020 & 22 & 0 & --- \\
+balance\_\allowbreak{}scale & 0.3 & apriori & 5 & 0.022 & 0.021 & 0.024 & 0.256 & 2 & 0 & --- \\
+balance\_\allowbreak{}scale & 0.3 & fpgrowth & 5 & 0.022 & 0.022 & 0.024 & 0.018 & 2 & 0 & --- \\
+balance\_\allowbreak{}scale & 0.3 & eclat & 5 & 0.008 & 0.008 & 0.009 & 0.024 & 2 & 0 & --- \\
+balance\_\allowbreak{}scale & 0.3 & mlxtend & 5 & 0.017 & 0.006 & 0.062 & 0.210 & 2 & 0 & --- \\
+bms\_\allowbreak{}pos & 0.02 & apriori & 30 & 227.2 & 232.6 & 237.2 & 22.79 & 308 & 489 & --- \\
+bms\_\allowbreak{}pos & 0.02 & fpgrowth & 30 & 94.08 & 94.10 & 96.58 & 107.5 & 308 & 489 & --- \\
+bms\_\allowbreak{}pos & 0.02 & eclat & 30 & 12.53 & 12.70 & 13.69 & 39.46 & 308 & 489 & --- \\
+bms\_\allowbreak{}pos & 0.02 & mlxtend & 5 & 27.43 & 32.49 & 32.89 & 164.5 & 308 & 489 & --- \\
+bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.005 & apriori & 5 & 31.15 & 29.17 & 44.22 & 9.97 & 201 & 59 & --- \\
+bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.005 & fpgrowth & 5 & 5.31 & 5.24 & 6.58 & 2.92 & 201 & 59 & --- \\
+bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.005 & eclat & 5 & 0.860 & 0.875 & 0.985 & 8.52 & 201 & 59 & --- \\
+bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.005 & mlxtend & 5 & 2.68 & 2.51 & 3.62 & 1895.9 & 201 & 59 & --- \\
+bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.01 & apriori & 5 & 6.85 & 6.85 & 6.94 & 14.66 & 77 & 17 & --- \\
+bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.01 & fpgrowth & 5 & 2.30 & 2.29 & 2.36 & 2.47 & 77 & 17 & --- \\
+bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.01 & eclat & 5 & 0.377 & 0.379 & 0.388 & 8.23 & 77 & 17 & --- \\
+bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.01 & mlxtend & 5 & 0.397 & 0.409 & 0.411 & 401.3 & 77 & 17 & --- \\
+bms\_\allowbreak{}webview\_\allowbreak{}2 & 0.005 & apriori & 5 & 64.30 & 63.04 & 70.42 & 14.63 & 408 & 877 & --- \\
+bms\_\allowbreak{}webview\_\allowbreak{}2 & 0.005 & fpgrowth & 5 & 7.66 & 6.59 & 10.76 & 2.38 & 408 & 877 & --- \\
+bms\_\allowbreak{}webview\_\allowbreak{}2 & 0.005 & eclat & 5 & 1.09 & 1.07 & 1.16 & 9.18 & 408 & 877 & --- \\
+bms\_\allowbreak{}webview\_\allowbreak{}2 & 0.005 & mlxtend & 5 & 3.97 & 4.04 & 4.27 & 3423.4 & 408 & 877 & --- \\
+bms\_\allowbreak{}webview\_\allowbreak{}2 & 0.01 & apriori & 5 & 12.51 & 11.03 & 16.67 & 16.28 & 81 & 52 & --- \\
+bms\_\allowbreak{}webview\_\allowbreak{}2 & 0.01 & fpgrowth & 5 & 4.79 & 4.14 & 7.35 & 1.67 & 81 & 52 & --- \\
+bms\_\allowbreak{}webview\_\allowbreak{}2 & 0.01 & eclat & 5 & 0.947 & 0.849 & 1.34 & 2.65 & 81 & 52 & --- \\
+bms\_\allowbreak{}webview\_\allowbreak{}2 & 0.01 & mlxtend & 5 & 1.74 & 1.72 & 1.94 & 588.4 & 81 & 52 & --- \\
+car\_\allowbreak{}evaluation & 0.2 & apriori & 5 & 0.087 & 0.087 & 0.088 & 0.104 & 31 & 16 & --- \\
+car\_\allowbreak{}evaluation & 0.2 & fpgrowth & 5 & 0.112 & 0.110 & 0.119 & 0.260 & 31 & 16 & --- \\
+car\_\allowbreak{}evaluation & 0.2 & eclat & 5 & 0.031 & 0.029 & 0.037 & 0.078 & 31 & 16 & --- \\
+car\_\allowbreak{}evaluation & 0.2 & mlxtend & 5 & 0.011 & 0.011 & 0.012 & 0.016 & 31 & 16 & --- \\
+car\_\allowbreak{}evaluation & 0.3 & apriori & 5 & 0.091 & 0.069 & 0.178 & 10.04 & 12 & 4 & --- \\
+car\_\allowbreak{}evaluation & 0.3 & fpgrowth & 5 & 0.073 & 0.071 & 0.079 & 0.016 & 12 & 4 & --- \\
+car\_\allowbreak{}evaluation & 0.3 & eclat & 5 & 0.026 & 0.026 & 0.027 & 0.060 & 12 & 4 & --- \\
+car\_\allowbreak{}evaluation & 0.3 & mlxtend & 5 & 0.009 & 0.008 & 0.010 & 0.062 & 12 & 4 & --- \\
+chess & 0.85 & apriori & 30 & 5.76 & 5.75 & 6.96 & 167.4 & 2669 & 95482 & --- \\
+chess & 0.85 & fpgrowth & 30 & 3.49 & 3.45 & 3.85 & 105.7 & 2669 & 95482 & --- \\
+chess & 0.85 & eclat & 30 & 3.48 & 3.47 & 3.58 & 93.04 & 2669 & 95482 & --- \\
+chess & 0.85 & mlxtend & 5 & 3.50 & 3.52 & 3.57 & 19.94 & 2669 & 95482 & --- \\
+connect & 0.95 & apriori & 30 & 87.87 & 88.72 & 110.1 & 304.9 & 2201 & 78376 & --- \\
+connect & 0.95 & fpgrowth & 30 & 10.05 & 9.73 & 13.77 & 40.96 & 2201 & 78376 & --- \\
+connect & 0.95 & eclat & 30 & 14.22 & 14.30 & 15.30 & 191.0 & 2201 & 78376 & --- \\
+connect & 0.95 & mlxtend & 5 & 3.44 & 3.47 & 3.56 & 284.2 & 2201 & 78376 & --- \\
+docword\_\allowbreak{}enron & 0.5 & apriori & 5 & 14.75 & 14.36 & 16.45 & 166.6 & 0 & 0 & --- \\
+docword\_\allowbreak{}enron & 0.5 & fpgrowth & 5 & 0.446 & 0.445 & 0.455 & 7.64 & 0 & 0 & --- \\
+docword\_\allowbreak{}enron & 0.5 & eclat & 5 & 8.37 & 8.04 & 9.49 & 17.74 & 0 & 0 & --- \\
+docword\_\allowbreak{}enron & 0.5 & mlxtend & 0 & --- & --- & --- & --- & --- & --- & mlxtend: empty input \\
+docword\_\allowbreak{}enron & 0.7 & apriori & 5 & 14.25 & 14.24 & 14.36 & 191.1 & 0 & 0 & --- \\
+docword\_\allowbreak{}enron & 0.7 & fpgrowth & 5 & 0.441 & 0.444 & 0.448 & 1.05 & 0 & 0 & --- \\
+docword\_\allowbreak{}enron & 0.7 & eclat & 5 & 7.96 & 7.96 & 7.99 & 17.72 & 0 & 0 & --- \\
+docword\_\allowbreak{}enron & 0.7 & mlxtend & 0 & --- & --- & --- & --- & --- & --- & mlxtend: empty input \\
+docword\_\allowbreak{}nips & 0.5 & apriori & 30 & 209.5 & 196.2 & 269.3 & 2672.8 & 31582 & 1148468 & --- \\
+docword\_\allowbreak{}nips & 0.5 & fpgrowth & 30 & 81.75 & 81.34 & 85.88 & 2560.6 & 31582 & 1148468 & --- \\
+docword\_\allowbreak{}nips & 0.5 & eclat & 30 & 50.23 & 44.48 & 90.98 & 2345.5 & 31582 & 1148468 & --- \\
+docword\_\allowbreak{}nips & 0.5 & mlxtend & 5 & 53.91 & 49.35 & 75.60 & 1079.8 & 31582 & 1148468 & --- \\
+groceries & 0.01 & apriori & 30 & 2.18 & 2.16 & 2.34 & 1.63 & 333 & 170 & --- \\
+groceries & 0.01 & fpgrowth & 30 & 0.871 & 0.871 & 0.938 & 1.15 & 333 & 170 & --- \\
+groceries & 0.01 & eclat & 30 & 0.166 & 0.160 & 0.203 & 0.588 & 333 & 170 & --- \\
+groceries & 0.01 & mlxtend & 5 & 0.128 & 0.126 & 0.142 & 107.0 & 333 & 170 & --- \\
+groceries & 0.02 & apriori & 30 & 1.07 & 1.07 & 1.13 & 0.841 & 122 & 49 & --- \\
+groceries & 0.02 & fpgrowth & 30 & 0.686 & 0.682 & 0.762 & 0.759 & 122 & 49 & --- \\
+groceries & 0.02 & eclat & 30 & 0.126 & 0.127 & 0.138 & 0.246 & 122 & 49 & --- \\
+groceries & 0.02 & mlxtend & 5 & 0.055 & 0.052 & 0.066 & 33.30 & 122 & 49 & --- \\
+kosarak & 0.005 & apriori & 0 & --- & --- & --- & --- & --- & --- & timeout 600 s \\
+kosarak & 0.005 & fpgrowth & 5 & 473.9 & 477.5 & 481.2 & 69.29 & 1618 & 5890 & --- \\
+kosarak & 0.005 & eclat & 5 & 28.30 & 28.23 & 28.73 & 349.2 & 1618 & 5890 & --- \\
+kosarak & 0.01 & apriori & 5 & 250.8 & 249.9 & 253.1 & 690.8 & 383 & 1037 & --- \\
+kosarak & 0.01 & fpgrowth & 5 & 198.9 & 199.3 & 203.4 & 76.03 & 383 & 1037 & --- \\
+kosarak & 0.01 & eclat & 5 & 21.29 & 21.43 & 22.39 & 277.1 & 383 & 1037 & --- \\
+kosarak\_\allowbreak{}spmf & 0.01 & apriori & 5 & 50.47 & 50.58 & 51.34 & 95.81 & 377 & 999 & --- \\
+kosarak\_\allowbreak{}spmf & 0.01 & fpgrowth & 5 & 23.02 & 23.25 & 23.60 & 4.61 & 377 & 999 & --- \\
+kosarak\_\allowbreak{}spmf & 0.01 & eclat & 5 & 4.24 & 4.25 & 4.32 & 25.35 & 377 & 999 & --- \\
+market\_\allowbreak{}basket & 0.02 & apriori & 5 & 0.688 & 0.694 & 0.710 & 0.020 & 103 & 28 & --- \\
+market\_\allowbreak{}basket & 0.02 & fpgrowth & 5 & 0.449 & 0.434 & 0.524 & 0.420 & 103 & 28 & --- \\
+market\_\allowbreak{}basket & 0.02 & eclat & 5 & 0.089 & 0.088 & 0.102 & 0.020 & 103 & 28 & --- \\
+market\_\allowbreak{}basket & 0.02 & mlxtend & 5 & 0.036 & 0.036 & 0.039 & 23.70 & 103 & 28 & --- \\
+market\_\allowbreak{}basket & 0.03 & apriori & 5 & 0.449 & 0.425 & 0.556 & 0.026 & 54 & 10 & --- \\
+market\_\allowbreak{}basket & 0.03 & fpgrowth & 5 & 0.370 & 0.368 & 0.401 & 0.426 & 54 & 10 & --- \\
+market\_\allowbreak{}basket & 0.03 & eclat & 5 & 0.076 & 0.075 & 0.085 & 0.436 & 54 & 10 & --- \\
+market\_\allowbreak{}basket & 0.03 & mlxtend & 5 & 0.023 & 0.020 & 0.029 & 8.73 & 54 & 10 & --- \\
+mushroom & 0.4 & apriori & 30 & 1.78 & 1.78 & 2.00 & 4.04 & 565 & 7020 & --- \\
+mushroom & 0.4 & fpgrowth & 30 & 0.849 & 0.848 & 0.900 & 1.97 & 565 & 7020 & --- \\
+mushroom & 0.4 & eclat & 30 & 0.718 & 0.714 & 0.777 & 2.52 & 565 & 7020 & --- \\
+mushroom & 0.4 & mlxtend & 5 & 0.298 & 0.292 & 0.338 & 3.91 & 565 & 7020 & --- \\
+online\_\allowbreak{}retail & 0.01 & apriori & 5 & 496.5 & 495.0 & 539.7 & 48.06 & 1840 & 2108 & --- \\
+online\_\allowbreak{}retail & 0.01 & fpgrowth & 5 & 55.79 & 55.89 & 56.52 & 19.52 & 1840 & 2108 & --- \\
+online\_\allowbreak{}retail & 0.01 & eclat & 5 & 4.97 & 4.99 & 5.02 & 5.39 & 1840 & 2108 & --- \\
+online\_\allowbreak{}retail & 0.01 & mlxtend & 5 & 85.08 & 82.62 & 108.5 & 9650.3 & 1840 & 2108 & --- \\
+online\_\allowbreak{}retail & 0.02 & apriori & 5 & 70.87 & 71.01 & 73.18 & 32.43 & 353 & 151 & --- \\
+online\_\allowbreak{}retail & 0.02 & fpgrowth & 5 & 17.99 & 18.07 & 18.17 & 4.78 & 353 & 151 & --- \\
+online\_\allowbreak{}retail & 0.02 & eclat & 5 & 1.92 & 1.91 & 1.97 & 4.74 & 353 & 151 & --- \\
+online\_\allowbreak{}retail & 0.02 & mlxtend & 5 & 1.99 & 1.98 & 2.12 & 2328.7 & 353 & 151 & --- \\
+online\_\allowbreak{}retail\_\allowbreak{}ii & 0.01 & apriori & 5 & 406.1 & 374.1 & 528.6 & 26.67 & 1216 & 911 & --- \\
+online\_\allowbreak{}retail\_\allowbreak{}ii & 0.01 & fpgrowth & 5 & 40.37 & 40.72 & 41.07 & 42.66 & 1216 & 911 & --- \\
+online\_\allowbreak{}retail\_\allowbreak{}ii & 0.01 & eclat & 5 & 3.90 & 3.93 & 3.96 & 6.40 & 1216 & 911 & --- \\
+online\_\allowbreak{}retail\_\allowbreak{}ii & 0.01 & mlxtend & 5 & 42.83 & 41.69 & 50.23 & 9785.3 & 1216 & 911 & --- \\
+online\_\allowbreak{}retail\_\allowbreak{}ii & 0.02 & apriori & 5 & 64.11 & 64.14 & 64.94 & 26.09 & 282 & 66 & --- \\
+online\_\allowbreak{}retail\_\allowbreak{}ii & 0.02 & fpgrowth & 5 & 15.78 & 15.63 & 16.49 & 3.16 & 282 & 66 & --- \\
+online\_\allowbreak{}retail\_\allowbreak{}ii & 0.02 & eclat & 5 & 1.81 & 1.81 & 1.84 & 6.15 & 282 & 66 & --- \\
+online\_\allowbreak{}retail\_\allowbreak{}ii & 0.02 & mlxtend & 5 & 2.30 & 2.15 & 2.67 & 1950.6 & 282 & 66 & --- \\
+pumsb & 0.9 & apriori & 5 & 332.8 & 323.1 & 374.8 & 87.70 & 2607 & 71474 & --- \\
+pumsb & 0.9 & fpgrowth & 5 & 21.34 & 21.23 & 21.74 & 25.96 & 2607 & 71474 & --- \\
+pumsb & 0.9 & eclat & 5 & 19.88 & 20.12 & 20.16 & 222.4 & 2607 & 71474 & --- \\
+pumsb & 0.9 & mlxtend & 5 & 3.90 & 3.97 & 4.08 & 397.6 & 2607 & 71474 & --- \\
+pumsb\_\allowbreak{}star & 0.85 & apriori & 5 & 10.59 & 10.59 & 10.74 & 85.64 & 0 & 0 & --- \\
+pumsb\_\allowbreak{}star & 0.85 & fpgrowth & 5 & 0.044 & 0.046 & 0.054 & 0.290 & 0 & 0 & --- \\
+pumsb\_\allowbreak{}star & 0.85 & eclat & 5 & 5.69 & 5.70 & 5.81 & 17.49 & 0 & 0 & --- \\
+pumsb\_\allowbreak{}star & 0.85 & mlxtend & 0 & --- & --- & --- & --- & --- & --- & mlxtend: empty input \\
+retail & 0.02 & apriori & 30 & 8.44 & 8.43 & 8.65 & 30.09 & 55 & 60 & --- \\
+retail & 0.02 & fpgrowth & 30 & 7.28 & 7.28 & 7.46 & 0.559 & 55 & 60 & --- \\
+retail & 0.02 & eclat & 30 & 2.58 & 2.36 & 3.52 & 7.43 & 55 & 60 & --- \\
+retail & 0.02 & mlxtend & 5 & 31.90 & 32.20 & 36.84 & 2022.8 & 55 & 60 & --- \\
+retail & 0.03 & apriori & 30 & 7.29 & 7.28 & 7.41 & 31.77 & 32 & 28 & --- \\
+retail & 0.03 & fpgrowth & 30 & 7.21 & 7.23 & 7.58 & 1.06 & 32 & 28 & --- \\
+retail & 0.03 & eclat & 30 & 2.39 & 2.37 & 2.55 & 9.24 & 32 & 28 & --- \\
+retail & 0.03 & mlxtend & 5 & 15.00 & 14.95 & 15.34 & 2667.7 & 32 & 28 & --- \\
+synthetic\_\allowbreak{}dense\_\allowbreak{}5000 & 0.3 & apriori & 5 & 13.67 & 13.62 & 14.23 & 4.93 & 1737 & 5262 & --- \\
+synthetic\_\allowbreak{}dense\_\allowbreak{}5000 & 0.3 & fpgrowth & 5 & 55.95 & 57.17 & 58.87 & 16.32 & 1737 & 5262 & --- \\
+synthetic\_\allowbreak{}dense\_\allowbreak{}5000 & 0.3 & eclat & 5 & 2.58 & 2.53 & 2.73 & 16.05 & 1737 & 5262 & --- \\
+synthetic\_\allowbreak{}dense\_\allowbreak{}5000 & 0.3 & mlxtend & 5 & 0.551 & 0.529 & 0.603 & 380.1 & 1737 & 5262 & --- \\
+synthetic\_\allowbreak{}dense\_\allowbreak{}5000 & 0.5 & apriori & 5 & 1.42 & 1.29 & 2.07 & 13.68 & 60 & 20 & --- \\
+synthetic\_\allowbreak{}dense\_\allowbreak{}5000 & 0.5 & fpgrowth & 5 & 9.90 & 10.43 & 11.64 & 10.63 & 60 & 20 & --- \\
+synthetic\_\allowbreak{}dense\_\allowbreak{}5000 & 0.5 & eclat & 5 & 0.547 & 0.545 & 0.590 & 9.27 & 60 & 20 & --- \\
+synthetic\_\allowbreak{}dense\_\allowbreak{}5000 & 0.5 & mlxtend & 5 & 0.025 & 0.026 & 0.027 & 7.38 & 60 & 20 & --- \\
+synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.02 & apriori & 5 & 0.441 & 0.445 & 0.473 & 0.826 & 269 & 407 & --- \\
+synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.02 & fpgrowth & 5 & 0.325 & 0.277 & 0.544 & 12.73 & 269 & 407 & --- \\
+synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.02 & eclat & 5 & 0.085 & 0.089 & 0.097 & 0.264 & 269 & 407 & --- \\
+synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.02 & mlxtend & 5 & 0.086 & 0.090 & 0.100 & 3.46 & 269 & 407 & --- \\
+synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.05 & apriori & 5 & 0.190 & 0.195 & 0.202 & 0.974 & 77 & 118 & --- \\
+synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.05 & fpgrowth & 5 & 0.179 & 0.181 & 0.208 & 0.176 & 77 & 118 & --- \\
+synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.05 & eclat & 5 & 0.056 & 0.053 & 0.068 & 0.776 & 77 & 118 & --- \\
+synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.05 & mlxtend & 5 & 0.034 & 0.035 & 0.039 & 0.836 & 77 & 118 & --- \\
+t10i4d100k & 0.01 & apriori & 1 & 592.9 & 592.9 & 592.9 & 0.000 & 385 & 17 & 4 failed: timeout 600 s \\
+t10i4d100k & 0.01 & fpgrowth & 5 & 72.63 & 71.45 & 77.40 & 292.7 & 385 & 17 & --- \\
+t10i4d100k & 0.01 & eclat & 5 & 6.49 & 6.39 & 7.53 & 49.25 & 385 & 17 & --- \\
+t10i4d100k & 0.01 & mlxtend & 1 & 101.9 & 101.9 & 101.9 & 0.000 & 385 & 17 & 4 failed: MemoryError: Unable to allocate 13.1 GiB \\
+t10i4d100k & 0.02 & apriori & 5 & 164.5 & 169.7 & 170.0 & 0.824 & 155 & 0 & --- \\
+t10i4d100k & 0.02 & fpgrowth & 5 & 48.41 & 48.07 & 49.81 & 124.5 & 155 & 0 & --- \\
+t10i4d100k & 0.02 & eclat & 5 & 4.78 & 4.80 & 5.01 & 23.61 & 155 & 0 & --- \\
+t10i4d100k & 0.02 & mlxtend & 5 & 34.40 & 40.95 & 42.95 & 17.31 & 155 & 0 & --- \\
+tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.3 & apriori & 30 & 0.069 & 0.071 & 0.085 & 0.038 & 25 & 10 & --- \\
+tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.3 & fpgrowth & 30 & 0.102 & 0.100 & 0.138 & 0.253 & 25 & 10 & --- \\
+tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.3 & eclat & 30 & 0.024 & 0.023 & 0.031 & 0.059 & 25 & 10 & --- \\
+tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.3 & mlxtend & 5 & 0.012 & 0.013 & 0.015 & 0.020 & 25 & 10 & --- \\
+tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.5 & apriori & 30 & 0.046 & 0.046 & 0.058 & 0.025 & 1 & 0 & --- \\
+tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.5 & fpgrowth & 30 & 0.045 & 0.044 & 0.064 & 0.021 & 1 & 0 & --- \\
+tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.5 & eclat & 30 & 0.022 & 0.020 & 0.030 & 0.026 & 1 & 0 & --- \\
+tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.5 & mlxtend & 5 & 0.005 & 0.005 & 0.006 & 0.040 & 1 & 0 & --- \\
 \bottomrule
 \end{longtable}
 
