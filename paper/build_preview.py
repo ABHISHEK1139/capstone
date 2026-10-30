@@ -9,16 +9,16 @@ canonical paper once results are filled in.
 import re
 import sys
 
-import os
-HERE = os.path.dirname(os.path.abspath(__file__))
-SRC = os.path.join(HERE, "paper-draft.tex")
-DST = os.path.join(HERE, "paper-preview.html")
+SRC = sys.argv[1] if len(sys.argv) > 1 else "/home/hatch/workspace/goals/capstone-paper-to-journal-quality/files/paper-draft.tex"
+DST = "/home/hatch/workspace/goals/capstone-paper-to-journal-quality/files/paper-preview.html"
 
 LABEL_MAP = {
     "sec:methods": "3", "sec:data": "4", "sec:setup": "5",
     "sec:limitations": "7", "app:repro": "A",
     "tab:metrics": "1", "tab:data": "2", "tab:thr": "3",
+    "tab:timing": "4", "tab:correctness": "5", "tab:skips": "6",
     "fig:arch": "1", "fig:flow": "2", "fig:fptree": "3",
+    "fig:runtime": "4", "fig:memory": "5", "fig:scatter": "6",
 }
 
 MATH_MAP = [
@@ -130,12 +130,16 @@ def parse_table(env):
     cap = cmd_arg(env, "caption", 0)
     caption = inline(cap[0]) if cap else ""
     m = re.search(r"\\begin\{tabular\}\{[^}]*\}(.*?)\\end\{tabular\}", env, flags=re.S)
+    if not m:
+        m = re.search(r"\\begin\{longtable\}\{[^}]*\}(.*?)\\end\{longtable\}", env, flags=re.S)
     body = m.group(1) if m else ""
+    body = re.sub(r"\\end(first|last)?head|\\endfoot", "", body)
     rows = []
     for raw in body.split("\\\\"):
         raw = raw.strip()
-        if not raw or "\\toprule" in raw or "\\midrule" in raw or "\\bottomrule" in raw:
+        if not raw or "\\toprule" in raw or "\\midrule" in raw or "\\bottomrule" in raw or raw.startswith("\\end"):
             continue
+        raw = raw.replace(r"\endfirsthead", "").replace(r"\endhead", "")
         cells = [inline(c) for c in raw.split("&")]
         if any(cells):
             rows.append(cells)
@@ -174,7 +178,7 @@ def main():
 
     # token scan over the body
     token_re = re.compile(
-        r"\\section\*\{|\\section\{|\\subsection\{|\\begin\{table\}|"
+        r"\\section\*\{|\\section\{|\\subsection\{|\\begin\{table\}|\\begin\{longtable\}|"
         r"\\begin\{figure\}|\\begin\{itemize\}|\\placeholder\{|\\appendix|"
         r"\x00BIB\x00")
     out = []
@@ -243,15 +247,33 @@ def main():
             out.append("\n".join(html))
             pos = end
             continue
+        if tok == "\\begin{longtable}":
+            end = raw.index("\\end{longtable}", m.start()) + len("\\end{longtable}")
+            caption, rows = parse_table(raw[m.start():end])
+            tab_no += 1
+            html = [f'<table><caption>Table {tab_no}. {caption}</caption>']
+            for ri, row in enumerate(rows):
+                tag = "th" if ri == 0 else "td"
+                html.append("<tr>" + "".join(f"<{tag}>{c}</{tag}>" for c in row) + "</tr>")
+            html.append("</table>")
+            out.append("\n".join(html))
+            pos = end
+            continue
         if tok == "\\begin{figure}":
             end = raw.index("\\end{figure}", m.start()) + len("\\end{figure}")
             env = raw[m.start():end]
             cap = cmd_arg(env, "caption", 0)
             caption = inline(cap[0]) if cap else ""
             fig_no += 1
-            out.append(f'<div class="fig"><div class="figbox">Figure {fig_no} '
-                       f'— diagram (renders in the compiled PDF)</div>'
-                       f'<div class="cap">Figure {fig_no}. {caption}</div></div>')
+            ig = re.search(r"\\includegraphics\[[^\]]*\]\{([^}]*)\}", env)
+            if ig:
+                out.append(f'<div class="fig"><img src="{ig.group(1)}" '
+                           f'style="max-width:100%">'
+                           f'<div class="cap">Figure {fig_no}. {caption}</div></div>')
+            else:
+                out.append(f'<div class="fig"><div class="figbox">Figure {fig_no} '
+                           f'— diagram (renders in the compiled PDF)</div>'
+                           f'<div class="cap">Figure {fig_no}. {caption}</div></div>')
             pos = end
             continue
         if tok == "\\begin{itemize}":
@@ -280,7 +302,7 @@ def main():
 
     html = f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
-<title>{title} — draft preview</title>
+<title>{title} — preview</title>
 <style>
 body {{ font-family: Georgia, 'Times New Roman', serif; max-width: 780px;
   margin: 2em auto; padding: 0 1.2em; color: #111; line-height: 1.55; }}
@@ -307,10 +329,11 @@ code {{ background: #f4f4f4; padding: 0 3px; }}
 .note {{ background: #eef4ff; border-left: 4px solid #3366cc; padding: 0.7em 1em;
   margin-bottom: 1.5em; font-family: sans-serif; font-size: 0.92em; }}
 </style></head><body>
-<div class="note"><b>Draft preview</b> — this is a readable rendering of
-paper-draft.tex so the paper can be judged before compiling. The compiled
-PDF remains the canonical version. Boxes marked EMPTY are the benchmark
-results, left blank on purpose until the campaign finishes.</div>
+<div class="note"><b>Paper preview</b> — readable rendering of paper.tex
+(results for 23 of 25 datasets, PC campaign 2026-10-30). The compiled PDF
+remains the canonical version once LaTeX is available. The two pending
+datasets (bms_pos, t10i4d100k) are marked in the results section, not
+estimated.</div>
 <div class="title">{title}</div>
 <div class="authors">{author_html}</div>
 <div class="abstract"><h1>Abstract</h1>{abstract_html}</div>
