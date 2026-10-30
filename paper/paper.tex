@@ -235,6 +235,38 @@ same fitted attributes, so a difference in output is a bug, not an API
 difference --- which is exactly what the correctness gate in
 Section~\ref{sec:setup} checks.
 
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[box/.style={draw, rounded corners, align=center, minimum height=0.95cm, font=\footnotesize}, lab/.style={font=\footnotesize\bfseries}, arr/.style={->, >=Stealth}]
+\node[lab] (a-lab) at (1.0,0) {Apriori};
+\node[box, minimum width=2.3cm] (a1) at (3.3,0) {Frequent\\1-itemsets};
+\node[box, minimum width=2.3cm] (a2) at (6.0,0) {Generate\\candidates};
+\node[box, minimum width=2.3cm] (a3) at (8.7,0) {Scan + count};
+\node[box, minimum width=2.3cm] (a4) at (11.4,0) {Prune\\(anti-monotone)};
+\node[box, minimum width=2.3cm] (a5) at (14.1,0) {Emit itemsets\\+ rules};
+\draw[arr] (a1) -- (a2); \draw[arr] (a2) -- (a3); \draw[arr] (a3) -- (a4); \draw[arr] (a4) -- (a5);
+\draw[arr] (a4.south) -- ++(0,-0.45) -| (a2.south) node[pos=0.25, below, font=\scriptsize] {more levels};
+\node[lab] (f-lab) at (1.0,-2.0) {FP-Growth};
+\node[box, minimum width=2.9cm] (f1) at (3.9,-2.0) {Order items by\\descending frequency};
+\node[box, minimum width=2.9cm] (f2) at (7.1,-2.0) {Build FP-tree};
+\node[box, minimum width=2.9cm] (f3) at (10.3,-2.0) {Mine conditional\\trees recursively};
+\node[box, minimum width=2.9cm] (f4) at (13.5,-2.0) {Emit itemsets\\+ rules};
+\draw[arr] (f1) -- (f2); \draw[arr] (f2) -- (f3); \draw[arr] (f3) -- (f4);
+\node[lab] (e-lab) at (1.0,-4.0) {Eclat};
+\node[box, minimum width=2.9cm] (e1) at (3.9,-4.0) {Build tidsets};
+\node[box, minimum width=2.9cm] (e2) at (7.1,-4.0) {Partition into\\equivalence classes};
+\node[box, minimum width=2.9cm] (e3) at (10.3,-4.0) {Intersect tidsets\\depth-first};
+\node[box, minimum width=2.9cm] (e4) at (13.5,-4.0) {Emit itemsets\\+ rules};
+\draw[arr] (e1) -- (e2); \draw[arr] (e2) -- (e3); \draw[arr] (e3) -- (e4);
+\end{tikzpicture}
+\caption{How the three engines work. Apriori repeats candidate generation
+until no candidates survive pruning; FP-Growth builds one FP-tree and
+mines it recursively, with no candidate generation; Eclat intersects
+tidsets depth-first within equivalence classes. All three consume the
+same pre-encoded matrix and return the same fitted attributes.}
+\label{fig:engines}
+\end{figure}
+
 \subsection{Estimator API}
 \texttt{AssociationRulesEstimator} exposes
 \texttt{min\_support}, \texttt{metric} (default \texttt{confidence}),
@@ -410,6 +442,15 @@ Online Retail II & 22,103 & 4,317 & 22.62 & 0.52 & retail \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+Figure~\ref{fig:family} summarises the same collection by family. Each dataset is counted once, under its most distinctive type from Table~2: accidents under traffic rather than dense, pumsb under census rather than dense, and the retail sets under retail rather than sparse.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/family.png}
+\caption{Datasets by family (25 total). Retail: groceries, retail, market basket, online retail I/II. Dense: chess, mushroom, connect. Census: pumsb, pumsb\_star, adult census. Click-stream: kosarak, kosarak (SPMF), BMS-POS, BMS-WebView-1/2. Document-word: NIPS papers, Enron emails. Categorical: tic-tac-toe, car evaluation, balance scale. Synthetic: T10I4D100K, synthetic sparse, synthetic dense. Traffic: accidents.}
+\label{fig:family}
+\end{figure}
 
 \section{Experimental setup}
 \label{sec:setup}
@@ -695,6 +736,29 @@ tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.5 & mlxtend & 5 & 0.005 & 0.005 & 0.
 \includegraphics[width=0.8\textwidth]{figures/scatter.png}
 \caption{Frequent itemsets versus association rules per cell (Apriori counts; all engines agree). Log scales. Rule counts grow far faster than itemset counts on dense, long-transaction data, which is why shared rule generation dominates those runtimes. Six cells with zero rules are omitted (log scale cannot show zero).}
 \label{fig:scatter}
+\end{figure}
+
+Throughput, itemset scale, and trial outcomes complete the picture.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/throughput.png}
+\caption{Mean throughput (transactions per second) per dataset at its primary threshold (same rule as Figure~\ref{fig:runtime}). Log scale. Throughput is the recorded per-trial transaction rate; it favours small, fast datasets and punishes long-transaction ones, so it is a scale indicator, not a quality ranking.}
+\label{fig:throughput}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/itemsets.png}
+\caption{Frequent itemsets per dataset at its primary threshold (Apriori counts; all engines agree). Log scale. The collection spans from 1 itemset (tic-tac-toe at 0.50) to 31,582 (NIPS papers), which is why no single threshold or engine suits every dataset.}
+\label{fig:itemsets}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/outcomes.png}
+\caption{Trial outcomes over all 1,515 records. The large OK share is the campaign's completion rate; timeouts, skips, and errors are the cells Table~\ref{tab:skips} lists with reasons.}
+\label{fig:outcomes}
 \end{figure}
 Across 39 cells, 145 engine pairs were compared and every one agrees exactly on itemsets and supports (maximum support difference 0.0). mlxtend was compared in 32 cells; the rest have no mlxtend pair because mlxtend did not complete trial 0 there.
 

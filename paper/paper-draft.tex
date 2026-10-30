@@ -236,6 +236,38 @@ same fitted attributes, so a difference in output is a bug, not an API
 difference --- which is exactly what the correctness gate in
 Section~\ref{sec:setup} checks.
 
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[box/.style={draw, rounded corners, align=center, minimum height=0.95cm, font=\footnotesize}, lab/.style={font=\footnotesize\bfseries}, arr/.style={->, >=Stealth}]
+\node[lab] (a-lab) at (1.0,0) {Apriori};
+\node[box, minimum width=2.3cm] (a1) at (3.3,0) {Frequent\\1-itemsets};
+\node[box, minimum width=2.3cm] (a2) at (6.0,0) {Generate\\candidates};
+\node[box, minimum width=2.3cm] (a3) at (8.7,0) {Scan + count};
+\node[box, minimum width=2.3cm] (a4) at (11.4,0) {Prune\\(anti-monotone)};
+\node[box, minimum width=2.3cm] (a5) at (14.1,0) {Emit itemsets\\+ rules};
+\draw[arr] (a1) -- (a2); \draw[arr] (a2) -- (a3); \draw[arr] (a3) -- (a4); \draw[arr] (a4) -- (a5);
+\draw[arr] (a4.south) -- ++(0,-0.45) -| (a2.south) node[pos=0.25, below, font=\scriptsize] {more levels};
+\node[lab] (f-lab) at (1.0,-2.0) {FP-Growth};
+\node[box, minimum width=2.9cm] (f1) at (3.9,-2.0) {Order items by\\descending frequency};
+\node[box, minimum width=2.9cm] (f2) at (7.1,-2.0) {Build FP-tree};
+\node[box, minimum width=2.9cm] (f3) at (10.3,-2.0) {Mine conditional\\trees recursively};
+\node[box, minimum width=2.9cm] (f4) at (13.5,-2.0) {Emit itemsets\\+ rules};
+\draw[arr] (f1) -- (f2); \draw[arr] (f2) -- (f3); \draw[arr] (f3) -- (f4);
+\node[lab] (e-lab) at (1.0,-4.0) {Eclat};
+\node[box, minimum width=2.9cm] (e1) at (3.9,-4.0) {Build tidsets};
+\node[box, minimum width=2.9cm] (e2) at (7.1,-4.0) {Partition into\\equivalence classes};
+\node[box, minimum width=2.9cm] (e3) at (10.3,-4.0) {Intersect tidsets\\depth-first};
+\node[box, minimum width=2.9cm] (e4) at (13.5,-4.0) {Emit itemsets\\+ rules};
+\draw[arr] (e1) -- (e2); \draw[arr] (e2) -- (e3); \draw[arr] (e3) -- (e4);
+\end{tikzpicture}
+\caption{How the three engines work. Apriori repeats candidate generation
+until no candidates survive pruning; FP-Growth builds one FP-tree and
+mines it recursively, with no candidate generation; Eclat intersects
+tidsets depth-first within equivalence classes. All three consume the
+same pre-encoded matrix and return the same fitted attributes.}
+\label{fig:engines}
+\end{figure}
+
 \subsection{Estimator API}
 \texttt{AssociationRulesEstimator} exposes
 \texttt{min\_support}, \texttt{metric} (default \texttt{confidence}),
@@ -411,6 +443,8 @@ Online Retail II & 22,103 & 4,317 & 22.62 & 0.52 & retail \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\placeholder{P10: dataset-family pie chart, computed from the Type column of Table 2 (each dataset counted once, under its most distinctive type).}
 
 \section{Experimental setup}
 \label{sec:setup}
