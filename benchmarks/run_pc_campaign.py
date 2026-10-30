@@ -508,7 +508,7 @@ def summarize():
                  + ", ".join(SUBSET_30) + ". All other datasets report 5 trials; "
                  "mlxtend always reports 5 trials where feasible.")
     lines.append("")
-    with open(REPORT, "w") as f:
+    with open(REPORT, "w", encoding="utf-8", newline="\n") as f:
         f.write("\n".join(lines) + "\n")
     return REPORT
 

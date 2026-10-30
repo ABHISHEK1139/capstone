@@ -1,6 +1,6 @@
 # skarm benchmark campaign report (PC run)
 
-> PARTIAL — missing datasets: bms_pos, t10i4d100k. Do not use this report for paper claims until the run completes.
+> COMPLETE â€” all datasets in thresholds.json have a checkpoint file.
 
 ## Environment
 
@@ -48,6 +48,10 @@
 | balance_scale | 0.3 | eclat | 5/5 | 0.008 | 0.008 | 0.009 | 0.0 | 2 | 0 | False |
 | balance_scale | 0.3 | fpgrowth | 5/5 | 0.022 | 0.022 | 0.024 | 0.0 | 2 | 0 | False |
 | balance_scale | 0.3 | mlxtend | 5/5 | 0.017 | 0.006 | 0.062 | 0.2 | 2 | 0 | - |
+| bms_pos | 0.02 | apriori | 30/30 | 227.205 | 232.565 | 237.223 | 22.8 | 308 | 489 | False |
+| bms_pos | 0.02 | eclat | 30/30 | 12.529 | 12.675 | 13.686 | 39.5 | 308 | 489 | False |
+| bms_pos | 0.02 | fpgrowth | 30/30 | 94.078 | 94.099 | 96.577 | 107.5 | 308 | 489 | False |
+| bms_pos | 0.02 | mlxtend | 5/5 | 27.43 | 32.487 | 32.891 | 164.5 | 308 | 489 | - |
 | bms_webview_1 | 0.005 | apriori | 5/5 | 31.145 | 29.175 | 44.215 | 10.0 | 201 | 59 | False |
 | bms_webview_1 | 0.005 | eclat | 5/5 | 0.86 | 0.875 | 0.985 | 8.5 | 201 | 59 | False |
 | bms_webview_1 | 0.005 | fpgrowth | 5/5 | 5.312 | 5.243 | 6.58 | 2.9 | 201 | 59 | False |
@@ -169,6 +173,14 @@
 | synthetic_sparse_2000 | 0.05 | eclat | 5/5 | 0.056 | 0.053 | 0.068 | 0.8 | 77 | 118 | False |
 | synthetic_sparse_2000 | 0.05 | fpgrowth | 5/5 | 0.179 | 0.181 | 0.208 | 0.2 | 77 | 118 | False |
 | synthetic_sparse_2000 | 0.05 | mlxtend | 5/5 | 0.034 | 0.035 | 0.039 | 0.8 | 77 | 118 | - |
+| t10i4d100k | 0.01 | apriori | 1/5 | 592.899 | 592.899 | 592.899 | 0.0 | 385 | 17 | False |
+| t10i4d100k | 0.01 | eclat | 5/5 | 6.495 | 6.392 | 7.527 | 49.2 | 385 | 17 | False |
+| t10i4d100k | 0.01 | fpgrowth | 5/5 | 72.629 | 71.452 | 77.401 | 292.7 | 385 | 17 | False |
+| t10i4d100k | 0.01 | mlxtend | 1/5 | 101.864 | 101.864 | 101.864 | 0.0 | 385 | 17 | - |
+| t10i4d100k | 0.02 | apriori | 5/5 | 164.486 | 169.661 | 169.981 | 0.8 | 155 | 0 | False |
+| t10i4d100k | 0.02 | eclat | 5/5 | 4.779 | 4.798 | 5.006 | 23.6 | 155 | 0 | False |
+| t10i4d100k | 0.02 | fpgrowth | 5/5 | 48.414 | 48.075 | 49.813 | 124.5 | 155 | 0 | False |
+| t10i4d100k | 0.02 | mlxtend | 5/5 | 34.395 | 40.949 | 42.953 | 17.3 | 155 | 0 | - |
 | tic_tac_toe | 0.3 | apriori | 30/30 | 0.069 | 0.07 | 0.085 | 0.0 | 25 | 10 | False |
 | tic_tac_toe | 0.3 | eclat | 30/30 | 0.024 | 0.023 | 0.031 | 0.1 | 25 | 10 | False |
 | tic_tac_toe | 0.3 | fpgrowth | 30/30 | 0.102 | 0.1 | 0.138 | 0.3 | 25 | 10 | False |
@@ -201,6 +213,10 @@
 - balance_scale@0.3 apriori_vs_eclat: match=True (n_a=2, n_b=2, max_support_diff=0.0, reason=None)
 - balance_scale@0.3 fpgrowth_vs_eclat: match=True (n_a=2, n_b=2, max_support_diff=0.0, reason=None)
 - balance_scale@0.3 skarm_apriori_vs_mlxtend: match=True (n_a=2, n_b=2, max_support_diff=0.0, reason=None)
+- bms_pos@0.02 apriori_vs_fpgrowth: match=True (n_a=308, n_b=308, max_support_diff=0.0, reason=None)
+- bms_pos@0.02 apriori_vs_eclat: match=True (n_a=308, n_b=308, max_support_diff=0.0, reason=None)
+- bms_pos@0.02 fpgrowth_vs_eclat: match=True (n_a=308, n_b=308, max_support_diff=0.0, reason=None)
+- bms_pos@0.02 skarm_apriori_vs_mlxtend: match=True (n_a=308, n_b=308, max_support_diff=0.0, reason=None)
 - bms_webview_1@0.005 apriori_vs_fpgrowth: match=True (n_a=201, n_b=201, max_support_diff=0.0, reason=None)
 - bms_webview_1@0.005 apriori_vs_eclat: match=True (n_a=201, n_b=201, max_support_diff=0.0, reason=None)
 - bms_webview_1@0.005 fpgrowth_vs_eclat: match=True (n_a=201, n_b=201, max_support_diff=0.0, reason=None)
@@ -317,6 +333,14 @@
 - synthetic_sparse_2000@0.05 apriori_vs_eclat: match=True (n_a=77, n_b=77, max_support_diff=0.0, reason=None)
 - synthetic_sparse_2000@0.05 fpgrowth_vs_eclat: match=True (n_a=77, n_b=77, max_support_diff=0.0, reason=None)
 - synthetic_sparse_2000@0.05 skarm_apriori_vs_mlxtend: match=True (n_a=77, n_b=77, max_support_diff=0.0, reason=None)
+- t10i4d100k@0.01 apriori_vs_fpgrowth: match=True (n_a=385, n_b=385, max_support_diff=0.0, reason=None)
+- t10i4d100k@0.01 apriori_vs_eclat: match=True (n_a=385, n_b=385, max_support_diff=0.0, reason=None)
+- t10i4d100k@0.01 fpgrowth_vs_eclat: match=True (n_a=385, n_b=385, max_support_diff=0.0, reason=None)
+- t10i4d100k@0.01 skarm_apriori_vs_mlxtend: match=True (n_a=385, n_b=385, max_support_diff=0.0, reason=None)
+- t10i4d100k@0.02 apriori_vs_fpgrowth: match=True (n_a=155, n_b=155, max_support_diff=0.0, reason=None)
+- t10i4d100k@0.02 apriori_vs_eclat: match=True (n_a=155, n_b=155, max_support_diff=0.0, reason=None)
+- t10i4d100k@0.02 fpgrowth_vs_eclat: match=True (n_a=155, n_b=155, max_support_diff=0.0, reason=None)
+- t10i4d100k@0.02 skarm_apriori_vs_mlxtend: match=True (n_a=155, n_b=155, max_support_diff=0.0, reason=None)
 - tic_tac_toe@0.3 apriori_vs_fpgrowth: match=True (n_a=25, n_b=25, max_support_diff=0.0, reason=None)
 - tic_tac_toe@0.3 apriori_vs_eclat: match=True (n_a=25, n_b=25, max_support_diff=0.0, reason=None)
 - tic_tac_toe@0.3 fpgrowth_vs_eclat: match=True (n_a=25, n_b=25, max_support_diff=0.0, reason=None)

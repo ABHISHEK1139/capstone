@@ -26,11 +26,11 @@ class FPTree:
 
     def __init__(self):
         self.root = FPNode(-1, 0.0, None)
-        # header_table maps item -> [head_node, total_count]
-        self.header_table: Dict[int, List[Union[Optional[FPNode], float]]] = {}
+        # header_table maps item -> [head_node, tail_node, total_count]
+        self.header_table: Dict[int, List[Any]] = {}
 
     def add_transaction(self, items: List[int], count: float):
-        """Insert a transaction into the FP-tree."""
+        """Insert a transaction into the FP-tree with O(1) linked list tail append."""
         curr = self.root
         for item in items:
             if item in curr.children:
@@ -38,14 +38,14 @@ class FPTree:
             else:
                 new_node = FPNode(item, count, curr)
                 curr.children[item] = new_node
-                # Update header table linked list
-                if self.header_table[item][0] is None:
-                    self.header_table[item][0] = new_node
+                # Update header table linked list in O(1) via tail pointer
+                entry = self.header_table[item]
+                if entry[0] is None:
+                    entry[0] = new_node
+                    entry[1] = new_node
                 else:
-                    head = self.header_table[item][0]
-                    while head.node_link is not None:
-                        head = head.node_link
-                    head.node_link = new_node
+                    entry[1].node_link = new_node
+                    entry[1] = new_node
             curr = curr.children[item]
 
 
@@ -148,7 +148,7 @@ def fpgrowth(
     # Step 2: Build initial FP-Tree
     tree = FPTree()
     for item in rank_order:
-        tree.header_table[item] = [None, frequent_1[item]]
+        tree.header_table[item] = [None, None, frequent_1[item]]
 
     if is_sparse:
         for i in range(n_samples):
@@ -176,11 +176,12 @@ def fpgrowth(
         # Break ties deterministically by item index (NT-5)
         items_sorted = sorted(
             curr_tree.header_table.keys(),
-            key=lambda x: (curr_tree.header_table[x][1], x)
+            key=lambda x: (curr_tree.header_table[x][2], x)
         )
 
         for item in items_sorted:
-            head_node, item_count = curr_tree.header_table[item]
+            entry = curr_tree.header_table[item]
+            head_node, item_count = entry[0], entry[2]
             if item_count < min_count - 1e-12:
                 continue
 
@@ -229,7 +230,7 @@ def fpgrowth(
 
             cond_tree = FPTree()
             for it in cond_rank_order:
-                cond_tree.header_table[it] = [None, cond_frequent[it]]
+                cond_tree.header_table[it] = [None, None, cond_frequent[it]]
 
             for path, count in cond_patterns:
                 filtered_path = [it for it in path if it in cond_frequent]
