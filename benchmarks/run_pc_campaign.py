@@ -87,6 +87,11 @@ def rss_mb():
                     return int(line.split()[1]) / 1024.0
     except Exception:
         pass
+    try:
+        import psutil
+        return psutil.Process().memory_info().rss / (1024.0 * 1024.0)
+    except Exception:
+        pass
     return 0.0
 
 
@@ -111,10 +116,28 @@ class RssSampler(threading.Thread):
         self.join(timeout=2.0)
 
 
+HAS_SIGALRM = hasattr(signal, "SIGALRM")
+
 def timed_trial(fn):
-    """Run fn() with SIGALRM cap + RSS sampling. Returns record dict."""
-    old = signal.signal(signal.SIGALRM, _alarm_handler)
-    signal.alarm(TRIAL_TIMEOUT_S)
+    """Run fn() with 600 s cap (SIGALRM on POSIX, thread watchdog via PyThreadState_SetAsyncExc on Windows) + RSS sampling."""
+    old = None
+    cancel_event = None
+    if HAS_SIGALRM:
+        old = signal.signal(signal.SIGALRM, _alarm_handler)
+        signal.alarm(TRIAL_TIMEOUT_S)
+    else:
+        import ctypes
+        cancel_event = threading.Event()
+        target_tid = threading.get_native_id()
+        def _watchdog_fn():
+            if not cancel_event.wait(TRIAL_TIMEOUT_S):
+                ctypes.pythonapi.PyThreadState_SetAsyncExc(
+                    ctypes.c_ulong(target_tid),
+                    ctypes.py_object(RunTimeout)
+                )
+        watchdog = threading.Thread(target=_watchdog_fn, daemon=True)
+        watchdog.start()
+
     baseline = rss_mb()
     sampler = RssSampler()
     sampler.start()
@@ -131,15 +154,19 @@ def timed_trial(fn):
     except RunTimeout as e:
         secs = time.perf_counter() - t0
         sampler.stop()
-        return {"status": "timeout", "seconds": round(secs, 4), "error": str(e)}
+        return {"status": "timeout", "seconds": round(secs, 4), "error": str(e) or "exceeded 600 s trial cap"}
     except Exception as e:  # noqa: BLE001 - campaign must record, not crash
         secs = time.perf_counter() - t0
         sampler.stop()
         return {"status": "error", "seconds": round(secs, 4),
                 "error": f"{type(e).__name__}: {e}"}
     finally:
-        signal.alarm(0)
-        signal.signal(signal.SIGALRM, old)
+        if HAS_SIGALRM:
+            signal.alarm(0)
+            if old is not None:
+                signal.signal(signal.SIGALRM, old)
+        elif cancel_event is not None:
+            cancel_event.set()
 
 
 def compare_itemsets(a, b, tol=1e-9):
