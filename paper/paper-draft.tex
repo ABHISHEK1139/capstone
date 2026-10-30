@@ -31,6 +31,8 @@
 \usetikzlibrary{arrows.meta,positioning,shapes.geometric}
 \usepackage{xcolor}
 \usepackage[hidelinks]{hyperref}
+\usepackage{lscape}
+\setlength{\emergencystretch}{2em}
 
 \newcommand{\placeholder}[1]{%
   \begin{center}
@@ -43,7 +45,7 @@ Mining with Auditable Pruning}
 \author{
   Ms.~Dudigam Ramya\textsuperscript{1},
   Gontla Venkata Anvitha\textsuperscript{1},
-  Kamma Giridhar\textsuperscript{1},
+  Kamma Giridhar\textsuperscript{1} \\
   Abhishek Kumar\textsuperscript{1},
   Paladagula Venkata Rajeev\textsuperscript{1} \\
   \small\textsuperscript{1}Department of Computer Science and Engineering,
@@ -285,7 +287,7 @@ labelled illustrative and no measured claim rests on it.
 
 \begin{figure}[h]
 \centering
-\begin{tikzpicture}[
+\resizebox{\textwidth}{!}{\begin{tikzpicture}[
   box/.style={draw, rounded corners, minimum width=2.6cm, minimum height=0.9cm, align=center, font=\small},
   arr/.style={-{Stealth}, thick}]
   \node[box] (tx) {Transactions};
@@ -300,7 +302,7 @@ labelled illustrative and no measured claim rests on it.
   \node[box, below=1.0cm of est] (tel) {Telemetry: candidate counts, degraded flag, peak RSS};
   \draw[arr] (est) -- (tel);
   \draw[arr] (gov) -- (tel);
-\end{tikzpicture}
+\end{tikzpicture}}
 \caption{System architecture. One encoding feeds all three engines;
 telemetry is emitted alongside results, not reconstructed afterwards.}
 \label{fig:arch}
