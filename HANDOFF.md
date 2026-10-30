@@ -124,6 +124,15 @@ the user on 30 Oct 2026).
   preview label map was fixed to match (engines 1, arch 2, flow 3,
   fptree 4).
 
+## 1D. Update — 30 Oct 2026 (author order)
+
+- At the user's instruction, Abhishek Kumar moved to THIRD overall.
+  Current order: 1. Ms. Dudigam Ramya, 2. Gontla Venkata Anvitha,
+  3. Abhishek Kumar, 4. Kamma Giridhar, 5. Paladagula Venkata Rajeev.
+  (He was previously fourth overall, third among the students, so
+  third overall is the move he asked for.) Supervisor-first from
+  30 Oct stands; only his position changed.
+
 ## 2. Findings (what was wrong, missed, fixed)
 
 ### 2.1 Code bugs fixed (all pushed, all verified)
