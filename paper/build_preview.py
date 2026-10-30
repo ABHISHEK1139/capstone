@@ -9,8 +9,8 @@ canonical paper once results are filled in.
 import re
 import sys
 
-SRC = sys.argv[1] if len(sys.argv) > 1 else "/home/hatch/workspace/goals/capstone-paper-to-journal-quality/files/paper-draft.tex"
-DST = "/home/hatch/workspace/goals/capstone-paper-to-journal-quality/files/paper-preview.html"
+SRC = sys.argv[1] if len(sys.argv) > 1 else "paper/paper.tex"
+DST = "paper/paper-preview.html"
 
 LABEL_MAP = {
     "sec:methods": "3", "sec:data": "4", "sec:setup": "5",
@@ -21,7 +21,8 @@ LABEL_MAP = {
     "fig:engines": "1", "fig:arch": "2", "fig:flow": "3", "fig:fptree": "4",
     "fig:family": "5",
     "fig:runtime": "6", "fig:memory": "7", "fig:scatter": "8",
-    "fig:throughput": "9", "fig:itemsets": "10", "fig:outcomes": "11",
+    "fig:throughput": "9", "fig:itemsets": "10", "fig:outcomes": "11", "fig:ablation": "12",
+    "sec:ablation": "6.4",
 }
 
 MATH_MAP = [
@@ -150,7 +151,7 @@ def parse_table(env):
 
 
 def main():
-    full = strip_comments(open(SRC).read())
+    full = strip_comments(open(SRC, encoding='utf-8').read())
     # Title and authors live in the preamble, before \begin{document}.
     t = cmd_arg(full, "title", 0)
     title = inline(t[0]) if t else "Paper draft"
@@ -346,7 +347,7 @@ journal layout). The compiled PDF remains the canonical version.</div>
 {''.join(out)}
 </body></html>
 """
-    open(DST, "w").write(html)
+    open(DST, "w", encoding="utf-8").write(html)
     print(f"wrote {DST} ({len(html)} chars)")
 
 

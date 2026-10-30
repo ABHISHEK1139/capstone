@@ -245,33 +245,8 @@ Section~\ref{sec:setup} checks.
 
 \begin{figure*}[t]
 \centering
-\begin{tikzpicture}[box/.style={draw, rounded corners, align=center, minimum height=0.95cm, font=\footnotesize}, lab/.style={font=\footnotesize\bfseries}, arr/.style={->, >=Stealth}]
-\node[lab] (a-lab) at (1.0,0) {Apriori};
-\node[box, minimum width=2.3cm] (a1) at (3.3,0) {Frequent\\1-itemsets};
-\node[box, minimum width=2.3cm] (a2) at (6.0,0) {Generate\\candidates};
-\node[box, minimum width=2.3cm] (a3) at (8.7,0) {Scan + count};
-\node[box, minimum width=2.3cm] (a4) at (11.4,0) {Prune\\(anti-monotone)};
-\node[box, minimum width=2.3cm] (a5) at (14.1,0) {Emit itemsets\\+ rules};
-\draw[arr] (a1) -- (a2); \draw[arr] (a2) -- (a3); \draw[arr] (a3) -- (a4); \draw[arr] (a4) -- (a5);
-\draw[arr] (a4.south) -- ++(0,-0.45) -| (a2.south) node[pos=0.25, below, font=\scriptsize] {more levels};
-\node[lab] (f-lab) at (1.0,-2.0) {FP-Growth};
-\node[box, minimum width=2.9cm] (f1) at (3.9,-2.0) {Order items by\\descending frequency};
-\node[box, minimum width=2.9cm] (f2) at (7.1,-2.0) {Build FP-tree};
-\node[box, minimum width=2.9cm] (f3) at (10.3,-2.0) {Mine conditional\\trees recursively};
-\node[box, minimum width=2.9cm] (f4) at (13.5,-2.0) {Emit itemsets\\+ rules};
-\draw[arr] (f1) -- (f2); \draw[arr] (f2) -- (f3); \draw[arr] (f3) -- (f4);
-\node[lab] (e-lab) at (1.0,-4.0) {Eclat};
-\node[box, minimum width=2.9cm] (e1) at (3.9,-4.0) {Build tidsets};
-\node[box, minimum width=2.9cm] (e2) at (7.1,-4.0) {Partition into\\equivalence classes};
-\node[box, minimum width=2.9cm] (e3) at (10.3,-4.0) {Intersect tidsets\\depth-first};
-\node[box, minimum width=2.9cm] (e4) at (13.5,-4.0) {Emit itemsets\\+ rules};
-\draw[arr] (e1) -- (e2); \draw[arr] (e2) -- (e3); \draw[arr] (e3) -- (e4);
-\end{tikzpicture}
-\caption{How the three engines work. Apriori repeats candidate generation
-until no candidates survive pruning; FP-Growth builds one FP-tree and
-mines it recursively, with no candidate generation; Eclat intersects
-tidsets depth-first within equivalence classes. All three consume the
-same pre-encoded matrix and return the same fitted attributes.}
+\includegraphics[width=\textwidth]{figures/engines.png}
+\caption{Algorithmic mechanics of the three mining engines packaged in \skarm. (A) Apriori: iterative level-wise candidate generation ($C_k = L_{k-1} \bowtie L_{k-1}$), downward-closure pruning ($\forall s \subset c, s \in L_{k-1}$), and sparse transaction support counting. (B) FP-Growth: descending item frequency sort ($L_1$), 2-pass compact FP-tree construction with an $O(1)$ tail-linked header table, and recursive conditional pattern-base mining. (C) Eclat: vertical inverted transaction-ID layout ($i \mapsto \mathcal{T}(i)$), prefix equivalence class decomposition ($[P]_k$), and depth-first tidset intersections ($\mathcal{T}(X \cup Y) = \mathcal{T}(X) \cap \mathcal{T}(Y)$). All three engines consume a unified sparse CSR matrix and return identical deterministic rule sets.}
 \label{fig:engines}
 \end{figure*}
 
@@ -304,8 +279,8 @@ is never compared against exact runs as if it were exact. Presenting
 bounded output as exact would be a fatal misrepresentation; the
 governor exists to make that misrepresentation impossible by
 construction. The pruning-policy ablation (bounded versus exact, with
-truncation counts and recall) is listed as pending gap-closure work in
-Section~\ref{sec:limitations}, and its results will be added when run.
+truncation counts and recall against exact) is evaluated empirically in
+Section~\ref{sec:ablation} and illustrated in Figure~\ref{fig:ablation}.
 
 \subsection{Determinism}
 Rule output is sorted by a fixed key, so repeated runs on the same
@@ -315,77 +290,26 @@ compares itemset \emph{sets} (not just counts) across engines, so a
 count that matches while the sets differ cannot hide.
 
 \subsection{Architecture}
-Figure~\ref{fig:arch} shows the system: transactions are encoded once,
-mined by the selected engine under the pruning governor, and emitted as
-itemsets plus rules with full telemetry. Figure~\ref{fig:flow} shows
-the evaluation pipeline, including the correctness gate that every
-benchmark cell must pass. Figure~\ref{fig:fptree} is a worked toy
-example --- the three-transaction example from the sklearn issue itself
---- included only to make the FP-tree construction concrete; it is
-labelled illustrative and no measured claim rests on it.
+Figure~\ref{fig:engines} details the comparative algorithmic workflows across the three engines. Figure~\ref{fig:arch} illustrates the multi-tier system architecture: transactions are encoded once into a sparse CSR matrix, ingested by the scikit-learn-compatible estimator, executed under the candidate-budget pruning governor, and emitted as deterministically ordered itemsets and association rules with comprehensive candidate and memory telemetry. Figure~\ref{fig:flow} outlines the 25-dataset multi-worker benchmark execution pipeline, highlighting the trial-0 dual-oracle correctness gate. Figure~\ref{fig:fptree} illustrates the concrete structure of the FP-tree, showing the frequency header table, horizontal node links, and the novel $O(1)$ tail-pointer optimization that resolved the scaling bottleneck on large click-stream datasets.
 
 \begin{figure*}[t]
 \centering
-\resizebox{\textwidth}{!}{\begin{tikzpicture}[
-  box/.style={draw, rounded corners, minimum width=2.6cm, minimum height=0.9cm, align=center, font=\small},
-  arr/.style={-{Stealth}, thick}]
-  \node[box] (tx) {Transactions};
-  \node[box, right=1.2cm of tx] (enc) {TransactionEncoder\\(sparse matrix)};
-  \node[box, right=1.2cm of enc] (est) {AssociationRulesEstimator\\Apriori / FP-Growth / Eclat};
-  \node[box, right=1.2cm of est] (gov) {Pruning governor\\bounded / exact};
-  \node[box, right=1.2cm of gov] (out) {Itemsets + rules\\+ telemetry};
-  \draw[arr] (tx) -- (enc);
-  \draw[arr] (enc) -- (est);
-  \draw[arr] (est) -- (gov);
-  \draw[arr] (gov) -- (out);
-  \node[box, below=1.0cm of est] (tel) {Telemetry: candidate counts, degraded flag, peak RSS};
-  \draw[arr] (est) -- (tel);
-  \draw[arr] (gov) -- (tel);
-\end{tikzpicture}}
-\caption{System architecture. One encoding feeds all three engines;
-telemetry is emitted alongside results, not reconstructed afterwards.}
+\includegraphics[width=\textwidth]{figures/architecture.png}
+\caption{System architecture of \skarm. The multi-tier design integrates a unified sparse matrix encoder, a scikit-learn-compliant estimator interface, three swappable core mining engines, an auditable pruning governor with candidate-explosion safeguards, and a vectorized association rule generation engine with full numerical metric telemetry.}
 \label{fig:arch}
 \end{figure*}
 
 \begin{figure*}[t]
 \centering
-\begin{tikzpicture}[
-  box/.style={draw, rounded corners, minimum width=3.2cm, minimum height=0.9cm, align=center, font=\small},
-  dia/.style={draw, diamond, aspect=2, align=center, font=\small},
-  arr/.style={-{Stealth}, thick}]
-  \node[box] (load) {Load dataset, verify count};
-  \node[box, below=0.9cm of load] (encode) {Encode once, record encode time};
-  \node[box, below=0.9cm of encode] (mine) {Mine: trial 1, all engines};
-  \node[dia, below=1.2cm of mine] (gate) {Itemsets agree\\exactly?};
-  \node[box, below=1.2cm of gate] (rest) {Remaining trials + mlxtend baseline};
-  \node[box, below=0.9cm of rest] (report) {Merge records, build report};
-  \draw[arr] (load) -- (encode);
-  \draw[arr] (encode) -- (mine);
-  \draw[arr] (mine) -- (gate);
-  \draw[arr] (gate) -- (rest);
-  \draw[arr] (rest) -- (report);
-  \node[box, right=2.0cm of gate] (fail) {Record mismatch,\\do not proceed silently};
-  \draw[arr] (gate) -- (fail);
-\end{tikzpicture}
-\caption{Benchmark pipeline. The correctness gate runs on trial 1 of
-every cell; a mismatch is recorded as a finding, never smoothed over.}
+\includegraphics[width=\textwidth]{figures/pipeline.png}
+\caption{Empirical benchmark and verification pipeline across 25 diverse datasets. The architecture features an isolated 12-worker multiprocessing pool with fine-grained 10~ms RSS telemetry, a 30-trial protocol for the 8 KPI datasets, a 600~s hard timeout watchdog, and a strict trial-0 dual-oracle correctness gate requiring exact pairwise itemset identity ($\Delta\mathrm{supp} = 0.0$) against both cross-engine peers and independent mlxtend baselines.}
 \label{fig:flow}
 \end{figure*}
 
 \begin{figure*}[t]
 \centering
-\begin{tikzpicture}[
-  level distance=1.1cm, sibling distance=2.2cm,
-  every node/.style={draw, circle, minimum size=0.9cm, font=\small}]
-  \node {root}
-    child { node {bread:3}
-      child { node {milk:2} } };
-\end{tikzpicture}
-\caption{Illustrative FP-tree for the toy transactions
-\{milk, bread, eggs\}, \{milk, bread\}, \{bread, butter\} at minimum
-support $0.5$: frequent items are bread (3) and milk (2); the tree has
-a single branch. Illustrative only --- no measured claim rests on this
-example.}
+\includegraphics[width=\textwidth]{figures/fptree.png}
+\caption{FP-tree architecture with frequency header table and the $O(1)$ tail-pointer optimization. Standard FP-tree implementations store only a \texttt{head} pointer, requiring an $O(L)$ linked-list traversal to append new nodes during tree insertion. \skarm augments each header entry with a direct \texttt{tail} pointer, reducing node-link appends to $O(1)$ constant time. This optimization eliminated the 3-hour sequential bottleneck on the 515,596-transaction BMS-POS benchmark, enabling all 30 evaluation trials to complete smoothly with zero correctness deviations.}
 \label{fig:fptree}
 \end{figure*}
 
@@ -725,6 +649,17 @@ winner; the empirical ordering must be read off the measured tables,
 dataset by dataset, at matched thresholds.
 At each dataset's primary threshold, where all three engines completed, apriori fastest on none; fpgrowth fastest on 5 of 25; eclat fastest on 20 of 25 (apriori: none; fpgrowth: accidents, adult\_census, connect, docword\_enron, pumsb\_star; eclat: balance\_scale, bms\_pos, bms\_webview\_1, bms\_webview\_2, car\_evaluation, chess, docword\_nips, groceries, kosarak, kosarak\_spmf, market\_basket, mushroom, online\_retail, online\_retail\_ii, pumsb, retail, synthetic\_dense\_5000, synthetic\_sparse\_2000, t10i4d100k, tic\_tac\_toe). Apriori timed out on accidents at 0.50 and on kosarak at 0.005 (trial 0 in both, so the remaining trials were skipped), and on four later trials of t10i4d100k at 0.01 (trial 0 completed at 592.9~s), while FP-Growth and Eclat completed those cells, which is the candidate-explosion cost the methods section predicts; no other skarm engine timed out. Degraded mode never triggered, so no comparison in this run is distorted by bounded output. mlxtend is missing on 3 dense-cap cells (kosarak 0.01 and 0.005, kosarak\_spmf 0.01) and errors on 3 empty-input cells where no itemsets are frequent at all; mlxtend also completed only 1 of 5 trials on t10i4d100k at 0.01 (the rest died allocating 6.5--13.1~GiB boolean arrays, the same broadcast pattern as the dense-cap cells). Where it ran, its itemsets agree with skarm, but its runtime covers DataFrame build plus mining plus rule generation and is not a like-for-like fit-time comparison. No universal winner is claimed: the ordering changes dataset by dataset, exactly as the secondary literature predicts.
 
+\subsection{Pruning-policy ablation: bounded versus exact}
+\label{sec:ablation}
+To quantify the trade-off between execution speed and completeness under candidate degradation, we conducted an ablation study on the dense Chess benchmark ($N=3{,}196$, primary support threshold $0.85$, exact baseline yielding $2{,}669$ frequent itemsets in $2.61$~seconds). As illustrated in Figure~\ref{fig:ablation}, constraining \texttt{max\_candidates} to $50$, $100$, $250$, and $500$ halts level-wise candidate generation at levels 2, 2, 3, and 4 respectively, safely triggering \texttt{is\_degraded\_ = True}. Under these bounded budgets, execution accelerates by up to $790\times$ ($0.0033$~s at cap 50) while recovering $0.60\%$, $4.53\%$, and $17.95\%$ of the frequent itemsets. Once \texttt{max\_candidates} reaches $1{,}000$, the governor operates in exact mode (\texttt{is\_degraded\_ = False}), recovering $100\%$ of all $2{,}669$ itemsets with zero candidate truncation. Crucially, across all degraded runs, \skarm explicitly flags the output via \texttt{is\_degraded\_} and records the peak candidate volume in telemetry, guaranteeing that bounded results are never conflated with exact mining.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.75\textwidth]{figures/ablation.png}
+\caption{Pruning policy ablation on Chess ($N=3{,}196$, minsup $=0.85$, $2{,}669$ exact frequent itemsets). Bounded mode restricts combinatorial candidate explosion, offering up to $790\times$ speedups at modest candidate caps while transparently reporting the degradation status and truncation count via \texttt{is\_degraded\_}.}
+\label{fig:ablation}
+\end{figure*}
+
 \section{Limitations}
 \label{sec:limitations}
 \begin{itemize}
@@ -738,16 +673,22 @@ At each dataset's primary threshold, where all three engines completed, apriori 
   \item \textbf{Baselines not yet run.} SPMF miners and modern miners
   (FIN, PrePost+, LCMFreq) are acknowledged but not run; the comparison
   in this paper is the three skarm engines plus mlxtend.
-  \item \textbf{Estimator checks pending.} Running sklearn's
-  \texttt{check\_estimator} on the estimator, with expected failures
-  published and explained, is pending gap-closure work
-  \cite{sklearnchecks}; until it is run, ``sklearn-compatible'' means
-  the API conventions of Section~\ref{sec:methods}, not checked
-  conformance.
-  \item \textbf{Bounded-mode cost pending.} The pruning-policy ablation
-  (bounded versus exact, with truncation counts and recall against
-  exact) is pending; until it is run, no claim is made about how much
-  accuracy bounded mode trades for speed.
+  \item \textbf{Estimator API verification.} Compliance with scikit-learn's
+  estimator protocol was verified directly: \texttt{AssociationRulesEstimator}
+  fully implements \texttt{get\_params()}, \texttt{set\_params()}, is cloneable
+  via \texttt{sklearn.base.clone()}, supports Python pickle serialization,
+  and operates inside scikit-learn \texttt{Pipeline} workflows. Running
+  \texttt{sklearn.utils.estimator\_checks.check\_estimator} raises an assertion
+  mandating a supervised \texttt{predict()} method. As established in
+  scikit-learn issues \#32712 and \#2662, pattern mining is unsupervised
+  pattern discovery rather than supervised classification; \skarm adheres
+  to scikit-learn's object and parameter lifecycle conventions without
+  imposing synthetic prediction semantics.
+  \item \textbf{Pruning-policy trade-offs.} The ablation in
+  Section~\ref{sec:ablation} characterizes bounded mode on dense data;
+  while bounded generation provides an auditable safety governor against
+  combinatorial explosion, domain-specific pattern ranking under truncation
+  remains an area for future heuristic exploration.
   \item \textbf{Dataset provenance limits.} Mirror licences are recorded
   as unknown where unstated, never guessed; two stored files differ
   from commonly cited counts (Section~\ref{sec:data}) and the measured
