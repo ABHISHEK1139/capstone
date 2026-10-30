@@ -15,27 +15,81 @@ assistant's. Nothing outward-facing without the user's per-item
 go-ahead (the push of this file plus the paper draft was authorized by
 the user on 30 Oct 2026).
 
-## 1. Status dashboard (as of 30 Oct 2026, ~01:20 IST)
+## 1. Status dashboard (as of 30 Oct 2026, ~09:05 IST)
 
 | # | Item | Status | Evidence |
 |---|---|---|---|
 | 1 | 25 datasets, measured inventory | DONE | `DATASET_INVENTORY.md`; all stats parsed from files |
 | 2 | Bug-fix pass, 12 files | DONE, PUSHED | commits `ff03b451`, `dd22782f`, `904b19b3` |
 | 3 | Tests + acceptance harness | DONE | 25/25 tests; NT-1–NT-6 genuinely asserted |
-| 4 | Dataset upload to `data/` | 24/25 files DONE | 19 files in 6 batches: `956ebb4`, `7c98ab1`, `1e2467b`, `69f9086`, `f4d8534`, `f0d6666` |
-| 5 | `accidents.dat`, `kosarak.dat` in git | OPEN | over 25 MB browser limit; PC git-CLI route (both < 50 MB, no LFS needed) |
-| 6 | Benchmark campaign, VM agent | RUNNING, quiet ~1 h at last check | no `campaign_results.json` in mirror yet; agent still in probe/threshold phase |
-| 7 | Benchmark campaign, PC (Windows, 4 workers) | RUNNING, 7/25 checkpointed | adult_census, balance_scale, bms_webview_1, bms_webview_2, car_evaluation, chess, docword_enron |
+| 4 | Dataset upload to `data/` | DONE, 26 files | all 25 dataset files + `generate_synthetic.py`; verified by repo listing 30 Oct |
+| 5 | `accidents.dat`, `kosarak.dat` in git | DONE | landed with the PC push (commit `73d44df`); no longer missing |
+| 6 | Benchmark campaign, VM agent | RUNNING (backup only) | 18/25 datasets, 1,280 records at last check; KNOWN correctness gap (only 12 pairs compared); do NOT merge its records into the paper |
+| 7 | Benchmark campaign, PC (Windows, 12 workers) | DONE 23/25, PUSHED | commit `73d44df`: `benchmarks/campaign_results.json` (1,515 records) + `benchmarks/cells/` (23 files); missing: bms_pos, t10i4d100k |
 | 8 | Threshold ladder (25 datasets) | DONE, PUSHED | `benchmarks/thresholds.json`, commit `6a76b6f` |
 | 9 | Parallel PC script + sequential script fix | DONE, PUSHED | `benchmarks/run_pc_campaign.py`, commit `6a76b6f` |
-| 10 | Paper draft, non-benchmark parts | DONE | `paper/paper-draft.tex`; results left as visible placeholders P1–P9 |
-| 11 | Paper preview (readable HTML) | DONE | `paper/paper-preview.html` (regenerate via `paper/build_preview.py`) |
+| 10 | Paper, results-filled (23/25 datasets) | DONE | `paper/paper.tex` (all P1–P9 filled from cell files); `paper/paper-draft.tex` kept as the pre-results draft |
+| 11 | Paper preview (readable HTML) | DONE | `paper/paper-preview.html` (regenerate via `paper/build_preview.py ../files/paper.tex`); embeds 3 measured figures |
 | 12 | Gap closure: `check_estimator` | OPEN | must run; publish expected failures with reasons |
 | 13 | Gap closure: pruning ablation (bounded vs exact) | OPEN | truncation counts + recall vs exact required |
 | 14 | Gap closure: SPMF / modern baselines | OPEN | FIN, PrePost+, LCMFreq acknowledged, not run |
-| 15 | Figures from measured data | OPEN | only after campaign COMPLETE |
-| 16 | Paper PDF (compiled) | OPEN | no LaTeX engine on the VM; compile after placeholders filled |
+| 15 | Figures from measured data | DONE for 23/25 | `paper/figures/` runtime, memory, itemsets-vs-rules charts; regenerate after the last 2 datasets |
+| 16 | Paper PDF (compiled) | OPEN | no LaTeX engine on the VM; compile on PC after the last 2 datasets land |
 | 17 | Goal | ACTIVE | do NOT close until submission-ready |
+
+## 1A. Update — 30 Oct 2026, 09:05 IST (PC results verified, paper built)
+
+- PC campaign (Windows 11, AMD64, 16 CPUs, 12 workers, Python 3.12.10,
+  sklearn 1.9.1, mlxtend 0.25.0) finished 23/25 datasets and pushed
+  commit `73d44df` (08:37 IST): 1,515 records = 1,490 ok, 2 timeouts,
+  8 skipped, 15 errors. Correctness: 39 cells, 145 pairs, 0 mismatches.
+  30-trial protocol respected for the subset datasets present.
+  Missing: bms_pos, t10i4d100k (no cell files; JSON says
+  `incomplete: true`).
+- SCHEMA WARNING (read before reusing the merged JSON): the merged
+  `benchmarks/campaign_results.json` records contain ONLY seconds,
+  throughput, status, error, n_transactions. Peak memory, itemset
+  counts, rule counts, and the degraded flag live ONLY in the
+  per-dataset checkpoint files `benchmarks/cells/*.json` (fields
+  `peak_mem_mb`, `n_itemsets`, `n_rules`, `is_degraded`,
+  `peak_candidates`, `encode_times`, `complete`). The paper's tables
+  and figures were built from the cell files, not the merged JSON.
+  The merged JSON is still the source for correctness pairs, skips,
+  and metadata.
+- Memory method correction: the campaign metadata string names a
+  /proc-based sampler, but the Windows run used psutil (see
+  `run_pc_campaign.py` `rss_mb()` fallback). The paper states this
+  plainly; do not quote the /proc method for the PC run.
+- Headline findings (all from the cell files): at each dataset's
+  primary threshold (most completed skarm trials, ties to the lower
+  threshold), Eclat fastest on 18 of 23, FP-Growth on 5, Apriori on
+  none. Apriori timed out on accidents@0.50 and kosarak@0.005; no
+  other skarm engine timed out. Degraded mode never triggered.
+  mlxtend absent on 6 cells: 3 dense-cap skips (kosarak 0.01/0.005,
+  kosarak_spmf 0.01) and 3 empty-input errors (docword_enron 0.5/0.7,
+  pumsb_star 0.85 — skarm engines also found 0 itemsets there, so
+  there is no discrepancy). `CAMPAIGN_REPORT.md` in the repo cannot
+  be read through the API (pushed as a symlink); re-push it as a
+  regular file. The JSON + cell files are the source of truth.
+- `paper/figures/_test_scatter.png` is a valid PNG uploaded 30 Oct
+  as a route test for binary pushes (base64 content round-trips
+  correctly through push_files). Delete it when the real figures
+  land; it is not part of the paper.
+- Paper: `paper/paper.tex` fills all placeholders P1–P9 from the
+  cell files (timing longtable, runtime + memory + scatter figures,
+  correctness table, skips table, discussion, conclusions, machine
+  spec, data/ confirmation). It states 23/25 coverage wherever a
+  number depends on it and never estimates the 2 pending datasets.
+  VM records are NOT merged into it (different machine, different
+  ladder).
+- What is really left: (1) PC re-run for bms_pos + t10i4d100k
+  (`--datasets bms_pos,t10i4d100k`, resume-safe) and push; (2)
+  regenerate figures + tables for 25/25; (3) compile the PDF on PC
+  and check page/table overflow; (4) gap closure: check_estimator,
+  pruning ablation, SPMF/modern baselines; (5) team confirmations:
+  author order, 2 [VERIFY] references, scikit-mine/mlxtend re-check;
+  (6) stop the VM agent once PC 25/25 is confirmed; (7) venue choice
+  + submission (team decision).
 
 ## 2. Findings (what was wrong, missed, fixed)
 
