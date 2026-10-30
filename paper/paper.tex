@@ -1,28 +1,32 @@
 % =====================================================================
-% skarm — journal-quality paper draft (results for 23 of 25 datasets, 2026-10-30)
+% skarm — journal-quality paper (two-column, 10pt; results for all
+% 25 datasets from the completed PC campaign, 2026-10-30)
 % ---------------------------------------------------------------------
-% STATUS: All sections that do not depend on the benchmark campaign are
-% written. Every place that needs measured campaign numbers is left
-% visibly EMPTY as a [PLACEHOLDER] box — nothing there is invented.
-% Fill placeholders ONLY from benchmarks/campaign_results.json after
-% the PC campaign prints CAMPAIGN COMPLETE. Never fill by hand, never
-% copy numbers from the old draft, never mix VM and PC trial records.
+% STATUS: Final results version. Every measured number is filled by
+% build_paper.py from benchmarks/cells/*.json plus the merged
+% campaign_results.json — nothing hand-typed, nothing invented, no VM
+% trial records merged in (different machine, different ladder).
 %
-% PLACEHOLDERS TO FILL (in order):
+% PLACEHOLDERS (filled by build_paper.py, in order):
 %  P1  Abstract headline finding (one sentence, from the merged report)
-%  P2  Section 6.2 per-cell timing table (mean/p50/p95, OK trials only)
-%  P3  Section 6.2 throughput chart + memory chart (from the JSON)
+%  P2  Section 6.2 condensed timing table (primary threshold only;
+%      full cell table is Appendix B, P11)
+%  P3  Section 6.2 result charts (runtime, memory, scatter, throughput,
+%      itemsets, outcomes — all from the cell files)
 %  P4  Section 6.2 correctness verdicts table (trial-0 agreement)
 %  P5  Section 6.2 skips/timeouts table (with reasons, never hidden)
 %  P6  Section 6.3 empirical trade-off discussion (from P2-P5)
 %  P7  Section 8 headline conclusion sentence (from P2-P5)
 %  P8  Appendix A: results commit SHA + machine spec (from JSON metadata)
-%  P9  Confirm all 25 dataset files are present in repo data/ at submission
-% Author order per user 30 Oct 2026: supervisor first, then students.
+%  P9  Confirm all 25 dataset files are present in repo data/
+%  P10 Section 4 dataset-family pie (from Table 2's Type column)
+%  P11 Appendix B: full per-cell timing table (all thresholds, engines)
+% Author order per user 30 Oct 2026: Ramya, Anvitha, Abhishek Kumar,
+% Giridhar, Rajeev (supervisor first; Abhishek third overall).
 % TODO (before submission): re-check scikit-mine activity, mlxtend
 %   version, and the two references marked [VERIFY] in the bibliography.
 % =====================================================================
-\documentclass[11pt]{article}
+\documentclass[twocolumn,10pt]{article}
 \usepackage[a4paper,margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
@@ -32,7 +36,6 @@
 \usetikzlibrary{arrows.meta,positioning,shapes.geometric}
 \usepackage{xcolor}
 \usepackage[hidelinks]{hyperref}
-\usepackage{lscape}
 \setlength{\emergencystretch}{2em}
 
 \newcommand{\placeholder}[1]{%
@@ -56,7 +59,7 @@ Mining with Auditable Pruning}
 \date{}
 
 \begin{document}
-\maketitle
+\twocolumn[\maketitle
 
 \begin{abstract}
 Frequent-itemset mining and association-rule mining are standard tools
@@ -75,8 +78,9 @@ evaluation protocol compares all three engines plus an mlxtend baseline
 at matched support thresholds on 25 datasets, with a 30-trial
 statistical protocol on an 8-dataset subset and exact itemset-agreement
 checks on every cell.
-Across 23 datasets (1,515 trial records on one Windows PC), all 145 compared engine pairs agree exactly on frequent itemsets; at each dataset's primary threshold, apriori fastest on none; fpgrowth fastest on 5 of 23; eclat fastest on 18 of 23, 2 cells timed out at the 600~s cap, and mlxtend could not run 6 cells for stated reasons (3 dense-cap skips, 3 empty-input errors). Two datasets (bms\_pos, t10i4d100k) are still pending.
+Across 25 datasets (1650 trial records on one Windows PC), all 157 compared engine pairs agree exactly on frequent itemsets; at each dataset's primary threshold, apriori fastest on none; fpgrowth fastest on 5 of 25; eclat fastest on 20 of 25, and mlxtend could not run 6 cells for stated reasons (3 dense-cap skips, 3 empty-input errors).
 \end{abstract}
+]
 
 \section{Introduction}
 
@@ -202,7 +206,7 @@ confidence threshold. Table~\ref{tab:metrics} defines the metrics
 \skarm reports; the edge cases are part of the definition, not footnotes,
 because they change rule counts.
 
-\begin{table}[h]
+\begin{table*}[t]
 \centering
 \caption{Rule metrics reported by \skarm, with edge-case conventions
 (definitions per \cite{hahsler}).}
@@ -219,7 +223,7 @@ Conviction & $(1 - \mathrm{supp}(Y)) / (1 - \mathrm{confidence})$ & $\infty$ at 
 Zhang's metric & leverage scaled to $[-1, 1]$ & $0$ when its denominator is $0$ \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
 \subsection{The three engines}
 \textbf{Apriori} generates candidates level by level and counts each
@@ -227,6 +231,10 @@ level with a database scan, pruning by the anti-monotone property.
 \textbf{FP-Growth} builds an FP-tree ordered by descending item
 frequency, then mines conditional trees recursively; it performs no
 candidate generation but its memory is the tree plus conditional trees.
+The header table keeps a tail pointer per item, so node-link appends
+are $O(1)$ rather than walking each chain (added with the final two
+datasets; it changes no results, as Table~\ref{tab:correctness}
+shows).
 \textbf{Eclat} intersects tidsets depth-first within equivalence
 classes, a decomposition originating in \cite{zaki1997} and developed
 in \cite{zaki2000}; its memory is the tidsets (or diffsets on dense data). All
@@ -235,7 +243,7 @@ same fitted attributes, so a difference in output is a bug, not an API
 difference --- which is exactly what the correctness gate in
 Section~\ref{sec:setup} checks.
 
-\begin{figure}[h]
+\begin{figure*}[t]
 \centering
 \begin{tikzpicture}[box/.style={draw, rounded corners, align=center, minimum height=0.95cm, font=\footnotesize}, lab/.style={font=\footnotesize\bfseries}, arr/.style={->, >=Stealth}]
 \node[lab] (a-lab) at (1.0,0) {Apriori};
@@ -265,7 +273,7 @@ mines it recursively, with no candidate generation; Eclat intersects
 tidsets depth-first within equivalence classes. All three consume the
 same pre-encoded matrix and return the same fitted attributes.}
 \label{fig:engines}
-\end{figure}
+\end{figure*}
 
 \subsection{Estimator API}
 \texttt{AssociationRulesEstimator} exposes
@@ -316,7 +324,7 @@ example --- the three-transaction example from the sklearn issue itself
 --- included only to make the FP-tree construction concrete; it is
 labelled illustrative and no measured claim rests on it.
 
-\begin{figure}[h]
+\begin{figure*}[t]
 \centering
 \resizebox{\textwidth}{!}{\begin{tikzpicture}[
   box/.style={draw, rounded corners, minimum width=2.6cm, minimum height=0.9cm, align=center, font=\small},
@@ -337,9 +345,9 @@ labelled illustrative and no measured claim rests on it.
 \caption{System architecture. One encoding feeds all three engines;
 telemetry is emitted alongside results, not reconstructed afterwards.}
 \label{fig:arch}
-\end{figure}
+\end{figure*}
 
-\begin{figure}[h]
+\begin{figure*}[t]
 \centering
 \begin{tikzpicture}[
   box/.style={draw, rounded corners, minimum width=3.2cm, minimum height=0.9cm, align=center, font=\small},
@@ -362,9 +370,9 @@ telemetry is emitted alongside results, not reconstructed afterwards.}
 \caption{Benchmark pipeline. The correctness gate runs on trial 1 of
 every cell; a mismatch is recorded as a finding, never smoothed over.}
 \label{fig:flow}
-\end{figure}
+\end{figure*}
 
-\begin{figure}[h]
+\begin{figure*}[t]
 \centering
 \begin{tikzpicture}[
   level distance=1.1cm, sibling distance=2.2cm,
@@ -379,7 +387,7 @@ support $0.5$: frequent items are bread (3) and milk (2); the tree has
 a single branch. Illustrative only --- no measured claim rests on this
 example.}
 \label{fig:fptree}
-\end{figure}
+\end{figure*}
 
 \section{Datasets}
 \label{sec:data}
@@ -403,7 +411,7 @@ manifest. Access date for all 25 datasets is 2026-10-29. The complete
 manifest (source URL, size, licence, owner, exclusions, transformations
 per file) is in \texttt{DATASET\_INVENTORY.md} in the repository.
 
-\begin{table}[h]
+\begin{table*}[t]
 \centering
 \footnotesize
 \caption{Evaluation datasets. $N$ = transactions, $M$ = unique items,
@@ -441,16 +449,16 @@ Synthetic dense & 5,000 & 50 & 30.56 & 61.12 & synthetic \\
 Online Retail II & 22,103 & 4,317 & 22.62 & 0.52 & retail \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
 Figure~\ref{fig:family} summarises the same collection by family. Each dataset is counted once, under its most distinctive type from Table~2: accidents under traffic rather than dense, pumsb under census rather than dense, and the retail sets under retail rather than sparse.
 
-\begin{figure}[h]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=0.7\textwidth]{figures/family.png}
+\includegraphics[width=0.75\textwidth]{figures/family.png}
 \caption{Datasets by family (25 total). Retail: groceries, retail, market basket, online retail I/II. Dense: chess, mushroom, connect. Census: pumsb, pumsb\_star, adult census. Click-stream: kosarak, kosarak (SPMF), BMS-POS, BMS-WebView-1/2. Document-word: NIPS papers, Enron emails. Categorical: tic-tac-toe, car evaluation, balance scale. Synthetic: T10I4D100K, synthetic sparse, synthetic dense. Traffic: accidents.}
 \label{fig:family}
-\end{figure}
+\end{figure*}
 
 \section{Experimental setup}
 \label{sec:setup}
@@ -483,9 +491,9 @@ before tuning; KPI-1, KPI-3, KPI-5, and KPI-6 follow the portal
 contract as recorded in the acceptance report. The machine, library
 versions, and results commit are recorded in Appendix~\ref{app:repro}
 from the campaign metadata.
-Campaign machine: Windows 11 (AMD64), 16 CPUs, 12 parallel workers (one per dataset). Python 3.12.10, scikit-learn 1.9.1, mlxtend 0.25.0, NumPy 2.5.4, pandas 3.1.0, SciPy 1.18.1. Per-trial cap 600~s; rules at confidence $\geq 0.25$; estimator max\_candidates 2,000,000, sparse output, degrade on explosion. Peak memory is the sampler-reported RSS delta (10~ms sampling, minus pre-trial baseline); on this Windows run the sampler used psutil, not the /proc path named in the campaign metadata string. Results: commit \texttt{73d44df}, 1,515 records, 23 datasets.
+Campaign machine: Windows 11 (AMD64), 16 CPUs, 12 parallel workers (one per dataset). Python 3.12.10, scikit-learn 1.9.1, mlxtend 0.25.0, NumPy 2.5.4, pandas 3.1.0, SciPy 1.18.1. Per-trial cap 600~s; rules at confidence $\geq 0.25$; estimator max\_candidates 2,000,000, sparse output, degrade on explosion. Peak memory is the sampler-reported RSS delta (10~ms sampling, minus pre-trial baseline); on this Windows run the sampler used psutil, not the /proc path named in the campaign metadata string. Results: commit \texttt{79334222}, 1650 records, 25 datasets.
 
-\begin{table}[h]
+\begin{table*}[t]
 \centering
 \footnotesize
 \caption{Support thresholds per dataset (matched across engines),
@@ -523,7 +531,7 @@ Synthetic dense & 0.50, 0.30 & small, dense; two points \\
 Online Retail II & 0.02, 0.01 & same shape as Online Retail \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
 \section{Results and discussion}
 
@@ -546,13 +554,307 @@ sort) is recorded in the repository history (commits
 \texttt{ff03b451}, \texttt{dd22782f}, \texttt{904b19b3}).
 
 \subsection{Benchmark campaign results}
-Results cover 23 of the 25 datasets. The two remaining datasets, bms\_pos and t10i4d100k, have data files in the repository but no trial records yet; they will be added by a re-run, not by estimation. Timings are fit only (encoding excluded); memory is the sampler-reported peak RSS delta in MB. One row per dataset $\times$ threshold $\times$ engine; cells with no completed trial show their reason instead of numbers.
+Results cover all 25 datasets (1650 trial records on one Windows PC). Timings are fit only (encoding excluded). This table shows each dataset's primary threshold only (the threshold with the most completed skarm trials; ties broken toward the lower threshold); the full per-cell table, with p50/p95, memory, counts, and failure notes, is Appendix~\ref{app:timing}.
 
-\begin{landscape}
+\begin{table*}[t]
+\centering
 \footnotesize
+\caption{Mean fit time (seconds) per dataset at its primary threshold. Bold marks the fastest skarm engine per row. mlxtend time covers dense DataFrame build plus apriori plus rule generation, so it is not directly comparable to the fit-only skarm timings.}
+\label{tab:timing}
+\begin{tabular}{llllll}
+\toprule
+Dataset & Thr & Apriori & FP-Growth & Eclat & mlxtend \\
+\midrule
+accidents & 0.6 & 473.5 & \textbf{60.92} & 97.93 & 4.76 \\
+adult\_\allowbreak{}census & 0.05 & 76.62 & \textbf{19.04} & 20.95 & 19.14 \\
+balance\_\allowbreak{}scale & 0.2 & 0.033 & 0.032 & \textbf{0.009} & 0.006 \\
+bms\_\allowbreak{}pos & 0.02 & 227.2 & 94.08 & \textbf{12.53} & 27.43 \\
+bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.005 & 31.15 & 5.31 & \textbf{0.860} & 2.68 \\
+bms\_\allowbreak{}webview\_\allowbreak{}2 & 0.005 & 64.30 & 7.66 & \textbf{1.09} & 3.97 \\
+car\_\allowbreak{}evaluation & 0.2 & 0.087 & 0.112 & \textbf{0.031} & 0.011 \\
+chess & 0.85 & 5.76 & 3.49 & \textbf{3.48} & 3.50 \\
+connect & 0.95 & 87.87 & \textbf{10.05} & 14.22 & 3.44 \\
+docword\_\allowbreak{}enron & 0.5 & 14.75 & \textbf{0.446} & 8.37 & --- \\
+docword\_\allowbreak{}nips & 0.5 & 209.5 & 81.75 & \textbf{50.23} & 53.91 \\
+groceries & 0.01 & 2.18 & 0.871 & \textbf{0.166} & 0.128 \\
+kosarak & 0.01 & 250.8 & 198.9 & \textbf{21.29} & --- \\
+kosarak\_\allowbreak{}spmf & 0.01 & 50.47 & 23.02 & \textbf{4.24} & --- \\
+market\_\allowbreak{}basket & 0.02 & 0.688 & 0.449 & \textbf{0.089} & 0.036 \\
+mushroom & 0.4 & 1.78 & 0.849 & \textbf{0.718} & 0.298 \\
+online\_\allowbreak{}retail & 0.01 & 496.5 & 55.79 & \textbf{4.97} & 85.08 \\
+online\_\allowbreak{}retail\_\allowbreak{}ii & 0.01 & 406.1 & 40.37 & \textbf{3.90} & 42.83 \\
+pumsb & 0.9 & 332.8 & 21.34 & \textbf{19.88} & 3.90 \\
+pumsb\_\allowbreak{}star & 0.85 & 10.59 & \textbf{0.044} & 5.69 & --- \\
+retail & 0.02 & 8.44 & 7.28 & \textbf{2.58} & 31.90 \\
+synthetic\_\allowbreak{}dense\_\allowbreak{}5000 & 0.3 & 13.67 & 55.95 & \textbf{2.58} & 0.551 \\
+synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.02 & 0.441 & 0.325 & \textbf{0.085} & 0.086 \\
+t10i4d100k & 0.02 & 164.5 & 48.41 & \textbf{4.78} & 34.40 \\
+tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.3 & 0.069 & 0.102 & \textbf{0.024} & 0.012 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/runtime.png}
+\caption{Mean fit time per dataset at its primary threshold (the threshold with the most completed skarm trials; ties broken toward the lower threshold; threshold in parentheses). Log scale. Missing bars are cells with no completed trial. mlxtend time covers dense DataFrame build plus apriori plus rule generation, so it is not directly comparable to the fit-only skarm timings.}
+\label{fig:runtime}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/memory.png}
+\caption{Mean peak RSS delta per dataset at its primary threshold (same rule as Figure~\ref{fig:runtime}). Log scale. Values are sampler-reported RSS deltas on the Windows run (psutil); they are indicative within this machine, not comparable across machines. Missing bars are cells with no completed trial or a 0.0 report.}
+\label{fig:memory}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/scatter.png}
+\caption{Frequent itemsets versus association rules per cell (Apriori counts; all engines agree). Log scales. Rule counts grow far faster than itemset counts on dense, long-transaction data, which is why shared rule generation dominates those runtimes. Six cells with zero rules are omitted (log scale cannot show zero).}
+\label{fig:scatter}
+\end{figure*}
+
+Throughput, itemset scale, and trial outcomes complete the picture.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/throughput.png}
+\caption{Mean throughput (transactions per second) per dataset at its primary threshold (same rule as Figure~\ref{fig:runtime}). Log scale. Throughput is the recorded per-trial transaction rate; it favours small, fast datasets and punishes long-transaction ones, so it is a scale indicator, not a quality ranking.}
+\label{fig:throughput}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/itemsets.png}
+\caption{Frequent itemsets per dataset at its primary threshold (Apriori counts; all engines agree). Log scale. The collection spans from 1 itemset (tic-tac-toe at 0.50) to 31,582 (NIPS papers), which is why no single threshold or engine suits every dataset.}
+\label{fig:itemsets}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.75\textwidth]{figures/outcomes.png}
+\caption{Trial outcomes over all 1650 records. The large OK share is the campaign's completion rate; timeouts, skips, and errors are the cells Table~\ref{tab:skips} lists with reasons.}
+\label{fig:outcomes}
+\end{figure*}
+Across 42 cells, 157 engine pairs were compared and every one agrees exactly on itemsets and supports (maximum support difference 0.0). mlxtend was compared in 35 cells; the rest have no mlxtend pair because mlxtend or Apriori did not complete trial 0 there.
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{Correctness verdicts: trial-0 itemset agreement per cell.}
+\label{tab:correctness}
+\begin{tabular}{lllll}
+\toprule
+Cell & Pairs & Verdict & mlxtend & Note \\
+\midrule
+accidents@0.5 & 1 & all match & no &  \\
+accidents@0.6 & 4 & all match & yes &  \\
+adult\_census@0.05 & 4 & all match & yes &  \\
+adult\_census@0.1 & 4 & all match & yes &  \\
+balance\_scale@0.2 & 4 & all match & yes &  \\
+balance\_scale@0.3 & 4 & all match & yes &  \\
+bms\_pos@0.02 & 4 & all match & yes &  \\
+bms\_webview\_1@0.005 & 4 & all match & yes &  \\
+bms\_webview\_1@0.01 & 4 & all match & yes &  \\
+bms\_webview\_2@0.005 & 4 & all match & yes &  \\
+bms\_webview\_2@0.01 & 4 & all match & yes &  \\
+car\_evaluation@0.2 & 4 & all match & yes &  \\
+car\_evaluation@0.3 & 4 & all match & yes &  \\
+chess@0.85 & 4 & all match & yes &  \\
+connect@0.95 & 4 & all match & yes &  \\
+docword\_enron@0.5 & 3 & all match & no &  \\
+docword\_enron@0.7 & 3 & all match & no &  \\
+docword\_nips@0.5 & 4 & all match & yes &  \\
+groceries@0.01 & 4 & all match & yes &  \\
+groceries@0.02 & 4 & all match & yes &  \\
+kosarak@0.005 & 1 & all match & no &  \\
+kosarak@0.01 & 3 & all match & no &  \\
+kosarak\_spmf@0.01 & 3 & all match & no &  \\
+market\_basket@0.02 & 4 & all match & yes &  \\
+market\_basket@0.03 & 4 & all match & yes &  \\
+mushroom@0.4 & 4 & all match & yes &  \\
+online\_retail@0.01 & 4 & all match & yes &  \\
+online\_retail@0.02 & 4 & all match & yes &  \\
+online\_retail\_ii@0.01 & 4 & all match & yes &  \\
+online\_retail\_ii@0.02 & 4 & all match & yes &  \\
+pumsb@0.9 & 4 & all match & yes &  \\
+pumsb\_star@0.85 & 3 & all match & no &  \\
+retail@0.02 & 4 & all match & yes &  \\
+retail@0.03 & 4 & all match & yes &  \\
+synthetic\_dense\_5000@0.3 & 4 & all match & yes &  \\
+synthetic\_dense\_5000@0.5 & 4 & all match & yes &  \\
+synthetic\_sparse\_2000@0.02 & 4 & all match & yes &  \\
+synthetic\_sparse\_2000@0.05 & 4 & all match & yes &  \\
+t10i4d100k@0.01 & 4 & all match & yes &  \\
+t10i4d100k@0.02 & 4 & all match & yes &  \\
+tic\_tac\_toe@0.3 & 4 & all match & yes &  \\
+tic\_tac\_toe@0.5 & 4 & all match & yes &  \\
+\bottomrule
+\end{tabular}
+\end{table*}
+The campaign recorded 6 timeout trials and 8 skipped trials. The skipped trials are the remaining trials of the two trial-0 timeout cells (accidents at 0.50, kosarak at 0.005), not separate failures; the other four timeouts are later trials of t10i4d100k at 0.01, whose trial 0 completed at 592.9~s. No process was killed in this run. Every fully skipped or fully errored cell is listed here; partial cells appear in Appendix~\ref{app:timing} with their OK counts.
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{Skipped, timed-out, and errored cells with reasons.}
+\label{tab:skips}
+\begin{tabular}{llllp{5.5cm}}
+\toprule
+Dataset & Thr & Engine & Outcome & Reason \\
+\midrule
+accidents & 0.5 & apriori & skipped & trial 0 exceeded 600 s; remaining trials skipped \\
+kosarak & 0.01 & mlxtend & skipped & dense boolean DataFrame would need ~40.9 GB \\
+kosarak & 0.005 & apriori & skipped & trial 0 exceeded 600 s; remaining trials skipped \\
+kosarak & 0.005 & mlxtend & skipped & dense boolean DataFrame would need ~40.9 GB \\
+kosarak\_spmf & 0.01 & mlxtend & skipped & dense boolean DataFrame would need ~5.3 GB \\
+docword\_enron & 0.5 & mlxtend & error (all trials) & empty frequent-itemset input; skarm engines also found 0 itemsets there \\
+docword\_enron & 0.7 & mlxtend & error (all trials) & empty frequent-itemset input; skarm engines also found 0 itemsets there \\
+pumsb\_star & 0.85 & mlxtend & error (all trials) & empty frequent-itemset input; skarm engines also found 0 itemsets there \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Discussion of algorithmic trade-offs}
+At the level of mechanism, the trade-offs are as Section~\ref{sec:methods}
+states: Apriori pays in candidates and repeated scans, FP-Growth pays
+in tree memory, Eclat pays in tidset memory, and dense, long-transaction
+data punishes each differently. Because secondary sources disagree on
+dense-versus-sparse winners, this paper does not assert a universal
+winner; the empirical ordering must be read off the measured tables,
+dataset by dataset, at matched thresholds.
+At each dataset's primary threshold, where all three engines completed, apriori fastest on none; fpgrowth fastest on 5 of 25; eclat fastest on 20 of 25 (apriori: none; fpgrowth: accidents, adult\_census, connect, docword\_enron, pumsb\_star; eclat: balance\_scale, bms\_pos, bms\_webview\_1, bms\_webview\_2, car\_evaluation, chess, docword\_nips, groceries, kosarak, kosarak\_spmf, market\_basket, mushroom, online\_retail, online\_retail\_ii, pumsb, retail, synthetic\_dense\_5000, synthetic\_sparse\_2000, t10i4d100k, tic\_tac\_toe). Apriori timed out on accidents at 0.50 and on kosarak at 0.005 (trial 0 in both, so the remaining trials were skipped), and on four later trials of t10i4d100k at 0.01 (trial 0 completed at 592.9~s), while FP-Growth and Eclat completed those cells, which is the candidate-explosion cost the methods section predicts; no other skarm engine timed out. Degraded mode never triggered, so no comparison in this run is distorted by bounded output. mlxtend is missing on 3 dense-cap cells (kosarak 0.01 and 0.005, kosarak\_spmf 0.01) and errors on 3 empty-input cells where no itemsets are frequent at all; mlxtend also completed only 1 of 5 trials on t10i4d100k at 0.01 (the rest died allocating 6.5--13.1~GiB boolean arrays, the same broadcast pattern as the dense-cap cells). Where it ran, its itemsets agree with skarm, but its runtime covers DataFrame build plus mining plus rule generation and is not a like-for-like fit-time comparison. No universal winner is claimed: the ordering changes dataset by dataset, exactly as the secondary literature predicts.
+
+\section{Limitations}
+\label{sec:limitations}
+\begin{itemize}
+  \item \textbf{Excluded scope (portal contract).} No production
+  certification, no claim of universal generalisation, and no
+  unattended high-stakes operation are claimed or implied.
+  \item \textbf{Single machine, Python only.} Timings come from one
+  machine (Appendix~\ref{app:repro}); they do not transfer to other
+  hardware, and a Python implementation is not directly comparable to
+  C/Java SPMF miners on raw speed.
+  \item \textbf{Baselines not yet run.} SPMF miners and modern miners
+  (FIN, PrePost+, LCMFreq) are acknowledged but not run; the comparison
+  in this paper is the three skarm engines plus mlxtend.
+  \item \textbf{Estimator checks pending.} Running sklearn's
+  \texttt{check\_estimator} on the estimator, with expected failures
+  published and explained, is pending gap-closure work
+  \cite{sklearnchecks}; until it is run, ``sklearn-compatible'' means
+  the API conventions of Section~\ref{sec:methods}, not checked
+  conformance.
+  \item \textbf{Bounded-mode cost pending.} The pruning-policy ablation
+  (bounded versus exact, with truncation counts and recall against
+  exact) is pending; until it is run, no claim is made about how much
+  accuracy bounded mode trades for speed.
+  \item \textbf{Dataset provenance limits.} Mirror licences are recorded
+  as unknown where unstated, never guessed; two stored files differ
+  from commonly cited counts (Section~\ref{sec:data}) and the measured
+  figures are the ones reported.
+  \item \textbf{Support-range limits.} Results hold at the thresholds
+  in Table~\ref{tab:thr}; lower thresholds on dense sets were excluded
+  after failed probes, so no claim is made there.
+\end{itemize}
+
+\section{Conclusions}
+\skarm packages Apriori, FP-Growth, and Eclat behind one auditable,
+sklearn-style estimator, with deterministic outputs, candidate
+telemetry, and a bounded mode that reports its own truncation. Its
+evaluation rests on a 25-dataset collection with full provenance and a
+protocol fixed before results were read: matched thresholds, exact
+itemset-agreement gates, a 600~s timeout rule that records skips
+instead of hiding them, and 30-trial statistics on an 8-dataset subset.
+On 25 datasets, skarm's three engines agree exactly on itemsets, apriori fastest on none; fpgrowth fastest on 5 of 25; eclat fastest on 20 of 25 at primary thresholds, with 6 timeout trials and mlxtend absent on 6 cells for stated reasons; the remaining work is the SPMF and modern-miner baselines, and the pruning-policy ablation.
+
+\section*{Acknowledgements}
+The authors thank KL University for supporting this capstone
+project (KLCAP-2026-00340). No sponsor is stated for
+this project, and none is claimed here.
+
+\begin{thebibliography}{99}
+\bibitem{agrawal1994} Agrawal, R. and Srikant, R. Fast algorithms for
+mining association rules. \emph{Proceedings of the 20th International
+Conference on Very Large Data Bases (VLDB)}, 1994, pp.~487--499.
+\bibitem{han2000} Han, J., Pei, J. and Yin, Y. Mining frequent patterns
+without candidate generation. \emph{Proceedings of the ACM SIGMOD
+International Conference on Management of Data}, 2000.
+\bibitem{han2004} Han, J., Pei, J. and Yin, Y. Mining frequent patterns
+without candidate generation: a frequent-pattern tree approach.
+\emph{Data Mining and Knowledge Discovery} 8(1), 2004, pp.~53--87.
+\bibitem{zaki2000} Zaki, M.~J. Scalable algorithms for association
+mining. \emph{IEEE Transactions on Knowledge and Data Engineering}
+12(3), 2000, pp.~372--390. \url{https://doi.org/10.1109/69.846291}
+\bibitem{zaki1997} Zaki, M.~J., Parthasarathy, S., Ogihara, M. and
+Li, W. New algorithms for fast discovery of association rules.
+\emph{Proceedings of the 3rd International Conference on Knowledge
+Discovery and Data Mining (KDD)}, 1997.
+\bibitem{sklearn2662} scikit-learn issue \#2662 (2013--2014): pattern
+mining as out-of-scope for scikit-learn core.
+\url{https://github.com/scikit-learn/scikit-learn/issues/2662}
+\bibitem{sklearn32712} scikit-learn issue \#32712 (November 2025): Add
+Apriori Algorithm for Association Rule Mining; closed as ``not
+planned'' on scope grounds, with maintainers directing the work to
+scikit-mine or scikit-learn-contrib.
+\url{https://github.com/scikit-learn/scikit-learn/issues/32712}
+\bibitem{scikitmine} scikit-mine repository: pattern mining in Python
+(SLIM, LCM, LCMMax, periodic and emerging patterns).
+\url{https://github.com/scikit-mine/scikit-mine} (accessed October 2026;
+master branch showed no commits after May 2023 at that time ---
+re-check at submission).
+\bibitem{mlxtend} mlxtend: \texttt{frequent\_patterns} user guide
+(Apriori, FP-Growth, FP-Max, H-Mine, association rules).
+\url{https://rasbt.github.io/mlxtend/user_guide/frequent_patterns/}
+(accessed October 2026).
+\bibitem{spmf} Fournier-Viger, P. SPMF dataset collection (FIMI
+datasets with sizes and densities).
+\url{https://www.philippe-fournier-viger.com/spmf/index.php?link=datasets.php}
+(accessed October 2026).
+\bibitem{fournier2022} Fournier-Viger, P. et al. Pattern mining:
+current challenges and opportunities. \emph{DASFAA 2022 International
+Workshops}, LNCS, 2022. [VERIFY page numbers in the LNCS volume before
+submission.]
+\bibitem{kallay2025} Kallay, H. and Mihoc, T. Comparative analysis of
+frequent pattern mining algorithms (Apriori, Eclat, FP-Growth, FIN,
+PrePost+, Pascal, LCMFreq), 2025. [VERIFY venue before submission.]
+\bibitem{hahsler} Hahsler, M. Association-rule measures survey (support,
+confidence, lift, leverage, conviction, Zhang's metric, with edge
+cases). \url{https://michael.hahsler.net/arules/docs/measures}
+(accessed October 2026).
+\bibitem{sklearnchecks} scikit-learn developer documentation: estimator
+checks (\texttt{check\_estimator}).
+\url{https://scikit-learn.org/stable/developers/develop.html}
+(accessed October 2026).
+\end{thebibliography}
+
+\appendix
+\section{Reproducibility}
+\label{app:repro}
+Repository: \texttt{ABHISHEK1139/capstone} (main branch). Code fixes
+for the acceptance defects are commits \texttt{ff03b451},
+\texttt{dd22782f}, \texttt{904b19b3}. Datasets live in
+\texttt{data/}; the full per-file manifest (source URL, access date
+2026-10-29, licence, owner, exclusions, transformations) is
+\texttt{DATASET\_INVENTORY.md}. The benchmark script is
+\texttt{benchmarks/run\_pc\_campaign.py} with thresholds in
+\texttt{benchmarks/thresholds.json}; the campaign is resume-safe via
+per-dataset checkpoint files, and trial records from different machines
+must never be merged into one results file.
+Results commit \texttt{79334222} (repository \texttt{benchmarks/campaign\_results.json} plus \texttt{benchmarks/cells/} with 25 per-dataset checkpoint files). Machine and library versions are as in Section~5. The campaign report file (\texttt{benchmarks/CAMPAIGN\_REPORT.md}) states COMPLETE. Note: \texttt{skarm/fpgrowth.py} in the repository carries a tail-pointer optimisation (O(1) node-link appends) added with the final two datasets; it changes no results (all correctness pairs agree exactly) and the methods section describes the code as it now stands. \texttt{benchmarks/thresholds.json} holds the matched ladder.
+Confirmed 2026-10-30 from the repository listing: \texttt{{data/}} holds 26 files --- all 25 dataset files plus \texttt{{generate\_synthetic.py}}. All 25 datasets in Table~2 are present; no data file is missing.
+
+\onecolumn
+\section{Full cell-level timing table}
+\label{app:timing}
+One row per dataset $\times$ threshold $\times$ engine, over OK trials
+only; the Note column records failures for partial and empty cells, so
+no trial is hidden. This appendix exists so the main text can stay
+short; the condensed primary-threshold table is Table~\ref{tab:timing}.
+\footnotesize
+\setlength{\tabcolsep}{3pt}
 \begin{longtable}{lllrrrrrrrll}
-\caption{Per-cell timing and output counts. Mean, median (p50) and p95 are over OK trials only.}
-\label{tab:timing}\\
+\caption{Full per-cell timing and output counts. Mean, median (p50) and p95 are over OK trials only.}
+\label{tab:timingfull}\\
 \toprule
 Dataset & Thr & Engine & OK & Mean (s) & p50 & p95 & Peak MB & Items & Rules & Degr & Note \\
 \midrule
@@ -585,6 +887,10 @@ balance\_\allowbreak{}scale & 0.3 & apriori & 5 & 0.022 & 0.021 & 0.024 & 0.256 
 balance\_\allowbreak{}scale & 0.3 & fpgrowth & 5 & 0.022 & 0.022 & 0.024 & 0.018 & 2 & 0 & no & --- \\
 balance\_\allowbreak{}scale & 0.3 & eclat & 5 & 0.008 & 0.008 & 0.009 & 0.024 & 2 & 0 & no & --- \\
 balance\_\allowbreak{}scale & 0.3 & mlxtend & 5 & 0.017 & 0.006 & 0.062 & 0.210 & 2 & 0 & no & --- \\
+bms\_\allowbreak{}pos & 0.02 & apriori & 30 & 227.2 & 232.6 & 237.2 & 22.79 & 308 & 489 & no & --- \\
+bms\_\allowbreak{}pos & 0.02 & fpgrowth & 30 & 94.08 & 94.10 & 96.58 & 107.5 & 308 & 489 & no & --- \\
+bms\_\allowbreak{}pos & 0.02 & eclat & 30 & 12.53 & 12.70 & 13.69 & 39.46 & 308 & 489 & no & --- \\
+bms\_\allowbreak{}pos & 0.02 & mlxtend & 5 & 27.43 & 32.49 & 32.89 & 164.5 & 308 & 489 & no & --- \\
 bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.005 & apriori & 5 & 31.15 & 29.17 & 44.22 & 9.97 & 201 & 59 & no & --- \\
 bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.005 & fpgrowth & 5 & 5.31 & 5.24 & 6.58 & 2.92 & 201 & 59 & no & --- \\
 bms\_\allowbreak{}webview\_\allowbreak{}1 & 0.005 & eclat & 5 & 0.860 & 0.875 & 0.985 & 8.52 & 201 & 59 & no & --- \\
@@ -706,6 +1012,14 @@ synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.05 & apriori & 5 & 0.190 &
 synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.05 & fpgrowth & 5 & 0.179 & 0.181 & 0.208 & 0.176 & 77 & 118 & no & --- \\
 synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.05 & eclat & 5 & 0.056 & 0.053 & 0.068 & 0.776 & 77 & 118 & no & --- \\
 synthetic\_\allowbreak{}sparse\_\allowbreak{}2000 & 0.05 & mlxtend & 5 & 0.034 & 0.035 & 0.039 & 0.836 & 77 & 118 & no & --- \\
+t10i4d100k & 0.01 & apriori & 1 & 592.9 & 592.9 & 592.9 & 0.000 & 385 & 17 & no & 4 failed: timeout 600 s \\
+t10i4d100k & 0.01 & fpgrowth & 5 & 72.63 & 71.45 & 77.40 & 292.7 & 385 & 17 & no & --- \\
+t10i4d100k & 0.01 & eclat & 5 & 6.49 & 6.39 & 7.53 & 49.25 & 385 & 17 & no & --- \\
+t10i4d100k & 0.01 & mlxtend & 1 & 101.9 & 101.9 & 101.9 & 0.000 & 385 & 17 & no & 4 failed: MemoryError: Unable to allocate 13.1 GiB \\
+t10i4d100k & 0.02 & apriori & 5 & 164.5 & 169.7 & 170.0 & 0.824 & 155 & 0 & no & --- \\
+t10i4d100k & 0.02 & fpgrowth & 5 & 48.41 & 48.07 & 49.81 & 124.5 & 155 & 0 & no & --- \\
+t10i4d100k & 0.02 & eclat & 5 & 4.78 & 4.80 & 5.01 & 23.61 & 155 & 0 & no & --- \\
+t10i4d100k & 0.02 & mlxtend & 5 & 34.40 & 40.95 & 42.95 & 17.31 & 155 & 0 & no & --- \\
 tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.3 & apriori & 30 & 0.069 & 0.071 & 0.085 & 0.038 & 25 & 10 & no & --- \\
 tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.3 & fpgrowth & 30 & 0.102 & 0.100 & 0.138 & 0.253 & 25 & 10 & no & --- \\
 tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.3 & eclat & 30 & 0.024 & 0.023 & 0.031 & 0.059 & 25 & 10 & no & --- \\
@@ -716,252 +1030,5 @@ tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.5 & eclat & 30 & 0.022 & 0.020 & 0.0
 tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.5 & mlxtend & 5 & 0.005 & 0.005 & 0.006 & 0.040 & 1 & 0 & no & --- \\
 \bottomrule
 \end{longtable}
-\end{landscape}
-\begin{figure}[h]
-\centering
-\includegraphics[width=\textwidth]{figures/runtime.png}
-\caption{Mean fit time per dataset at its primary threshold (the threshold with the most completed skarm trials; ties broken toward the lower threshold; threshold in parentheses). Log scale. Missing bars are cells with no completed trial. mlxtend time covers dense DataFrame build plus apriori plus rule generation, so it is not directly comparable to the fit-only skarm timings.}
-\label{fig:runtime}
-\end{figure}
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=\textwidth]{figures/memory.png}
-\caption{Mean peak RSS delta per dataset at its primary threshold (same rule as Figure~\ref{fig:runtime}). Log scale. Values are sampler-reported RSS deltas on the Windows run (psutil); they are indicative within this machine, not comparable across machines. Missing bars are cells with no completed trial or a 0.0 report.}
-\label{fig:memory}
-\end{figure}
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.8\textwidth]{figures/scatter.png}
-\caption{Frequent itemsets versus association rules per cell (Apriori counts; all engines agree). Log scales. Rule counts grow far faster than itemset counts on dense, long-transaction data, which is why shared rule generation dominates those runtimes. Six cells with zero rules are omitted (log scale cannot show zero).}
-\label{fig:scatter}
-\end{figure}
-
-Throughput, itemset scale, and trial outcomes complete the picture.
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=\textwidth]{figures/throughput.png}
-\caption{Mean throughput (transactions per second) per dataset at its primary threshold (same rule as Figure~\ref{fig:runtime}). Log scale. Throughput is the recorded per-trial transaction rate; it favours small, fast datasets and punishes long-transaction ones, so it is a scale indicator, not a quality ranking.}
-\label{fig:throughput}
-\end{figure}
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=\textwidth]{figures/itemsets.png}
-\caption{Frequent itemsets per dataset at its primary threshold (Apriori counts; all engines agree). Log scale. The collection spans from 1 itemset (tic-tac-toe at 0.50) to 31,582 (NIPS papers), which is why no single threshold or engine suits every dataset.}
-\label{fig:itemsets}
-\end{figure}
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.7\textwidth]{figures/outcomes.png}
-\caption{Trial outcomes over all 1,515 records. The large OK share is the campaign's completion rate; timeouts, skips, and errors are the cells Table~\ref{tab:skips} lists with reasons.}
-\label{fig:outcomes}
-\end{figure}
-Across 39 cells, 145 engine pairs were compared and every one agrees exactly on itemsets and supports (maximum support difference 0.0). mlxtend was compared in 32 cells; the rest have no mlxtend pair because mlxtend did not complete trial 0 there.
-
-\begin{table}[h]
-\centering
-\footnotesize
-\caption{Correctness verdicts: trial-0 itemset agreement per cell.}
-\label{tab:correctness}
-\begin{tabular}{lllll}
-\toprule
-Cell & Pairs & Verdict & mlxtend & Note \\
-\midrule
-accidents@0.5 & 1 & all match & no &  \\
-accidents@0.6 & 4 & all match & yes &  \\
-adult\_census@0.05 & 4 & all match & yes &  \\
-adult\_census@0.1 & 4 & all match & yes &  \\
-balance\_scale@0.2 & 4 & all match & yes &  \\
-balance\_scale@0.3 & 4 & all match & yes &  \\
-bms\_webview\_1@0.005 & 4 & all match & yes &  \\
-bms\_webview\_1@0.01 & 4 & all match & yes &  \\
-bms\_webview\_2@0.005 & 4 & all match & yes &  \\
-bms\_webview\_2@0.01 & 4 & all match & yes &  \\
-car\_evaluation@0.2 & 4 & all match & yes &  \\
-car\_evaluation@0.3 & 4 & all match & yes &  \\
-chess@0.85 & 4 & all match & yes &  \\
-connect@0.95 & 4 & all match & yes &  \\
-docword\_enron@0.5 & 3 & all match & no &  \\
-docword\_enron@0.7 & 3 & all match & no &  \\
-docword\_nips@0.5 & 4 & all match & yes &  \\
-groceries@0.01 & 4 & all match & yes &  \\
-groceries@0.02 & 4 & all match & yes &  \\
-kosarak@0.005 & 1 & all match & no &  \\
-kosarak@0.01 & 3 & all match & no &  \\
-kosarak\_spmf@0.01 & 3 & all match & no &  \\
-market\_basket@0.02 & 4 & all match & yes &  \\
-market\_basket@0.03 & 4 & all match & yes &  \\
-mushroom@0.4 & 4 & all match & yes &  \\
-online\_retail@0.01 & 4 & all match & yes &  \\
-online\_retail@0.02 & 4 & all match & yes &  \\
-online\_retail\_ii@0.01 & 4 & all match & yes &  \\
-online\_retail\_ii@0.02 & 4 & all match & yes &  \\
-pumsb@0.9 & 4 & all match & yes &  \\
-pumsb\_star@0.85 & 3 & all match & no &  \\
-retail@0.02 & 4 & all match & yes &  \\
-retail@0.03 & 4 & all match & yes &  \\
-synthetic\_dense\_5000@0.3 & 4 & all match & yes &  \\
-synthetic\_dense\_5000@0.5 & 4 & all match & yes &  \\
-synthetic\_sparse\_2000@0.02 & 4 & all match & yes &  \\
-synthetic\_sparse\_2000@0.05 & 4 & all match & yes &  \\
-tic\_tac\_toe@0.3 & 4 & all match & yes &  \\
-tic\_tac\_toe@0.5 & 4 & all match & yes &  \\
-\bottomrule
-\end{tabular}
-\end{table}
-The campaign recorded 2 trial-0 timeouts and 8 skipped trials. The skipped trials are the remaining trials of the two timeout cells, not separate failures. No process was killed in this run. Every skipped or errored cell is listed here; nothing is omitted to make a table look complete.
-
-\begin{table}[h]
-\centering
-\footnotesize
-\caption{Skipped, timed-out, and errored cells with reasons.}
-\label{tab:skips}
-\begin{tabular}{llllp{5.5cm}}
-\toprule
-Dataset & Thr & Engine & Outcome & Reason \\
-\midrule
-accidents & 0.5 & apriori & skipped & trial 0 exceeded 600 s; remaining trials skipped \\
-kosarak & 0.01 & mlxtend & skipped & dense boolean DataFrame would need ~40.9 GB \\
-kosarak & 0.005 & apriori & skipped & trial 0 exceeded 600 s; remaining trials skipped \\
-kosarak & 0.005 & mlxtend & skipped & dense boolean DataFrame would need ~40.9 GB \\
-kosarak\_spmf & 0.01 & mlxtend & skipped & dense boolean DataFrame would need ~5.3 GB \\
-docword\_enron & 0.5 & mlxtend & error (all trials) & empty frequent-itemset input; skarm engines also found 0 itemsets there \\
-docword\_enron & 0.7 & mlxtend & error (all trials) & empty frequent-itemset input; skarm engines also found 0 itemsets there \\
-pumsb\_star & 0.85 & mlxtend & error (all trials) & empty frequent-itemset input; skarm engines also found 0 itemsets there \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Discussion of algorithmic trade-offs}
-At the level of mechanism, the trade-offs are as Section~\ref{sec:methods}
-states: Apriori pays in candidates and repeated scans, FP-Growth pays
-in tree memory, Eclat pays in tidset memory, and dense, long-transaction
-data punishes each differently. Because secondary sources disagree on
-dense-versus-sparse winners, this paper does not assert a universal
-winner; the empirical ordering must be read off the measured tables,
-dataset by dataset, at matched thresholds.
-At each dataset's primary threshold, where all three engines completed, apriori fastest on none; fpgrowth fastest on 5 of 23; eclat fastest on 18 of 23 (apriori: none; fpgrowth: accidents, adult\_census, connect, docword\_enron, pumsb\_star; eclat: balance\_scale, bms\_webview\_1, bms\_webview\_2, car\_evaluation, chess, docword\_nips, groceries, kosarak, kosarak\_spmf, market\_basket, mushroom, online\_retail, online\_retail\_ii, pumsb, retail, synthetic\_dense\_5000, synthetic\_sparse\_2000, tic\_tac\_toe). Apriori timed out on accidents at 0.50 and on kosarak at 0.005, while FP-Growth and Eclat completed those cells, which is the candidate-explosion cost the methods section predicts; no other skarm engine timed out. Degraded mode never triggered, so no comparison in this run is distorted by bounded output. mlxtend is missing on 3 dense-cap cells (kosarak 0.01 and 0.005, kosarak\_spmf 0.01) and errors on 3 empty-input cells where no itemsets are frequent at all; where it ran, its itemsets agree with skarm, but its runtime covers DataFrame build plus mining plus rule generation and is not a like-for-like fit-time comparison. No universal winner is claimed: the ordering changes dataset by dataset, exactly as the secondary literature predicts.
-
-\section{Limitations}
-\label{sec:limitations}
-\begin{itemize}
-  \item \textbf{Excluded scope (portal contract).} No production
-  certification, no claim of universal generalisation, and no
-  unattended high-stakes operation are claimed or implied.
-  \item \textbf{Single machine, Python only.} Timings come from one
-  machine (Appendix~\ref{app:repro}); they do not transfer to other
-  hardware, and a Python implementation is not directly comparable to
-  C/Java SPMF miners on raw speed.
-  \item \textbf{Baselines not yet run.} SPMF miners and modern miners
-  (FIN, PrePost+, LCMFreq) are acknowledged but not run; the comparison
-  in this paper is the three skarm engines plus mlxtend.
-  \item \textbf{Estimator checks pending.} Running sklearn's
-  \texttt{check\_estimator} on the estimator, with expected failures
-  published and explained, is pending gap-closure work
-  \cite{sklearnchecks}; until it is run, ``sklearn-compatible'' means
-  the API conventions of Section~\ref{sec:methods}, not checked
-  conformance.
-  \item \textbf{Bounded-mode cost pending.} The pruning-policy ablation
-  (bounded versus exact, with truncation counts and recall against
-  exact) is pending; until it is run, no claim is made about how much
-  accuracy bounded mode trades for speed.
-  \item \textbf{Dataset provenance limits.} Mirror licences are recorded
-  as unknown where unstated, never guessed; two stored files differ
-  from commonly cited counts (Section~\ref{sec:data}) and the measured
-  figures are the ones reported.
-  \item \textbf{Support-range limits.} Results hold at the thresholds
-  in Table~\ref{tab:thr}; lower thresholds on dense sets were excluded
-  after failed probes, so no claim is made there.
-\end{itemize}
-
-\section{Conclusions}
-\skarm packages Apriori, FP-Growth, and Eclat behind one auditable,
-sklearn-style estimator, with deterministic outputs, candidate
-telemetry, and a bounded mode that reports its own truncation. Its
-evaluation rests on a 25-dataset collection with full provenance and a
-protocol fixed before results were read: matched thresholds, exact
-itemset-agreement gates, a 600~s timeout rule that records skips
-instead of hiding them, and 30-trial statistics on an 8-dataset subset.
-On 23 datasets, skarm's three engines agree exactly on itemsets, apriori fastest on none; fpgrowth fastest on 5 of 23; eclat fastest on 18 of 23 at primary thresholds, with 2 cells timing out and mlxtend absent on 6 cells for stated reasons; the remaining work is the two pending datasets, the SPMF and modern-miner baselines, and the pruning-policy ablation.
-
-\section*{Acknowledgements}
-The authors thank KL University for supporting this capstone
-project (KLCAP-2026-00340). No sponsor is stated for
-this project, and none is claimed here.
-
-\begin{thebibliography}{99}
-\bibitem{agrawal1994} Agrawal, R. and Srikant, R. Fast algorithms for
-mining association rules. \emph{Proceedings of the 20th International
-Conference on Very Large Data Bases (VLDB)}, 1994, pp.~487--499.
-\bibitem{han2000} Han, J., Pei, J. and Yin, Y. Mining frequent patterns
-without candidate generation. \emph{Proceedings of the ACM SIGMOD
-International Conference on Management of Data}, 2000.
-\bibitem{han2004} Han, J., Pei, J. and Yin, Y. Mining frequent patterns
-without candidate generation: a frequent-pattern tree approach.
-\emph{Data Mining and Knowledge Discovery} 8(1), 2004, pp.~53--87.
-\bibitem{zaki2000} Zaki, M.~J. Scalable algorithms for association
-mining. \emph{IEEE Transactions on Knowledge and Data Engineering}
-12(3), 2000, pp.~372--390. \url{https://doi.org/10.1109/69.846291}
-\bibitem{zaki1997} Zaki, M.~J., Parthasarathy, S., Ogihara, M. and
-Li, W. New algorithms for fast discovery of association rules.
-\emph{Proceedings of the 3rd International Conference on Knowledge
-Discovery and Data Mining (KDD)}, 1997.
-\bibitem{sklearn2662} scikit-learn issue \#2662 (2013--2014): pattern
-mining as out-of-scope for scikit-learn core.
-\url{https://github.com/scikit-learn/scikit-learn/issues/2662}
-\bibitem{sklearn32712} scikit-learn issue \#32712 (November 2025): Add
-Apriori Algorithm for Association Rule Mining; closed as ``not
-planned'' on scope grounds, with maintainers directing the work to
-scikit-mine or scikit-learn-contrib.
-\url{https://github.com/scikit-learn/scikit-learn/issues/32712}
-\bibitem{scikitmine} scikit-mine repository: pattern mining in Python
-(SLIM, LCM, LCMMax, periodic and emerging patterns).
-\url{https://github.com/scikit-mine/scikit-mine} (accessed October 2026;
-master branch showed no commits after May 2023 at that time ---
-re-check at submission).
-\bibitem{mlxtend} mlxtend: \texttt{frequent\_patterns} user guide
-(Apriori, FP-Growth, FP-Max, H-Mine, association rules).
-\url{https://rasbt.github.io/mlxtend/user_guide/frequent_patterns/}
-(accessed October 2026).
-\bibitem{spmf} Fournier-Viger, P. SPMF dataset collection (FIMI
-datasets with sizes and densities).
-\url{https://www.philippe-fournier-viger.com/spmf/index.php?link=datasets.php}
-(accessed October 2026).
-\bibitem{fournier2022} Fournier-Viger, P. et al. Pattern mining:
-current challenges and opportunities. \emph{DASFAA 2022 International
-Workshops}, LNCS, 2022. [VERIFY page numbers in the LNCS volume before
-submission.]
-\bibitem{kallay2025} Kallay, H. and Mihoc, T. Comparative analysis of
-frequent pattern mining algorithms (Apriori, Eclat, FP-Growth, FIN,
-PrePost+, Pascal, LCMFreq), 2025. [VERIFY venue before submission.]
-\bibitem{hahsler} Hahsler, M. Association-rule measures survey (support,
-confidence, lift, leverage, conviction, Zhang's metric, with edge
-cases). \url{https://michael.hahsler.net/arules/docs/measures}
-(accessed October 2026).
-\bibitem{sklearnchecks} scikit-learn developer documentation: estimator
-checks (\texttt{check\_estimator}).
-\url{https://scikit-learn.org/stable/developers/develop.html}
-(accessed October 2026).
-\end{thebibliography}
-
-\appendix
-\section{Reproducibility}
-\label{app:repro}
-Repository: \texttt{ABHISHEK1139/capstone} (main branch). Code fixes
-for the acceptance defects are commits \texttt{ff03b451},
-\texttt{dd22782f}, \texttt{904b19b3}. Datasets live in
-\texttt{data/}; the full per-file manifest (source URL, access date
-2026-10-29, licence, owner, exclusions, transformations) is
-\texttt{DATASET\_INVENTORY.md}. The benchmark script is
-\texttt{benchmarks/run\_pc\_campaign.py} with thresholds in
-\texttt{benchmarks/thresholds.json}; the campaign is resume-safe via
-per-dataset checkpoint files, and trial records from different machines
-must never be merged into one results file.
-Results commit \texttt{73d44df} (repository \texttt{benchmarks/campaign\_results.json} plus \texttt{benchmarks/cells/} with 23 per-dataset checkpoint files). Machine and library versions are as in Section~5. The campaign report file in the repository could not be read through the API (it appears to have been pushed as a symlink); the JSON and cell files are the source of truth. \texttt{benchmarks/thresholds.json} holds the matched ladder.
-Confirmed 2026-10-30 from the repository listing: \texttt{{data/}} holds 26 files --- all 25 dataset files plus \texttt{{generate\_synthetic.py}}. The two pending datasets (bms\_pos, t10i4d100k) have data files present; only their trial records are missing.
 
 \end{document}

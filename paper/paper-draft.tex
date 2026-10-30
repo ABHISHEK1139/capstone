@@ -1,28 +1,32 @@
 % =====================================================================
-% skarm — journal-quality paper draft (DRAFT, results pending)
+% skarm — journal-quality paper (two-column, 10pt; results for all
+% 25 datasets from the completed PC campaign, 2026-10-30)
 % ---------------------------------------------------------------------
-% STATUS: All sections that do not depend on the benchmark campaign are
-% written. Every place that needs measured campaign numbers is left
-% visibly EMPTY as a [PLACEHOLDER] box — nothing there is invented.
-% Fill placeholders ONLY from benchmarks/campaign_results.json after
-% the PC campaign prints CAMPAIGN COMPLETE. Never fill by hand, never
-% copy numbers from the old draft, never mix VM and PC trial records.
+% STATUS: Final results version. Every measured number is filled by
+% build_paper.py from benchmarks/cells/*.json plus the merged
+% campaign_results.json — nothing hand-typed, nothing invented, no VM
+% trial records merged in (different machine, different ladder).
 %
-% PLACEHOLDERS TO FILL (in order):
+% PLACEHOLDERS (filled by build_paper.py, in order):
 %  P1  Abstract headline finding (one sentence, from the merged report)
-%  P2  Section 6.2 per-cell timing table (mean/p50/p95, OK trials only)
-%  P3  Section 6.2 throughput chart + memory chart (from the JSON)
+%  P2  Section 6.2 condensed timing table (primary threshold only;
+%      full cell table is Appendix B, P11)
+%  P3  Section 6.2 result charts (runtime, memory, scatter, throughput,
+%      itemsets, outcomes — all from the cell files)
 %  P4  Section 6.2 correctness verdicts table (trial-0 agreement)
 %  P5  Section 6.2 skips/timeouts table (with reasons, never hidden)
 %  P6  Section 6.3 empirical trade-off discussion (from P2-P5)
 %  P7  Section 8 headline conclusion sentence (from P2-P5)
 %  P8  Appendix A: results commit SHA + machine spec (from JSON metadata)
-%  P9  Confirm all 25 dataset files are present in repo data/ at submission
-% Author order per user 30 Oct 2026: supervisor first, then students.
+%  P9  Confirm all 25 dataset files are present in repo data/
+%  P10 Section 4 dataset-family pie (from Table 2's Type column)
+%  P11 Appendix B: full per-cell timing table (all thresholds, engines)
+% Author order per user 30 Oct 2026: Ramya, Anvitha, Abhishek Kumar,
+% Giridhar, Rajeev (supervisor first; Abhishek third overall).
 % TODO (before submission): re-check scikit-mine activity, mlxtend
 %   version, and the two references marked [VERIFY] in the bibliography.
 % =====================================================================
-\documentclass[11pt]{article}
+\documentclass[twocolumn,10pt]{article}
 \usepackage[a4paper,margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
@@ -31,7 +35,6 @@
 \usetikzlibrary{arrows.meta,positioning,shapes.geometric}
 \usepackage{xcolor}
 \usepackage[hidelinks]{hyperref}
-\usepackage{lscape}
 \setlength{\emergencystretch}{2em}
 
 \newcommand{\placeholder}[1]{%
@@ -55,7 +58,7 @@ Mining with Auditable Pruning}
 \date{}
 
 \begin{document}
-\maketitle
+\twocolumn[\maketitle
 
 \begin{abstract}
 Frequent-itemset mining and association-rule mining are standard tools
@@ -75,9 +78,9 @@ at matched support thresholds on 25 datasets, with a 30-trial
 statistical protocol on an 8-dataset subset and exact itemset-agreement
 checks on every cell.
 \placeholder{P1: headline finding, one sentence, from the merged
-campaign report after CAMPAIGN COMPLETE. Do not write this sentence
-until the numbers exist.}
+campaign report (campaign COMPLETE, 25 datasets).}
 \end{abstract}
+]
 
 \section{Introduction}
 
@@ -203,7 +206,7 @@ confidence threshold. Table~\ref{tab:metrics} defines the metrics
 \skarm reports; the edge cases are part of the definition, not footnotes,
 because they change rule counts.
 
-\begin{table}[h]
+\begin{table*}[t]
 \centering
 \caption{Rule metrics reported by \skarm, with edge-case conventions
 (definitions per \cite{hahsler}).}
@@ -220,7 +223,7 @@ Conviction & $(1 - \mathrm{supp}(Y)) / (1 - \mathrm{confidence})$ & $\infty$ at 
 Zhang's metric & leverage scaled to $[-1, 1]$ & $0$ when its denominator is $0$ \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
 \subsection{The three engines}
 \textbf{Apriori} generates candidates level by level and counts each
@@ -228,6 +231,10 @@ level with a database scan, pruning by the anti-monotone property.
 \textbf{FP-Growth} builds an FP-tree ordered by descending item
 frequency, then mines conditional trees recursively; it performs no
 candidate generation but its memory is the tree plus conditional trees.
+The header table keeps a tail pointer per item, so node-link appends
+are $O(1)$ rather than walking each chain (added with the final two
+datasets; it changes no results, as Table~\ref{tab:correctness}
+shows).
 \textbf{Eclat} intersects tidsets depth-first within equivalence
 classes, a decomposition originating in \cite{zaki1997} and developed
 in \cite{zaki2000}; its memory is the tidsets (or diffsets on dense data). All
@@ -236,7 +243,7 @@ same fitted attributes, so a difference in output is a bug, not an API
 difference --- which is exactly what the correctness gate in
 Section~\ref{sec:setup} checks.
 
-\begin{figure}[h]
+\begin{figure*}[t]
 \centering
 \begin{tikzpicture}[box/.style={draw, rounded corners, align=center, minimum height=0.95cm, font=\footnotesize}, lab/.style={font=\footnotesize\bfseries}, arr/.style={->, >=Stealth}]
 \node[lab] (a-lab) at (1.0,0) {Apriori};
@@ -266,7 +273,7 @@ mines it recursively, with no candidate generation; Eclat intersects
 tidsets depth-first within equivalence classes. All three consume the
 same pre-encoded matrix and return the same fitted attributes.}
 \label{fig:engines}
-\end{figure}
+\end{figure*}
 
 \subsection{Estimator API}
 \texttt{AssociationRulesEstimator} exposes
@@ -317,7 +324,7 @@ example --- the three-transaction example from the sklearn issue itself
 --- included only to make the FP-tree construction concrete; it is
 labelled illustrative and no measured claim rests on it.
 
-\begin{figure}[h]
+\begin{figure*}[t]
 \centering
 \resizebox{\textwidth}{!}{\begin{tikzpicture}[
   box/.style={draw, rounded corners, minimum width=2.6cm, minimum height=0.9cm, align=center, font=\small},
@@ -338,9 +345,9 @@ labelled illustrative and no measured claim rests on it.
 \caption{System architecture. One encoding feeds all three engines;
 telemetry is emitted alongside results, not reconstructed afterwards.}
 \label{fig:arch}
-\end{figure}
+\end{figure*}
 
-\begin{figure}[h]
+\begin{figure*}[t]
 \centering
 \begin{tikzpicture}[
   box/.style={draw, rounded corners, minimum width=3.2cm, minimum height=0.9cm, align=center, font=\small},
@@ -363,9 +370,9 @@ telemetry is emitted alongside results, not reconstructed afterwards.}
 \caption{Benchmark pipeline. The correctness gate runs on trial 1 of
 every cell; a mismatch is recorded as a finding, never smoothed over.}
 \label{fig:flow}
-\end{figure}
+\end{figure*}
 
-\begin{figure}[h]
+\begin{figure*}[t]
 \centering
 \begin{tikzpicture}[
   level distance=1.1cm, sibling distance=2.2cm,
@@ -380,7 +387,7 @@ support $0.5$: frequent items are bread (3) and milk (2); the tree has
 a single branch. Illustrative only --- no measured claim rests on this
 example.}
 \label{fig:fptree}
-\end{figure}
+\end{figure*}
 
 \section{Datasets}
 \label{sec:data}
@@ -404,7 +411,7 @@ manifest. Access date for all 25 datasets is 2026-10-29. The complete
 manifest (source URL, size, licence, owner, exclusions, transformations
 per file) is in \texttt{DATASET\_INVENTORY.md} in the repository.
 
-\begin{table}[h]
+\begin{table*}[t]
 \centering
 \footnotesize
 \caption{Evaluation datasets. $N$ = transactions, $M$ = unique items,
@@ -442,7 +449,7 @@ Synthetic dense & 5,000 & 50 & 30.56 & 61.12 & synthetic \\
 Online Retail II & 22,103 & 4,317 & 22.62 & 0.52 & retail \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
 \placeholder{P10: dataset-family pie chart, computed from the Type column of Table 2 (each dataset counted once, under its most distinctive type).}
 
@@ -480,7 +487,7 @@ from the campaign metadata.
 \placeholder{P8 (part): machine specification and library versions,
 from campaign\_results.json metadata --- fill at merge time.}
 
-\begin{table}[h]
+\begin{table*}[t]
 \centering
 \footnotesize
 \caption{Support thresholds per dataset (matched across engines),
@@ -518,7 +525,7 @@ Synthetic dense & 0.50, 0.30 & small, dense; two points \\
 Online Retail II & 0.02, 0.01 & same shape as Online Retail \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
 \section{Results and discussion}
 
@@ -541,14 +548,12 @@ sort) is recorded in the repository history (commits
 \texttt{ff03b451}, \texttt{dd22782f}, \texttt{904b19b3}).
 
 \subsection{Benchmark campaign results}
-\placeholder{P2: per-cell timing table --- mean / p50 / p95 seconds
-over OK trials only, with mean peak memory, itemset and rule counts
-from trial 1, and the degraded flag. One row per dataset $\times$
-threshold $\times$ engine. 30-trial statistics ONLY for the 8-dataset
-subset; all other rows report 5 trials.}
-\placeholder{P3: throughput chart and peak-memory chart, computed from
-campaign\_results.json. No chart may show a number that is not in the
-JSON.}
+\placeholder{P2: condensed timing table --- mean fit seconds at each
+dataset's primary threshold (fastest skarm engine bolded; mlxtend mean
+where it ran). The full per-cell table, with p50/p95, memory, counts,
+and failure notes, is Appendix B.}
+\placeholder{P3: result charts, computed from the cell files. No chart
+may show a number that is not in the cell files.}
 \placeholder{P4: correctness verdicts table --- trial-0 itemset
 agreement per cell (all engine pairs, plus skarm Apriori versus
 mlxtend where it ran). Any mismatch is reported as a finding.}
@@ -690,7 +695,18 @@ must never be merged into one results file.
 library versions, copied from campaign\_results.json metadata at merge
 time.}
 \placeholder{P9: confirm all 25 dataset files are present in repo
-data/ at submission (accidents.dat and kosarak.dat are added by the PC
-git-CLI push; verify the listing, do not assume it).}
+data/ at submission (verified from the listing, do not assume it).}
+
+\onecolumn
+\section{Full cell-level timing table}
+\label{app:timing}
+One row per dataset $\times$ threshold $\times$ engine, over OK trials
+only; the Note column records failures for partial and empty cells, so
+no trial is hidden. This appendix exists so the main text can stay
+short; the condensed primary-threshold table is Table~\ref{tab:timing}.
+\placeholder{P11: full per-cell timing table --- mean / p50 / p95
+seconds over OK trials, mean peak memory, itemset and rule counts,
+degraded flag, and failure notes. 30-trial statistics ONLY for the
+8-dataset subset; all other rows report 5 trials.}
 
 \end{document}
