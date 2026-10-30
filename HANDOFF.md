@@ -34,7 +34,7 @@ the user on 30 Oct 2026).
 | 13 | Gap closure: pruning ablation (bounded vs exact) | OPEN | truncation counts + recall vs exact required |
 | 14 | Gap closure: SPMF / modern baselines | OPEN | FIN, PrePost+, LCMFreq acknowledged, not run |
 | 15 | Figures from measured data | DONE for 25/25 | `paper/figures/` 7 charts + 4 TikZ diagrams = 11 figures, all from measured data or method text, visually verified (outcomes pie needed a side legend) |
-| 16 | Paper PDF (compiled) | PENDING TeX reinstall | `paper/paper.tex` pushed and verified back from git (67,245 chars, twocolumn, "Across 25 datasets"); compile blocked: a VM replacement wiped `/usr/bin/pdflatex`; TeX Live reinstall running since ~10:55 IST |
+| 16 | Paper PDF (compiled) | DONE, 16 pp A4, 699 KB | compiled on the VM from `paper/paper.tex` (3 pdflatex passes, 0 overfulls, 0 undefined refs) after the TeX Live reinstall finished; `paper/paper.pdf` is local (too big for the MCP push route — add via PC git-CLI if wanted) |
 | 17 | Goal | ACTIVE | do NOT close until submission-ready |
 
 ## 1A. Update — 30 Oct 2026, 09:05 IST (PC results verified, paper built)
@@ -218,6 +218,40 @@ the user on 30 Oct 2026).
   2 [VERIFY] references, scikit-mine/mlxtend re-check at submission
   (author order is settled); (6) venue choice + submission (team
   decision). The goal stays ACTIVE until submission-ready.
+
+## 1G. Update — 30 Oct 2026, ~11:20 IST (PDF compiled and verified)
+
+- TeX Live reinstall finished (pdfTeX 3.141592653-2.6-1.40.25,
+  TeX Live 2023/Debian; one apt mirror warning, install clean).
+  The two-column 25/25 paper compiled on the VM: 16 pages A4,
+  699 KB, 3 passes, 0 overfulls, 0 undefined references, no float
+  warnings. Title page verified (spanning title/abstract, author
+  order Ramya–Anvitha–Abhishek–Giridhar–Rajeev), condensed timing
+  Table 4 verified (all 25 datasets, fastest engine bolded),
+  Appendix B verified (full 167-row table inside the margins).
+- Appendix fix on the way there (in `paper/build_paper.py`'s P11
+  fragment, so regeneration stays correct): the first portrait
+  appendix table overran the right margin by 131 pt, because the
+  12-column spec still carried the Degr column. Fix: dropped the
+  Degr column (constant "no" everywhere — degraded mode never
+  triggered; the caption now says so), `\scriptsize`,
+  `\tabcolsep` 2 pt, Dataset `p{3.0cm}`, Note `p{2.4cm}`. Two
+  self-inflicted compile breaks while fixing: the empty-row
+  continuation line kept the extra Degr placeholder, and the new
+  spec was written with 6 `r` columns instead of 7 — both caught
+  by the compile + a row column-count check (167 rows, 10 `&`
+  each). Main tables stay `\footnotesize`; only the appendix is
+  `\scriptsize`.
+- `paper/paper.tex` (final, 66,516 chars) + regenerated preview
+  pushed; the PDF itself is local only (see dashboard row 16).
+- VM agent: STOPPED once the 25/25 PDF was verified (it was backup
+  only; its records were never merged). What is really left now:
+  (1) gap closure: check_estimator, pruning ablation, SPMF/modern
+  baselines; (2) team confirmations: 2 [VERIFY] references,
+  scikit-mine/mlxtend re-check at submission; (3) venue choice +
+  submission (team decision); (4) cleanup: delete
+  `paper/figures/_test_scatter.png` via PC push, optionally add
+  `paper/paper.pdf` via PC push.
 
 ## 2. Findings (what was wrong, missed, fixed)
 
