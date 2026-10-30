@@ -176,6 +176,7 @@ def main():
     raw = re.sub(r"\\begin\{abstract\}.*?\\end\{abstract\}", "", raw,
                  count=1, flags=re.S)
 
+    raw = raw.replace("\\begin{landscape}", "").replace("\\end{landscape}", "")
     # token scan over the body
     token_re = re.compile(
         r"\\section\*\{|\\section\{|\\subsection\{|\\begin\{table\}|\\begin\{longtable\}|"

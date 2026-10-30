@@ -91,6 +91,23 @@ the user on 30 Oct 2026).
   (6) stop the VM agent once PC 25/25 is confirmed; (7) venue choice
   + submission (team decision).
 
+## 1B. Update — 30 Oct 2026 (single LaTeX source; old files removed)
+
+- `paper/paper.tex` (results-filled, layout-fixed, PDF compiled
+  16 pp A4 on the VM) is the current paper. `paper/paper-draft.tex`
+  is its regeneration source (`build_paper.py` reads it); both were
+  pushed with the layout fixes (author block wrapped, architecture
+  figure scaled to text width, timing table on landscape pages,
+  skips-table Reason column wraps).
+- REMOVED from the repo at the user's instruction:
+  `paper/paper_presentation.tex` (old draft with placeholder
+  authors and the invented Figure 4 formula) and
+  `paper/paper_presentation.pdf` (its output). Both remain
+  recoverable from git history. `paper/presentation_slides.md` was
+  left in place (slides, not LaTeX code).
+- `paper/paper.pdf` is NOT in the repo (too big for the MCP push
+  route); the PC git-CLI push can add it.
+
 ## 2. Findings (what was wrong, missed, fixed)
 
 ### 2.1 Code bugs fixed (all pushed, all verified)
