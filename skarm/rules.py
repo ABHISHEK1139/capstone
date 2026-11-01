@@ -28,20 +28,15 @@ def compute_zhangs_metric(supp_ac: float, supp_a: float, supp_c: float) -> float
     if math.isclose(num, 0.0, abs_tol=1e-12):
         return 0.0
 
-    if num > 0:
-        denom = max(
-            supp_ac * (1.0 - supp_a),
-            supp_a * (supp_c - supp_ac),
-        )
-    else:
-        denom = max(
-            supp_ac * (supp_a - supp_ac),
-            supp_a * (1.0 - supp_c),
-        )
+    denom = max(
+        supp_ac * (1.0 - supp_a),
+        supp_a * (supp_c - supp_ac),
+    )
 
     if denom <= 1e-12:
         return 0.0
-    return float(num / denom)
+    val = float(num / denom)
+    return float(max(-1.0, min(1.0, val)))
 
 
 def association_rules(

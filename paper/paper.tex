@@ -57,22 +57,22 @@
   \begin{center}%
   \let \footnote \thanks
     {\LARGE\bfseries \@title \par}%
-    \vskip 0.8em%
-    {\large
-      \lineskip .4em%
+    \vskip 0.5em%
+    {\normalsize
+      \lineskip .3em%
       \begin{tabular}[t]{c}%
         \@author
       \end{tabular}\par}%
   \end{center}%
   \par
-  \vskip 0.6em}
+  \vskip 0.4em}
 \newcommand\captionof[1]{\def\@captype{#1}\caption}
 \makeatother
 
 \title{A scikit-learn-Compatible Estimator for Association-Rule
 Mining with Auditable Pruning}
 \author{
-  Ms.~Dudigam Ramya\textsuperscript{1},
+  Ms.~Dudigam Ramya\textsuperscript{1} (Supervisor/Guide),
   Gontla Venkata Anvitha\textsuperscript{1},
   Abhishek Kumar\textsuperscript{1} \\
   Kamma Giridhar\textsuperscript{1},
@@ -84,7 +84,7 @@ Mining with Auditable Pruning}
 \date{}
 
 \begin{document}
-\twocolumn[{\vspace*{-1.8cm}\maketitle
+\twocolumn[{\maketitle
 
 \begin{abstract}
 Frequent-itemset mining and association-rule mining are standard tools
@@ -102,26 +102,23 @@ reports truncation instead of silently returning partial results. The
 evaluation protocol compares all three engines plus an mlxtend baseline
 at matched support thresholds on 25 datasets, with a 30-trial
 statistical protocol on an 8-dataset subset and exact itemset-agreement
-checks on every cell.
-Across 25 datasets (1650 trial records on one Windows PC), all 157 compared engine pairs agree exactly on frequent itemsets; at each dataset's primary threshold, apriori fastest on none; fpgrowth fastest on 5 of 25; eclat fastest on 20 of 25, and mlxtend could not run 6 cells for stated reasons (3 dense-cap skips, 3 empty-input errors).
+checks on every cell. Across 25 datasets (1,650 trial records on one Windows PC), all 157 compared engine pairs agree exactly on frequent itemsets ($\Delta\mathrm{supp}=0.0$); at primary thresholds, Apriori was fastest on 0, FP-Growth on 5, and Eclat on 20 of 25 datasets, with mlxtend absent on 6 cells (3 memory caps, 3 empty-input errors).
 \end{abstract}
 
-\vspace{0.6em}
-\noindent\textbf{Keywords:} Association Rule Mining, Frequent Itemset Mining, Apriori, FP-Growth, Eclat, scikit-learn Compatibility, Auditable Pruning Governor, Reproducibility.
-\vspace{0.8em}\par
+{\raggedright\noindent\textbf{Keywords:} Association-Rule Mining, Frequent-Itemset Mining, Apriori, FP-Growth, Eclat, scikit-learn Compatibility, Auditable Pruning Governor, Reproducibility.\par}
+\vspace{0.4em}\par
 }]
 
 \section{Introduction}
 \label{sec:intro}
+\enlargethispage{3.5\baselineskip}
 
 \subsection{Problem and Motivation}
-Frequent-itemset mining (FIM) and association-rule mining (ARM) are foundational primitives for discovering co-occurrence patterns in transactional, clickstream, and categorical datasets. Given a transaction database $D$ containing $N$ transactions over an item universe $I$, ARM seeks to uncover all directional implications $X \Rightarrow Y$ (with $X \cap Y = \emptyset$) satisfying user-specified minimum support ($\sigma$) and confidence ($\gamma$) thresholds. 
-
-While algorithmically well-studied since the introduction of Apriori \cite{agrawal1994}, FP-Growth \cite{han2000}, and Eclat \cite{zaki2000}, integrating these methods into modern Python machine-learning workflows exposes severe software-engineering and scientific challenges. Practitioners face distinct operational pain points across roles:
-\begin{enumerate}
-  \item \textbf{Data Scientists and ML Engineers} struggle with fragmented, non-standard APIs across independent packages. Existing tools rely on one-off standalone functions over dense in-memory DataFrames, lacking compatibility with scikit-learn's standardized \texttt{fit}, \texttt{transform}, and \texttt{Pipeline} abstraction.
-  \item \textbf{Data Engineers and Production Systems} face combinatorial candidate explosion ($2^{|I|} - 1$). In dense transaction regimes, existing exact miners either exceed physical memory limits or run unbounded for hours, lacking fine-grained candidate governors and machine-readable degradation contracts.
-  \item \textbf{Researchers and Auditors} encounter undocumented execution differences, non-standard metric definitions, and opaque edge-case handling that make cross-study reproducibility difficult.
+Frequent-itemset mining (FIM) and association-rule mining (ARM) discover directional implications $X \Rightarrow Y$ ($X \cap Y = \emptyset$) satisfying support ($\sigma$) and confidence ($\gamma$) thresholds over an item universe $I$ in a database $D$ of $N$ transactions \cite{agrawal1994,han2000,zaki2000}. While algorithmically mature, integrating these methods into modern Python workflows exposes operational challenges across practitioner roles:
+\begin{enumerate}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
+  \item \textbf{Data Scientists and ML Engineers} struggle with fragmented APIs across packages. Existing tools rely on standalone functions over dense DataFrames, lacking compatibility with scikit-learn's standardized \texttt{fit}, \texttt{transform}, and \texttt{Pipeline} abstractions.
+  \item \textbf{Data Engineers and Production Systems} face combinatorial candidate explosion ($2^{|I|} - 1$). In dense regimes, existing exact miners either exceed memory limits or run unbounded, lacking candidate governors and degradation contracts.
+  \item \textbf{Model Auditors and Compliance Researchers} encounter undocumented execution differences, non-standard metric definitions, and opaque edge cases that impede reproducibility, as well as non-deterministic row sorting that corrupts version-controlled tracking.
 \end{enumerate}
 
 To serve these distinct user profiles, a modern association-rule mining library must answer three fundamental questions honestly: \emph{which} patterns were discovered, \emph{whether} the returned output is mathematically exhaustive or budget-bounded, and \emph{what} computational cost was incurred across both system resources and algorithmic steps.
@@ -134,11 +131,18 @@ Accordingly, \skarm does not claim to implement an officially endorsed scikit-le
 
 \subsection{Three Dimensions of Determinism}
 \label{sec:determinism_dims}
-A central design objective of \skarm is end-to-end determinism. We explicitly distinguish three technical tiers of determinism:
-\begin{enumerate}
-  \item \textbf{Result Determinism}: Generating identical sets of frequent itemsets and identical floating-point support and metric values for identical transaction data, regardless of input item ordering or backend mining engine.
-  \item \textbf{Ordering Determinism}: Guaranteeing strict, deterministic canonical row ordering of discovered itemsets (sorted by descending support, then ascending item cardinality, then lexicographical item tokens) and association rules (sorted by descending metric, descending confidence, and lexicographical antecedent/consequent), preventing unstable outputs across repeated invocations.
-  \item \textbf{Execution Determinism}: Ensuring reproducible termination decisions, consistent candidate-budget checks, and cross-platform numerical stability across independent executions.
+A central design objective of \skarm is end-to-end determinism as an evaluated engineering and scientific property rather than an unverified assumption. We explicitly formalize three technical tiers of determinism:
+\begin{enumerate}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
+  \item \textbf{Result Determinism}: For any transaction multiset $D$ and configuration $\theta = (\sigma, \gamma, \mathcal{M})$, the frequent itemsets $\mathcal{F}_\sigma(D)$ and rules $\mathcal{R}_{\sigma,\gamma}(D)$ are identical regardless of backend mining engine $E \in \{\text{Apriori}, \text{FP-Growth}, \text{Eclat}\}$ or initial item ordering in $D$:
+  \begin{equation}
+  \begin{split}
+  \forall E_i, E_j:\ \mathcal{F}_\sigma(D \mid E_i) \equiv \mathcal{F}_\sigma(D \mid E_j) \ \wedge \\
+  \max_{X \in \mathcal{F}_\sigma} |\mathrm{supp}_{E_i}(X) - \mathrm{supp}_{E_j}(X)| = 0.0
+  \end{split}
+  \end{equation}
+  This property is empirically certified across all 42 benchmark cells and 157 trial-0 pairwise comparisons (Table~\ref{tab:correctness}).
+  \item \textbf{Ordering Determinism}: Discovered itemsets and rules are sorted by a strict canonical key to eliminate non-deterministic row shuffling: itemsets by descending support, ascending cardinality, and lexicographical item tokens; rules by descending metric, descending confidence, descending support, and lexicographical antecedent/consequent tokens. This guarantees zero output diff churn across repeated invocations (asserted by test \texttt{NT-5}).
+  \item \textbf{Execution Determinism}: When candidate budgets ($B_{\text{cand}}$) trigger degradation, candidate pruning follows a deterministic priority queue (lowest support and lexicographical tie-breaking), ensuring that bounded executions ($\mathcal{F}_{\text{bounded}}$) recover identical pattern subsets across multiple executions and operating systems.
 \end{enumerate}
 
 \subsection{Research Questions}
@@ -177,24 +181,29 @@ Table~\ref{tab:ecosystem} provides a comparative analysis of \skarm against exis
 
 \begin{table*}[t]
 \centering
-\small
-\caption{Comprehensive ecosystem comparison of pattern mining frameworks across API design, supported algorithms, execution guarantees, telemetry, and workflow integration.}
+\footnotesize
+\caption{Comprehensive ecosystem comparison of pattern mining frameworks across API design, algorithmic coverage, execution contracts, telemetry depth, and pipeline integration.}
 \label{tab:ecosystem}
-\begin{tabular}{p{3.2cm}p{3.1cm}p{3.1cm}p{3.1cm}p{3.0cm}}
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{p{2.6cm}p{2.5cm}p{2.4cm}p{2.4cm}p{2.4cm}p{2.6cm}}
 \toprule
-\textbf{Feature / Dimension} & \textbf{\skarm (This Work)} & \textbf{mlxtend} \cite{mlxtend} & \textbf{scikit-mine} \cite{scikitmine} & \textbf{SPMF} \cite{spmf} \\
+\textbf{Dimension} & \textbf{\skarm (This Work)} & \textbf{mlxtend} \cite{mlxtend} & \textbf{scikit-mine} \cite{scikitmine} & \textbf{SPMF} \cite{spmf} & \textbf{Modern Baselines} \cite{kallay2025} \\
 \midrule
-Primary Language & Python 3.10+ / NumPy / SciPy & Python / Pandas & Python / Cython & Java \\
-API Paradigm & Scikit-learn Estimator & Procedural Functions & Scikit-learn Compatible & Standalone CLI / Java API \\
-Supported FIM Engines & Apriori, FP-Growth, Eclat & Apriori, FP-Growth, FP-Max, H-Mine & SLIM, LCM, LCMMax & 250+ miners (FIM, HUIM, Sequence) \\
-Input Representation & Sparse CSR / CSC Matrix & Dense / Sparse Pandas DataFrame & Transaction Lists & Flat Text Transaction Files \\
-Pipeline Placement & Final Estimator \& Transformer & Incompatible (Function only) & Intermediate Transformer & External System Call \\
-Exactness Contract & Explicit (EXACT / DEGRADED) & Implicit (Assumes exact) & Implicit (Assumes exact) & Implicit (Assumes exact) \\
-Bounded Safety Governor & Configurable Candidate / RSS Cap & None (MemoryError risk) & None & None (Timeout only) \\
-Execution Telemetry & Wall / CPU time, RSS, Peak Candidates & Execution Time only & Execution Time only & Memory, Candidates, Wall Time \\
-Rule Metric Set & 6 standard metrics + Zhang & 6 standard metrics + Zhang & Pattern compression (MDL) & 20+ specialized measures \\
-Edge-Case Handling & Audited ($\infty$ conviction, $0$ div) & Documented & Partial & Varies by algorithm \\
-Output Determinism & Certified (Item \& Rule Sort) & Uncertified row order & Uncertified row order & Platform-dependent \\
+\textbf{1. Primary Runtime \& Language} & Python 3.10+ / NumPy / SciPy & Python / Pandas & Python / Cython & Java (JVM 8+) & C / C++ / Java (Standalone) \\
+\midrule
+\textbf{2. API Paradigm \& Protocol} & Unified Scikit-learn Estimator \& Transformer (\texttt{fit}, \texttt{transform}, \texttt{get\_params}) & Procedural functions over DataFrames (\texttt{apriori}, \texttt{fpgrowth}) & Scikit-learn compatible transformer (\texttt{fit}, \texttt{transform}) & Standalone GUI, CLI, and Java library calls & Standalone algorithmic binaries (command-line execution) \\
+\midrule
+\textbf{3. Algorithmic Breadth} & Apriori, FP-Growth ($O(1)$ tail), Eclat (tidsets) & Apriori, FP-Growth, FP-Max, H-Mine (No Eclat) & Specialized: SLIM, LCM, LCMMax (No Apriori/Eclat) & 250+ miners (FIM, HUIM, Sequences, Graph) & Specialized single-engine miners (FIN, PrePost+, LCMFreq) \\
+\midrule
+\textbf{4. Memory Layout \& Input Semantics} & Sparse CSR / CSC matrix (low overhead; multi-set rows) & Dense boolean DataFrame ($O(N \cdot M)$ memory cliff) & List-of-lists transactional token sequences & Flat space-delimited text transaction files & Binary encoded vertical bitsets / Diffsets / N-lists \\
+\midrule
+\textbf{5. Formal Execution Contract} & Rigorous Tri-State: \texttt{EXACT}, \texttt{DEGRADED}, \texttt{FAILED} & Implicit: assumes exact; crashes on resource exhaust & Implicit: assumes exact; unmonitored truncation & Implicit: unmonitored JVM heap overflow or timeout & Unbounded execution until process termination \\
+\midrule
+\textbf{6. Multi-Axis Safety Governor} & Multi-dimensional: candidate cap ($B_{\text{cand}}$), RSS ($B_{\text{mem}}$), timeout ($B_{\text{time}}$) & None (Vulnerable to catastrophic \texttt{MemoryError}) & None & Single-axis (timeout or JVM \texttt{-Xmx} crash) & None \\
+\midrule
+\textbf{7. Telemetry \& Auditable Metadata} & Algorithmic operation counters, 10\,ms RSS delta, wall/CPU split & Wall-clock execution time only & Wall-clock execution time only & Peak memory, candidate count, wall time & Wall-clock execution time and candidate volume \\
+\midrule
+\textbf{8. Scikit-Learn Pipeline Placement} & Both Terminal Estimator \& Intermediate Feature Transformer & Incompatible with \texttt{Pipeline} abstraction & Intermediate Transformer only (No rule generation) & External system call; no Python pipeline integration & Incompatible; requires external file I/O glue code \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -228,7 +237,10 @@ Given a minimum support threshold $\sigma \in (0, 1]$, an itemset $X$ is \emph{f
 \end{equation}
 Given a minimum confidence threshold $\gamma \in (0, 1]$, the set of qualifying association rules is:
 \begin{equation}
-\mathcal{R}_{\sigma, \gamma} = \{X \Rightarrow Y \mid X \cap Y = \emptyset, X \cup Y \in \mathcal{F}_\sigma, \mathrm{conf}(X \Rightarrow Y) \ge \gamma\}
+\begin{split}
+\mathcal{R}_{\sigma, \gamma} = \{X \Rightarrow Y \mid X \cap Y = \emptyset, X \cup Y \in \mathcal{F}_\sigma, \\
+\mathrm{conf}(X \Rightarrow Y) \ge \gamma\}
+\end{split}
 \end{equation}
 
 Table~\ref{tab:metrics} specifies the mathematical definitions and edge-case conventions for all six rule evaluation metrics computed by \skarm, adhering to the standard survey by Hahsler \cite{hahsler}.
@@ -237,7 +249,8 @@ Table~\ref{tab:metrics} specifies the mathematical definitions and edge-case con
 \centering
 \caption{Rule metrics reported by \skarm, with formal edge-case conventions (per \cite{hahsler}).}
 \label{tab:metrics}
-\begin{tabular}{p{2.5cm}p{7.0cm}p{6.0cm}}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{p{2.2cm}p{8.2cm}p{4.7cm}}
 \toprule
 \textbf{Metric} & \textbf{Mathematical Definition} & \textbf{Edge-Case Convention} \\
 \midrule
@@ -284,7 +297,7 @@ Figure~\ref{fig:engines} details the comparative algorithmic workflows across th
 
 \subsection{Scikit-Learn Estimator and Pipeline Interoperability}
 \label{sec:api_contracts}
-The primary user interface is \texttt{AssociationRulesEstimator}. It implements the full scikit-learn estimator protocol:
+The primary user interface is \texttt{AssociationRulesEstimator}, structured around the multi-tier system architecture shown in Figure~\ref{fig:arch}. It implements the full scikit-learn estimator protocol:
 \begin{itemize}
   \item \textbf{Parameters and Cloning}: Constructor parameters (\texttt{min\_support}, \texttt{min\_threshold}, \texttt{metric}, \texttt{algorithm}, \texttt{max\_candidates}) are stored without modification. \texttt{get\_params()} and \texttt{set\_params()} allow runtime inspection and dynamic parameter updates. Estimators are fully cloneable via \texttt{sklearn.base.clone()} and support Python \texttt{pickle} serialization.
   \item \textbf{Fitted Attributes}: In accordance with scikit-learn conventions, all state learned during \texttt{fit(X)} is stored with a trailing underscore: \texttt{frequent\_itemsets\_}, \texttt{rules\_}, \texttt{is\_degraded\_}, \texttt{pruning\_policy\_}, and \texttt{n\_features\_in\_}.
@@ -336,14 +349,14 @@ per file) is in \texttt{DATASET\_INVENTORY.md} in the repository.
 
 \begin{table*}[t]
 \centering
-\begin{minipage}[t]{0.57\textwidth}
+\begin{minipage}[t]{0.58\textwidth}
 \captionof{table}{Evaluation datasets. $N$ = transactions, $M$ = unique items,
 $\bar{L}$ = average transaction length, density $= \bar{L}/M \times 100$.
 All statistics measured by parsing the stored files.}
 \label{tab:data}
 \vspace{0.3em}
 \footnotesize
-\setlength{\tabcolsep}{3.5pt}
+\setlength{\tabcolsep}{2.5pt}
 \begin{tabular}{lrrrrl}
 \toprule
 Dataset & $N$ & $M$ & $\bar{L}$ & Density \% & Type \\
@@ -376,7 +389,7 @@ Online Retail II & 22,103 & 4,317 & 22.62 & 0.52 & retail \\
 \bottomrule
 \end{tabular}
 \end{minipage}\hfill
-\begin{minipage}[t]{0.40\textwidth}
+\begin{minipage}[t]{0.39\textwidth}
 \centering
 \vspace{0pt}
 \includegraphics[width=\linewidth]{figures/family.png}
@@ -385,11 +398,11 @@ Online Retail II & 22,103 & 4,317 & 22.62 & 0.52 & retail \\
 \end{minipage}
 \end{table*}
 
-Figure~\ref{fig:family} summarises the same collection by family. Each dataset is counted once, under its most distinctive type from Table~2: accidents under traffic rather than dense, pumsb under census rather than dense, and the retail sets under retail rather than sparse.
+Figure~\ref{fig:family} summarises the same collection by family. Each dataset is counted once, under its most distinctive type from Table~\ref{tab:data}: accidents under traffic rather than dense, pumsb under census rather than dense, and the retail sets under retail rather than sparse.
 
 \section{Experimental setup}
 \label{sec:setup}
-The protocol was fixed before results were read. Thresholds are
+The protocol was fixed before results were read. Figure~\ref{fig:flow} outlines the empirical benchmark and verification pipeline across all 25 datasets. Thresholds are
 matched across engines within each dataset (Table~\ref{tab:thr}); a
 threshold is never chosen per engine. Thresholds already proven
 infeasible in probing are not re-attempted blindly: docword\_nips at
@@ -434,7 +447,8 @@ Campaign machine: Windows 11 (AMD64), 16 CPUs, 12 parallel workers (one per data
 with the reason each ladder was chosen. Thresholds proven infeasible
 in probing are excluded, not hidden.}
 \label{tab:thr}
-\begin{tabular}{p{2.5cm}p{7.0cm}p{6.0cm}}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{2.4cm}p{7.3cm}p{5.5cm}}
 \toprule
 Dataset & Thresholds & Reason (condensed) \\
 \midrule
@@ -599,7 +613,8 @@ Across 42 cells, 157 engine pairs were compared and every one agrees exactly on 
 \footnotesize
 \caption{Correctness verdicts: trial-0 itemset agreement per cell.}
 \label{tab:correctness}
-\begin{tabular}{p{3.2cm}p{3.1cm}p{3.1cm}p{3.1cm}p{3.0cm}}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{4.2cm}p{2.2cm}p{2.5cm}p{2.2cm}p{3.5cm}}
 \toprule
 Cell & Pairs & Verdict & mlxtend & Note \\
 \midrule
@@ -679,16 +694,16 @@ The empirical results across all 25 benchmark datasets and 1,650 trial records d
 
 \paragraph{RQ2: Comparative Scaling and Performance Dynamics.} Figure~\ref{fig:runtime} and Table~\ref{tab:timing} demonstrate that algorithmic efficiency is governed by transactional density and average length ($\bar{L}$):
 \begin{itemize}
-  \item \textbf{Eclat} is the fastest engine on \textbf{20 of the 25 datasets}, achieving \times$ to \times$ speedups on sparse clickstream and retail datasets (\texttt{retail}, \texttt{kosarak}, \texttt{bms\_pos}, \texttt{online\_retail}). Here, depth-first vertical tidset intersections execute extremely fast over compact transaction-ID lists.
+  \item \textbf{Eclat} is the fastest engine on \textbf{20 of the 25 datasets}, achieving $5\times$ to $10\times$ speedups on sparse clickstream and retail datasets (\texttt{retail}, \texttt{kosarak}, \texttt{bms\_pos}, \texttt{online\_retail}). Here, depth-first vertical tidset intersections execute extremely fast over compact transaction-ID lists.
   \item \textbf{FP-Growth} is fastest on \textbf{5 datasets} (\texttt{accidents}, \texttt{adult\_census}, \texttt{connect}, \texttt{docword\_enron}, \texttt{pumsb\_star}). These datasets feature high density or long transactions ($\bar{L} > 30$), where recursive conditional tree projections compress prefixes efficiently while vertical tidsets become bloated.
-  \item \textbf{Apriori} was fastest on \textbf{0 datasets}, constrained by combinatorial candidate self-joins ( = L_{k-1} \bowtie L_{k-1}$) and repeated full-database scans, exceeding the 600~s watchdog on dense configurations (\texttt{accidents@0.50}, \texttt{kosarak@0.005}).
+  \item \textbf{Apriori} was fastest on \textbf{0 datasets}, constrained by combinatorial candidate self-joins ($C_k = L_{k-1} \bowtie L_{k-1}$) and repeated full-database scans, exceeding the 600~s watchdog on dense configurations (\texttt{accidents@0.50}, \texttt{kosarak@0.005}).
 \end{itemize}
 
 \paragraph{RQ3: Bounded-Search Safety and Recall Trade-Offs.} Figure~\ref{fig:ablation} and Section~\ref{sec:ablation} demonstrate the efficacy of the candidate governor. On dense workloads where exact mining becomes intractable, capping \texttt{max\_candidates} accelerates execution by up to $790\times$ while recovering meaningful subsets ($0.60\%$ to $17.95\%$ recall). Most importantly, \skarm transitions into \texttt{DEGRADED} mode and records exact truncation metrics, eliminating silent omissions.
 
 \paragraph{RQ4: Scikit-Learn Estimator and Pipeline Interoperability.} As documented in Section~\ref{sec:api_contracts} and Section~\ref{sec:limitations}, \skarm adheres to scikit-learn's estimator protocol: constructor parameters are immutable until explicitly modified via \texttt{set\_params()}, estimators are cloneable via \texttt{sklearn.base.clone()}, and fit state is encapsulated with trailing underscores. In \texttt{Pipeline} workflows, \skarm operates seamlessly both as a terminal estimator and as an intermediate transformer projecting transactional data into binary rule-firing indicator features.
 
-\paragraph{RQ5: Reproducibility, Auditing, and Telemetry.} The campaign's 98.0\% completion rate ({,}617$ OK trials out of {,}650$, Figure~\ref{fig:outcomes}) demonstrates high robustness. All 6 timeouts and 8 skips are audited with explicit rationale in Table~\ref{tab:skips}. Fine-grained 10~ms RSS telemetry captures memory dynamics without system crashes, providing a reproducible empirical foundation across all 25 benchmark datasets.
+\paragraph{RQ5: Reproducibility, Auditing, and Telemetry.} The campaign's 98.0\% completion rate ($1{,}617$ OK trials out of $1{,}650$, Figure~\ref{fig:outcomes}) demonstrates high robustness. All 6 timeouts and 8 skips are audited with explicit rationale in Table~\ref{tab:skips}. Fine-grained 10~ms RSS telemetry captures memory dynamics without system crashes, providing a reproducible empirical foundation across all 25 benchmark datasets.
 
 \subsection{Pruning-policy ablation: bounded versus exact}
 \label{sec:ablation}
@@ -825,10 +840,11 @@ for the acceptance defects are commits \texttt{ff03b451},
 per-dataset checkpoint files, and trial records from different machines
 must never be merged into one results file.
 Results commit \texttt{79334222} (repository \texttt{benchmarks/campaign\_results.json} plus \texttt{benchmarks/cells/} with 25 per-dataset checkpoint files). Machine and library versions are as in Section~5. The campaign report file (\texttt{benchmarks/CAMPAIGN\_REPORT.md}) states COMPLETE. Note: \texttt{skarm/fpgrowth.py} in the repository carries a tail-pointer optimisation (O(1) node-link appends) added with the final two datasets; it changes no results (all correctness pairs agree exactly) and the methods section describes the code as it now stands. \texttt{benchmarks/\allowbreak{}thresholds.json} holds the matched ladder.
-Confirmed 2026-10-30 from the repository listing: \texttt{{data/}} holds 26 files --- all 25 dataset files plus \texttt{{generate\_synthetic.py}}. All 25 datasets in Table~2 are present; no data file is missing.
+Confirmed 2026-10-30 from the repository listing: \texttt{{data/}} holds 26 files --- all 25 dataset files plus \texttt{{generate\_synthetic.py}}. All 25 datasets in Table~\ref{tab:data} are present; no data file is missing.
 
 \clearpage
 \onecolumn
+\raggedbottom
 \section{Full cell-level timing table}
 \label{app:timing}
 One row per dataset $\times$ threshold $\times$ engine, over OK trials
@@ -837,6 +853,7 @@ no trial is hidden. This appendix exists so the main text can stay
 short; the condensed primary-threshold table is Table~\ref{tab:timing}.
 \scriptsize
 \setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{1.05}
 \begin{longtable}{p{3.0cm}llrrrrrrrp{2.4cm}}
 \caption{Full per-cell timing and output counts. Mean, median (p50) and p95 are over OK trials only. Degraded mode never triggered on any cell, so no degraded column is shown.}
 \label{tab:timingfull}\\
@@ -848,6 +865,10 @@ Dataset & Thr & Engine & OK & Mean (s) & p50 & p95 & Peak MB & Items & Rules & N
 Dataset & Thr & Engine & OK & Mean (s) & p50 & p95 & Peak MB & Items & Rules & Note \\
 \midrule
 \endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 accidents & 0.5 & apriori & 0 & --- & --- & --- & --- & --- & --- & timeout 600 s \\
 accidents & 0.5 & fpgrowth & 5 & 156.5 & 157.1 & 181.3 & 955.1 & 8057 & 375774 & --- \\
 accidents & 0.5 & eclat & 5 & 288.2 & 273.6 & 333.4 & 1738.2 & 8057 & 375774 & --- \\
@@ -1013,7 +1034,6 @@ tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.5 & apriori & 30 & 0.046 & 0.046 & 0
 tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.5 & fpgrowth & 30 & 0.045 & 0.044 & 0.064 & 0.021 & 1 & 0 & --- \\
 tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.5 & eclat & 30 & 0.022 & 0.020 & 0.030 & 0.026 & 1 & 0 & --- \\
 tic\_\allowbreak{}tac\_\allowbreak{}toe & 0.5 & mlxtend & 5 & 0.005 & 0.005 & 0.006 & 0.040 & 1 & 0 & --- \\
-\bottomrule
 \end{longtable}
 
 \end{document}

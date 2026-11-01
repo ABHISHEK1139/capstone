@@ -23,6 +23,12 @@ from skarm.pruning import (
 from skarm.telemetry import TelemetryLogger, RecoveryCoordinator
 from skarm.estimator import AssociationRulesEstimator
 from skarm.explorer import RuleExplorer
+from skarm.metrics import (
+    mean_confidence_scorer,
+    mean_lift_scorer,
+    total_support_scorer,
+    rule_count_scorer,
+)
 
 __version__ = "0.1.0"
 
@@ -43,4 +49,8 @@ __all__ = [
     "RecoveryCoordinator",
     "AssociationRulesEstimator",
     "RuleExplorer",
+    "mean_confidence_scorer",
+    "mean_lift_scorer",
+    "total_support_scorer",
+    "rule_count_scorer",
 ]

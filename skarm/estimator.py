@@ -1,10 +1,10 @@
 """Scikit-learn compatible Association Rule Mining Estimator."""
 
-from typing import Optional, Union, Iterable, List, Dict, Any, FrozenSet
+from typing import Optional, Union, Iterable, List, Dict, Any, FrozenSet, Set, Sequence
 import numpy as np
 import pandas as pd
 from scipy import sparse
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from skarm.preprocessing import TransactionEncoder
@@ -16,7 +16,7 @@ from skarm.pruning import PruningPolicy, BoundaryConditionError
 from skarm.telemetry import TelemetryLogger
 
 
-class AssociationRulesEstimator(BaseEstimator):
+class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
     """Scikit-learn compatible estimator for association rule mining.
 
     Supports Apriori, FP-Growth, and Eclat algorithms with configurable
@@ -71,6 +71,9 @@ class AssociationRulesEstimator(BaseEstimator):
         max_candidates: int = 100000,
         on_candidate_explosion: str = "degrade",
         sparse_output: bool = True,
+        max_time_seconds: Optional[float] = None,
+        max_memory_mb: Optional[float] = None,
+        scoring: str = "mean_confidence",
     ):
         self.min_support = min_support
         self.metric = metric
@@ -80,6 +83,9 @@ class AssociationRulesEstimator(BaseEstimator):
         self.max_candidates = max_candidates
         self.on_candidate_explosion = on_candidate_explosion
         self.sparse_output = sparse_output
+        self.max_time_seconds = max_time_seconds
+        self.max_memory_mb = max_memory_mb
+        self.scoring = scoring
 
     def _validate_parameters(self):
         """Validate constructor parameters against boundary conditions (NT-4)."""
@@ -89,11 +95,18 @@ class AssociationRulesEstimator(BaseEstimator):
             raise BoundaryConditionError(f"max_candidates must be > 0, got {self.max_candidates}")
         if self.max_len is not None and self.max_len < 1:
             raise BoundaryConditionError(f"max_len must be >= 1, got {self.max_len}")
+        if self.max_time_seconds is not None and self.max_time_seconds <= 0:
+            raise BoundaryConditionError(f"max_time_seconds must be positive, got {self.max_time_seconds}")
+        if self.max_memory_mb is not None and self.max_memory_mb <= 0:
+            raise BoundaryConditionError(f"max_memory_mb must be positive, got {self.max_memory_mb}")
         if self.algorithm not in ("auto", "apriori", "fpgrowth", "eclat"):
             raise ValueError(f"Unknown algorithm: {self.algorithm}")
         valid_metrics = {"confidence", "lift", "support", "leverage", "conviction", "zhangs_metric"}
         if self.metric not in valid_metrics:
             raise ValueError(f"Unknown metric '{self.metric}'. Choose from {valid_metrics}")
+        valid_scorings = {"mean_confidence", "mean_lift", "total_support", "rule_count"}
+        if self.scoring not in valid_scorings and not callable(self.scoring):
+            raise ValueError(f"Invalid scoring metric: {self.scoring}")
 
     def fit(
         self,
@@ -119,30 +132,36 @@ class AssociationRulesEstimator(BaseEstimator):
         """
         self._validate_parameters()
 
-        # A DataFrame of 0/1 indicators is a matrix, not an iterable of
-        # transactions (iterating it would yield column names).
+        # Handle Pandas DataFrame: preserve column names (Bug B4)
         if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
-
-        # Handle raw iterables of transactions vs pre-encoded matrices
-        if isinstance(X, (np.ndarray, sparse.spmatrix)):
+            df_columns = list(X.columns)
+            X_matrix = X.to_numpy()
+            self.columns_ = df_columns
+            self.feature_names_in_ = np.array(df_columns, dtype=object)
+            self.n_features_in_ = len(df_columns)
+            self.encoder_ = None
+        elif isinstance(X, (np.ndarray, sparse.spmatrix)):
             X_matrix = X
             self.encoder_ = None
             self.columns_ = [f"item_{i}" for i in range(X_matrix.shape[1])]
             self.n_features_in_ = X_matrix.shape[1]
+            self.feature_names_in_ = np.array(self.columns_, dtype=object)
         else:
             # Transaction list of lists
             self.encoder_ = TransactionEncoder(sparse_output=self.sparse_output)
             X_matrix = self.encoder_.fit_transform(X)
             self.columns_ = list(self.encoder_.columns_)
             self.n_features_in_ = len(self.columns_)
+            self.feature_names_in_ = np.array(self.columns_, dtype=object)
 
-        # Setup pruning and telemetry
+        # Setup pruning policy and telemetry
         self.pruning_policy_ = PruningPolicy(
             max_candidates=self.max_candidates,
             max_len=self.max_len,
             min_support=self.min_support,
             on_candidate_explosion=self.on_candidate_explosion,
+            max_time_seconds=self.max_time_seconds,
+            max_memory_mb=self.max_memory_mb,
         )
         self.telemetry_ = TelemetryLogger()
 
@@ -187,6 +206,9 @@ class AssociationRulesEstimator(BaseEstimator):
             )
 
         self.is_degraded_ = self.pruning_policy_.is_degraded
+        self.status_ = "DEGRADED" if self.is_degraded_ else "EXACT"
+        self.is_complete_ = (self.status_ == "EXACT")
+        self.termination_reason_ = self.pruning_policy_.degradation_reason if self.is_degraded_ else None
 
         # Generate association rules
         self.rules_ = association_rules(
@@ -196,7 +218,62 @@ class AssociationRulesEstimator(BaseEstimator):
             feature_names=self.columns_,
         )
 
+        # Standard fitted attribute itemsets_ as a DataFrame (retaining frequent_itemsets_ as alias)
+        self.itemsets_ = self.get_frequent_itemsets(use_names=True)
+
+        # Structured metadata dictionary (R2)
+        counters = getattr(self.pruning_policy_, "counters", {})
+        if not counters and hasattr(self.telemetry_, "counters"):
+            counters = self.telemetry_.counters
+
+        self.metadata_ = {
+            "status": self.status_,
+            "is_complete": self.is_complete_,
+            "termination_reason": self.termination_reason_,
+            "level_halted": self.pruning_policy_.level_halted,
+            "candidates_generated_at_level": self.pruning_policy_.candidates_generated_at_level,
+            "candidates_remaining_at_level": self.pruning_policy_.candidates_remaining_at_level,
+            "future_candidates_status": self.pruning_policy_.future_candidates_status,
+            "frequent_itemsets_discovered": len(self.frequent_itemsets_),
+            "is_candidate_count_exact": (self.status_ == "EXACT"),
+            "counters": dict(counters),
+        }
+
         return self
+
+    def _to_tx_sets(self, X: Any) -> List[Set[int]]:
+        """Convert query transactions or binary matrix into list of item index sets (Bug B5)."""
+        if isinstance(X, pd.DataFrame):
+            X = X.to_numpy()
+
+        if isinstance(X, sparse.spmatrix):
+            X_csr = X.tocsr()
+            return [
+                set(X_csr.indices[X_csr.indptr[i]: X_csr.indptr[i + 1]])
+                for i in range(X_csr.shape[0])
+            ]
+
+        if isinstance(X, np.ndarray):
+            X_arr = np.asarray(X, dtype=bool)
+            return [set(np.where(row)[0]) for row in X_arr]
+
+        # Iterable of transactions (e.g. list of lists)
+        tx_list = list(X)
+        col_to_idx = {col: idx for idx, col in enumerate(self.columns_)}
+        tx_sets = []
+        for tx in tx_list:
+            if isinstance(tx, (str, bytes)):
+                tx = [tx]
+            tx_indices = set()
+            for item in tx:
+                if self.encoder_ is not None and item in self.encoder_.item_to_idx_:
+                    tx_indices.add(self.encoder_.item_to_idx_[item])
+                elif item in col_to_idx:
+                    tx_indices.add(col_to_idx[item])
+                elif isinstance(item, (int, np.integer)) and 0 <= item < len(self.columns_):
+                    tx_indices.add(int(item))
+            tx_sets.append(tx_indices)
+        return tx_sets
 
     def predict(self, X: Union[Iterable[Iterable[Any]], np.ndarray, sparse.csr_matrix]) -> List[List[str]]:
         """Predict recommended consequent items for each transaction.
@@ -214,35 +291,10 @@ class AssociationRulesEstimator(BaseEstimator):
             Recommended items per transaction.
         """
         check_is_fitted(self, attributes=["rules_", "columns_"])
-
-        if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
-        # Materialize one-shot iterables (e.g. generators) so the empty-rules
-        # path and the transaction loop both see the same transactions.
-        if not isinstance(X, (np.ndarray, sparse.spmatrix)):
-            X = list(X)
+        tx_sets = self._to_tx_sets(X)
 
         if self.rules_.empty:
-            return [[] for _ in range(len(X))]
-
-        # Prepare transactions as set of indices
-        if self.encoder_ is not None and not isinstance(X, (np.ndarray, sparse.spmatrix)):
-            tx_sets = [
-                {self.encoder_.item_to_idx_[item] for item in tx if item in self.encoder_.item_to_idx_}
-                for tx in X
-            ]
-        elif isinstance(X, sparse.spmatrix):
-            X_csr = X.tocsr()
-            tx_sets = [
-                set(X_csr.indices[X_csr.indptr[i]: X_csr.indptr[i + 1]])
-                for i in range(X_csr.shape[0])
-            ]
-        else:
-            X_arr = np.asarray(X, dtype=bool)
-            tx_sets = [
-                set(np.where(row)[0])
-                for row in X_arr
-            ]
+            return [[] for _ in range(len(tx_sets))]
 
         results = []
         # Pre-extract rules as tuples of (antecedent_set, consequent_indices)
@@ -267,34 +319,15 @@ class AssociationRulesEstimator(BaseEstimator):
     def transform(self, X: Union[Iterable[Iterable[Any]], np.ndarray, sparse.csr_matrix]) -> np.ndarray:
         """Transform transactions into binary vector of triggered rule firings."""
         check_is_fitted(self, attributes=["rules_"])
-        if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
-        if not isinstance(X, (np.ndarray, sparse.spmatrix)):
-            X = list(X)
+        tx_sets = self._to_tx_sets(X)
+        n_samples = len(tx_sets)
         n_rules = len(self.rules_)
         if n_rules == 0:
-            n_samples = len(X)
             return np.zeros((n_samples, 0), dtype=bool)
 
         # Pre-extract antecedents
         rule_antes = list(self.rules_["antecedent"])
 
-        if self.encoder_ is not None and not isinstance(X, (np.ndarray, sparse.spmatrix)):
-            tx_sets = [
-                {self.encoder_.item_to_idx_[item] for item in tx if item in self.encoder_.item_to_idx_}
-                for tx in X
-            ]
-        elif isinstance(X, sparse.spmatrix):
-            X_csr = X.tocsr()
-            tx_sets = [
-                set(X_csr.indices[X_csr.indptr[i]: X_csr.indptr[i + 1]])
-                for i in range(X_csr.shape[0])
-            ]
-        else:
-            X_arr = np.asarray(X, dtype=bool)
-            tx_sets = [set(np.where(row)[0]) for row in X_arr]
-
-        n_samples = len(tx_sets)
         output = np.zeros((n_samples, n_rules), dtype=bool)
         for i, tx in enumerate(tx_sets):
             for r_idx, ante in enumerate(rule_antes):
@@ -302,6 +335,64 @@ class AssociationRulesEstimator(BaseEstimator):
                     output[i, r_idx] = True
 
         return output
+
+    def get_feature_names_out(self, input_features: Optional[Any] = None) -> np.ndarray:
+        """Get output feature names for transformation (Bug B8).
+
+        Returns array of rule representations in the format:
+        '{antecedent} -> {consequent}'
+        """
+        check_is_fitted(self, attributes=["rules_"])
+        if self.rules_.empty:
+            return np.array([], dtype=object)
+
+        if input_features is not None:
+            if hasattr(self, "n_features_in_") and len(input_features) != self.n_features_in_:
+                raise ValueError(
+                    f"input_features has length {len(input_features)}, but "
+                    f"{self.n_features_in_} features were seen during fit."
+                )
+            feature_names_map = list(input_features)
+        elif hasattr(self, "columns_") and self.columns_:
+            feature_names_map = self.columns_
+        else:
+            feature_names_map = [f"item_{i}" for i in range(getattr(self, "n_features_in_", 0))]
+
+        feature_names = []
+        for _, row in self.rules_.iterrows():
+            ante_items = [
+                feature_names_map[i] if i < len(feature_names_map) else str(i)
+                for i in row["antecedent"]
+            ]
+            cons_items = [
+                feature_names_map[i] if i < len(feature_names_map) else str(i)
+                for i in row["consequent"]
+            ]
+            ante_str = "{" + ", ".join(sorted(str(x) for x in ante_items)) + "}"
+            cons_str = "{" + ", ".join(sorted(str(x) for x in cons_items)) + "}"
+            feature_names.append(f"{ante_str} -> {cons_str}")
+
+        return np.array(feature_names, dtype=object)
+
+    def score(self, X: Any = None, y: Optional[Any] = None) -> float:
+        """Calculate unsupervised model score for hyperparameter tuning (Bug B9).
+
+        Defaults to mean rule confidence.
+        """
+        check_is_fitted(self, attributes=["rules_"])
+        if self.rules_.empty:
+            return 0.0
+        scoring = getattr(self, "scoring", "mean_confidence")
+        if callable(scoring):
+            return float(scoring(self, X, y))
+        elif scoring == "mean_lift":
+            return float(self.rules_["lift"].mean())
+        elif scoring == "total_support":
+            return float(self.rules_["support"].sum())
+        elif scoring == "rule_count":
+            return float(len(self.rules_))
+        else:
+            return float(self.rules_["confidence"].mean())
 
     def get_frequent_itemsets(self, use_names: bool = True) -> pd.DataFrame:
         """Return frequent itemsets as a formatted DataFrame."""
@@ -335,3 +426,16 @@ class AssociationRulesEstimator(BaseEstimator):
         check_is_fitted(self, attributes=["rules_"])
         from skarm.explorer import RuleExplorer
         return RuleExplorer(self.rules_)
+
+    def __sklearn_tags__(self):
+        """Declare scikit-learn estimator tags for interoperability (R3)."""
+        tags = super().__sklearn_tags__()
+        tags.target_tags.required = False
+        tags.input_tags.sparse = True
+        tags.input_tags.two_d_array = True
+        try:
+            from sklearn.utils._tags import TransformerTags
+            tags.transformer_tags = TransformerTags(preserves_dtype=[])
+        except Exception:
+            pass
+        return tags

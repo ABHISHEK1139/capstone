@@ -1,0 +1,83 @@
+{
+  "framework": "SKARM E2E Verification Suite",
+  "capstone_id": "KLCAP-2026-00340",
+  "timestamp": "2026-11-01T08:49:07Z",
+  "overall_status": "ALL TESTS PASSED",
+  "total_time_seconds": 8.918,
+  "total_tests": 88,
+  "total_passed": 88,
+  "total_failed": 0,
+  "total_errors": 0,
+  "tiers": [
+    {
+      "tier": "Tier 1",
+      "name": "Feature Coverage",
+      "file": "test_tier1_features.py",
+      "description": "Input formats, core miners vs oracles, rule metrics, result states, estimator contracts",
+      "status": "PASS",
+      "duration_s": 2.021,
+      "passed": 32,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "total": 32,
+      "failures": []
+    },
+    {
+      "tier": "Tier 2",
+      "name": "Boundary & Corner Cases",
+      "file": "test_tier2_boundaries.py",
+      "description": "Empty/single items, token idempotency, extreme thresholds, missing values, candidate budgets",
+      "status": "PASS",
+      "duration_s": 0.349,
+      "passed": 29,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "total": 29,
+      "failures": []
+    },
+    {
+      "tier": "Tier 3",
+      "name": "Cross-Feature Combinations",
+      "file": "test_tier3_pairwise.py",
+      "description": "Pairwise interactions: CSR+Eclat, DataFrame+FP-Growth+Pipeline, GridSearchCV, weights equivalence",
+      "status": "PASS",
+      "duration_s": 0.792,
+      "passed": 6,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "total": 6,
+      "failures": []
+    },
+    {
+      "tier": "Tier 4",
+      "name": "Real-World Application Scenarios",
+      "file": "test_tier4_scenarios.py",
+      "description": "Retail market basket, e-commerce intent pipeline, clickstream sparsity, census survey, batch ETL",
+      "status": "PASS",
+      "duration_s": 0.664,
+      "passed": 5,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "total": 5,
+      "failures": []
+    },
+    {
+      "tier": "Tier 5",
+      "name": "Adversarial Coverage Hardening",
+      "file": "test_tier5_adversarial.py",
+      "description": "Extreme boundary matrices, multi-dimensional budgets, persistence, numerical stability, pandas set_output",
+      "status": "PASS",
+      "duration_s": 5.091,
+      "passed": 16,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "total": 16,
+      "failures": []
+    }
+  ]
+}

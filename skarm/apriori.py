@@ -9,6 +9,29 @@ from skarm.pruning import PruningPolicy, CandidateExplosionError
 from skarm.telemetry import TelemetryLogger
 
 
+def _validate_matrix(X: Union[np.ndarray, sparse.spmatrix]):
+    """Validate that input matrix values are strictly binary {0, 1} or boolean."""
+    if sparse.issparse(X):
+        if X.data.dtype.kind in ('f', 'c'):
+            if np.isnan(X.data).any():
+                raise ValueError("Input matrix contains NaNs.")
+            if np.isinf(X.data).any():
+                raise ValueError("Input matrix contains infinite values.")
+        if X.data.dtype != bool:
+            if not np.all((X.data == 0) | (X.data == 1)):
+                raise ValueError("Input matrix values must be strictly binary (0, 1, or boolean). Continuous, negative, or non-binary values are not allowed.")
+    else:
+        arr = np.asarray(X)
+        if arr.dtype.kind in ('f', 'c'):
+            if np.isnan(arr).any():
+                raise ValueError("Input matrix contains NaNs.")
+            if np.isinf(arr).any():
+                raise ValueError("Input matrix contains infinite values.")
+        if arr.dtype != bool:
+            if not np.all((arr == 0) | (arr == 1)):
+                raise ValueError("Input matrix values must be strictly binary (0, 1, or boolean). Continuous, negative, or non-binary values are not allowed.")
+
+
 def apriori(
     X: Union[np.ndarray, sparse.csr_matrix],
     min_support: float = 0.1,
@@ -42,6 +65,8 @@ def apriori(
     frequent_itemsets : dict
         Mapping from frozenset of item indices to float support value.
     """
+    _validate_matrix(X)
+
     if pruning_policy is None:
         pruning_policy = PruningPolicy(
             max_candidates=max_candidates,
@@ -56,11 +81,15 @@ def apriori(
     if n_samples == 0 or n_features == 0:
         return {}
 
-    # Weight validation (NT-3)
+    # Weight validation (NT-3, B10)
     if sample_weight is not None:
         sample_weight = np.asarray(sample_weight, dtype=float)
         if len(sample_weight) != n_samples:
             raise ValueError(f"sample_weight length {len(sample_weight)} != n_samples {n_samples}")
+        if np.isnan(sample_weight).any():
+            raise ValueError("sample_weight cannot contain NaN values.")
+        if np.isinf(sample_weight).any():
+            raise ValueError("sample_weight cannot contain infinite values.")
         if np.any(sample_weight < 0):
             raise ValueError("sample_weight cannot contain negative values.")
         total_weight = float(np.sum(sample_weight))
@@ -92,10 +121,14 @@ def apriori(
 
     # Level 1 frequent itemsets
     level_start = time.perf_counter()
+    candidates_generated = n_features
+    joins_attempted = 0
+    scans_performed = 0
+
     L1: Dict[Tuple[int], float] = {}
     for j in range(n_features):
         supp = float(col_supports[j])
-        if supp >= min_support:
+        if supp >= min_support - 1e-12:
             L1[(j,)] = supp
 
     frequent_itemsets: Dict[FrozenSet[int], float] = {
@@ -132,6 +165,7 @@ def apriori(
 
         for i in range(n_L):
             for j in range(i + 1, n_L):
+                joins_attempted += 1
                 l1 = current_L[i]
                 l2 = current_L[j]
                 # Join condition: share first k-2 elements
@@ -146,11 +180,17 @@ def apriori(
                             break
                     if is_valid:
                         candidates.append(c)
+                        candidates_generated += 1
                 else:
                     break
 
         candidate_count = len(candidates)
-        can_proceed = pruning_policy.check_candidate_count(candidate_count, level=k)
+        elapsed = time.perf_counter() - level_start
+        can_proceed = pruning_policy.check_budget(
+            candidate_count=candidate_count,
+            level=k,
+            elapsed_time=elapsed,
+        )
         if not can_proceed:
             # Degraded mode triggered (NT-1, NT-6)
             break
@@ -158,7 +198,7 @@ def apriori(
         if not candidates:
             break
 
-        # Truncate candidates if truncate policy
+        # Truncate candidates if truncate policy (B7)
         if candidate_count > pruning_policy.max_candidates and pruning_policy.on_candidate_explosion == "truncate":
             candidates = candidates[: pruning_policy.max_candidates]
 
@@ -167,6 +207,7 @@ def apriori(
         for c in candidates:
             c_set = set(c)
             if is_sparse:
+                scans_performed += len(row_itemsets)
                 if sample_weight is not None:
                     matched_weight = sum(
                         sample_weight[row_idx]
@@ -180,6 +221,7 @@ def apriori(
                     )
                     supp = matched / total_weight
             else:
+                scans_performed += n_samples
                 cols = list(c)
                 row_match = np.all(X_arr[:, cols], axis=1)
                 if sample_weight is not None:
@@ -187,7 +229,7 @@ def apriori(
                 else:
                     supp = float(np.count_nonzero(row_match) / total_weight)
 
-            if supp >= min_support:
+            if supp >= min_support - 1e-12:
                 next_L[c] = supp
                 frequent_itemsets[frozenset(c)] = supp
 
@@ -202,12 +244,20 @@ def apriori(
         current_L = sorted(next_L.keys())
         k += 1
 
+    counters = {
+        "candidates_generated": candidates_generated,
+        "joins_attempted": joins_attempted,
+        "scans_performed": scans_performed,
+    }
+    pruning_policy.counters = counters
     if telemetry is not None:
+        telemetry.counters = counters
         telemetry.stop({
             "algorithm": "apriori",
             "total_frequent_itemsets": len(frequent_itemsets),
             "is_degraded": pruning_policy.is_degraded,
             "peak_candidates": pruning_policy.peak_candidate_count,
+            "counters": counters,
         })
 
     return frequent_itemsets

@@ -13,26 +13,42 @@ SRC = sys.argv[1] if len(sys.argv) > 1 else "paper/paper.tex"
 DST = "paper/paper-preview.html"
 
 LABEL_MAP = {
-    "sec:methods": "3", "sec:data": "4", "sec:setup": "5",
-    "sec:limitations": "7", "app:repro": "A",
-    "tab:metrics": "1", "tab:data": "2", "tab:thr": "3",
-    "tab:timing": "4", "tab:correctness": "5", "tab:skips": "6",
-    "tab:timingfull": "7", "app:timing": "B",
-    "fig:engines": "1", "fig:arch": "2", "fig:flow": "3", "fig:fptree": "4",
-    "fig:family": "5",
+    "sec:intro": "1", "sec:sklearn_scope": "1.2", "sec:determinism_dims": "1.3",
+    "sec:rqs": "1.4", "sec:related": "2", "sec:methods": "3",
+    "sec:formal_spec": "3.1", "sec:result_states": "3.2",
+    "sec:api_contracts": "3.4", "sec:governor": "3.5",
+    "sec:data": "4", "sec:setup": "5", "sec:rq_answers": "6.3",
+    "sec:ablation": "6.4", "sec:limitations": "7", "app:repro": "A",
+    "app:timing": "B",
+    "tab:ecosystem": "1", "tab:metrics": "2", "tab:data": "3", "tab:thr": "4",
+    "tab:timing": "5", "tab:correctness": "6", "tab:skips": "7",
+    "tab:timingfull": "8",
+    "fig:engines": "1", "fig:fptree": "2", "fig:arch": "3",
+    "fig:family": "4", "fig:flow": "5",
     "fig:runtime": "6", "fig:memory": "7", "fig:scatter": "8",
     "fig:throughput": "9", "fig:itemsets": "10", "fig:outcomes": "11", "fig:ablation": "12",
-    "sec:ablation": "6.4",
 }
 
 MATH_MAP = [
-    (r"\mathrm{supp}", "supp"), (r"\mathrm{confidence}", "confidence"),
-    (r"\Rightarrow", "\u21d2"), (r"\cup", "\u222a"), (r"\cap", "\u2229"),
+    (r"\mathrm{supp}", "supp"), (r"\mathrm{conf}", "conf"),
+    (r"\mathrm{confidence}", "confidence"),
+    (r"\Rightarrow", "\u21d2"), (r"\to", "\u2192"),
+    (r"\cup", "\u222a"), (r"\cap", "\u2229"),
     (r"\emptyset", "\u2205"), (r"\infty", "\u221e"), (r"\times", "\u00d7"),
-    (r"\leq", "\u2264"), (r"\geq", "\u2265"), (r"\neq", "\u2260"),
-    (r"\to", "\u2192"), (r"\bar{L}", "L\u0304"), (r"\bar", ""),
+    (r"\leq", "\u2264"), (r"\geq", "\u2265"), (r"\ge", "\u2265"), (r"\le", "\u2264"),
+    (r"\neq", "\u2260"), (r"\ne", "\u2260"), (r"\equiv", "\u2261"),
+    (r"\wedge", "\u2227"), (r"\vee", "\u2228"),
+    (r"\forall", "\u2200"), (r"\exists", "\u2203"),
+    (r"\bowtie", "\u22c8"), (r"\subset", "\u2282"), (r"\subseteq", "\u2286"),
+    (r"\in", "\u2208"), (r"\notin", "\u2209"),
+    (r"\mid", "|"), (r"\cdot", "\u00b7"), (r"\approx", "\u2248"), (r"\pm", "\u00b1"),
+    (r"\setminus", "\\"), (r"\max", "max"), (r"\min", "min"),
+    (r"\sigma", "\u03c3"), (r"\gamma", "\u03b3"), (r"\theta", "\u03b8"),
+    (r"\Delta", "\u0394"),
+    (r"\bar{L}", "L\u0304"), (r"\bar", ""),
     (r"{,}", ","), (r"\%", "%"), (r"\#", "#"), (r"\_", "_"),
     (r"\&", "&"), (r"\{", "{"), (r"\}", "}"),
+    (r"\mathbf", ""), (r"\mathcal", ""),
 ]
 
 
@@ -80,12 +96,29 @@ BIB_ORDER = {}
 
 def inline(text):
     """Convert a chunk of LaTeX body text to HTML inline content."""
+    text = re.sub(r"\\enlargethispage\*?\{[^}]*\}", "", text)
+    text = re.sub(r"\\vspace\*?\{[^}]*\}", "", text)
+    text = re.sub(r"\\hspace\*?\{[^}]*\}", "", text)
+    text = re.sub(r"\\setlength\{[^}]*\}\{[^}]*\}", "", text)
+
+    # display equations
+    def eq_sub(m):
+        inner = m.group(1)
+        for a, b in MATH_MAP:
+            inner = inner.replace(a, b)
+        inner = re.sub(r"\\(?:mathrm|text|mathit)\{([^}]*)\}", r"\1", inner)
+        inner = inner.replace("\\\\", "<br>")
+        inner = re.sub(r"\\[a-zA-Z]+", "", inner)
+        inner = inner.replace("{", "").replace("}", "")
+        return f'<div style="text-align:center;margin:0.5em 0;"><i>{inner}</i></div>'
+    text = re.sub(r"\\begin\{equation\*?\}(?:\s*\\begin\{split\})?(.*?)(?:\\end\{split\}\s*)?\\end\{equation\*?\}", eq_sub, text, flags=re.S)
+
     # math spans: apply map, then drop $ delimiters
     def math_sub(m):
         inner = m.group(1)
         for a, b in MATH_MAP:
             inner = inner.replace(a, b)
-        inner = re.sub(r"\\mathrm\{([^}]*)\}", r"\1", inner)
+        inner = re.sub(r"\\(?:mathrm|text|mathit)\{([^}]*)\}", r"\1", inner)
         inner = re.sub(r"\\[a-zA-Z]+", "", inner)
         inner = inner.replace("{", "").replace("}", "")
         return inner
@@ -132,22 +165,110 @@ def inline(text):
 
 def parse_table(env):
     cap = cmd_arg(env, "caption", 0)
+    if not cap:
+        m_captab = re.search(r"\\captionof\{table\}\{", env)
+        if m_captab:
+            content, _ = extract_braced(env, m_captab.end() - 1)
+            cap = (content, m_captab.start(), _)
     caption = inline(cap[0]) if cap else ""
-    m = re.search(r"\\begin\{tabular\}\{[^}]*\}(.*?)\\end\{tabular\}", env, flags=re.S)
+
+    m = re.search(r"\\begin\{(tabular\*?|longtable)\}", env)
     if not m:
-        m = re.search(r"\\begin\{longtable\}\{[^}]*\}(.*?)\\end\{longtable\}", env, flags=re.S)
-    body = m.group(1) if m else ""
-    body = re.sub(r"\\end(first|last)?head|\\endfoot", "", body)
+        return caption, []
+
+    endtok = f"\\end{{{m.group(1)}}}"
+    end_idx = env.index(endtok) if endtok in env else len(env)
+
+    brace_start = env.find("{", m.end())
+    if brace_start != -1 and brace_start < end_idx:
+        _, body_start = extract_braced(env, brace_start)
+        body = env[body_start:end_idx]
+    else:
+        body = env[m.end():end_idx]
+
+    if m.group(1) == "longtable":
+        if r"\endlastfoot" in body:
+            pre, _, post = body.partition(r"\endlastfoot")
+            header_part = pre.split(r"\endfirsthead")[0] if r"\endfirsthead" in pre else pre.split(r"\endhead")[0]
+            header_part = re.sub(r"\\caption(?:of\{table\})?\{.*?\}", "", header_part, flags=re.S)
+            header_part = re.sub(r"\\label\{.*?\}", "", header_part)
+            body = header_part + "\n" + post
+        else:
+            body = re.sub(r"\\end(first|last)?head|\\end(first|last)?foot", "", body)
+
+    body = re.sub(r"\\end(first|last)?head|\\end(first|last)?foot", "", body)
+
     rows = []
-    for raw in body.split("\\\\"):
+    for raw in body.split(r"\\"):
+        raw = re.sub(r"\\(toprule|midrule|bottomrule|hline)\b", "", raw)
+        raw = re.sub(r"\\cline\{[^}]*\}", "", raw)
+        raw = re.sub(r"\\caption(?:of\{table\})?\{.*?\}", "", raw, flags=re.S)
+        raw = re.sub(r"\\label\{.*?\}", "", raw)
         raw = raw.strip()
-        if not raw or "\\toprule" in raw or "\\midrule" in raw or "\\bottomrule" in raw or raw.startswith("\\end"):
+        if not raw or raw.startswith(r"\end"):
             continue
-        raw = raw.replace(r"\endfirsthead", "").replace(r"\endhead", "")
-        cells = [inline(c) for c in raw.split("&")]
-        if any(cells):
+        raw = raw.replace(r"\&", "\x00AMP\x00")
+        cells = [inline(c.replace("\x00AMP\x00", r"\&")) for c in raw.split("&")]
+        if any(c.strip() for c in cells):
             rows.append(cells)
     return caption, rows
+
+
+def find_matching_end(s, start_pos, env_name):
+    """Find the index after \\end{env_name} matching \\begin{env_name} at start_pos."""
+    begin_str = f"\\begin{{{env_name}}}"
+    assert s.startswith(begin_str, start_pos)
+    pattern = re.compile(rf"\\begin\{{{re.escape(env_name)}\}}|\\end\{{{re.escape(env_name)}\}}")
+    depth = 0
+    for m in pattern.finditer(s, start_pos):
+        if m.group(0) == begin_str:
+            depth += 1
+        else:
+            depth -= 1
+            if depth == 0:
+                return m.end()
+    raise ValueError(f"unmatched \\begin{{{env_name}}}")
+
+
+def render_list(env_text, list_tag="ul"):
+    """Parse list items, supporting nested lists and stripping length commands."""
+    env_text = re.sub(r"\\setlength\{[^}]*\}\{[^}]*\}", "", env_text)
+    env_text = re.sub(r"\\vspace\*?\{[^}]*\}", "", env_text)
+
+    sub_map = {}
+    sub_idx = 0
+    while True:
+        m_sub = re.search(r"\\begin\{(itemize|enumerate)\}", env_text)
+        if not m_sub:
+            break
+        sub_name = m_sub.group(1)
+        sub_end = find_matching_end(env_text, m_sub.start(), sub_name)
+        sub_inner = env_text[m_sub.start() + len(f"\\begin{{{sub_name}}}"):sub_end - len(f"\\end{{{sub_name}}}")]
+        sub_tag = "ol" if sub_name == "enumerate" else "ul"
+        sub_rendered = render_list(sub_inner, sub_tag)
+        ph = f"\x00SUBLIST_{sub_idx}\x00"
+        sub_map[ph] = sub_rendered
+        sub_idx += 1
+        env_text = env_text[:m_sub.start()] + ph + env_text[sub_end:]
+
+    items = []
+    parts = re.split(r"\\item\b\s*", env_text)
+    for p in parts[1:]:
+        p = p.strip()
+        if not p:
+            continue
+        for ph, sub_html in sub_map.items():
+            if ph in p:
+                p = p.replace(ph, f"\n{sub_html}")
+        if "\n<ul" in p or "\n<ol" in p:
+            main_p, _, sub_p = p.partition("\n<")
+            rendered = f"{inline(main_p)} <{sub_p}"
+        else:
+            rendered = inline(p)
+        items.append(rendered)
+
+    return f"<{list_tag}>" + "".join(f"<li>{it}</li>" for it in items if it.strip()) + f"</{list_tag}>"
+
 
 
 def main():
@@ -177,16 +298,25 @@ def main():
     ab = re.search(r"\\begin\{abstract\}(.*?)\\end\{abstract\}", raw, flags=re.S)
     abstract = ab.group(1) if ab else ""
     raw = re.sub(r"\\maketitle", "", raw)
-    raw = raw.replace("\\twocolumn[", "")
-    raw = re.sub(r"^\\]\s*$", "", raw, count=1, flags=re.M)
+    raw = re.sub(r"\\twocolumn\[\{?", "", raw)
+    raw = re.sub(r"\}\]\s*", "", raw, count=1)
+    raw = re.sub(r"^\s*\}\]\s*$", "", raw, flags=re.M)
     raw = re.sub(r"\\begin\{abstract\}.*?\\end\{abstract\}", "", raw,
                  count=1, flags=re.S)
+    raw = re.sub(r"\\enlargethispage\*?\{[^}]*\}", "", raw)
+    raw = re.sub(r"\\vspace\*?\{[^}]*\}", "", raw)
+    raw = re.sub(r"\\hspace\*?\{[^}]*\}", "", raw)
+    raw = re.sub(r"\\setlength\{[^}]*\}\{[^}]*\}", "", raw)
+    raw = re.sub(r"\\renewcommand\{[^}]*\}\{[^}]*\}", "", raw)
+    raw = re.sub(r"\\par\b", "\n\n", raw)
+    raw = re.sub(r"\\(noindent|smallskip|medskip|bigskip|centering|arraystretch)\b", "", raw)
+    raw = re.sub(r"\\(footnotesize|scriptsize|small|normalsize|large|Large)\b", "", raw)
 
     raw = raw.replace("\\begin{landscape}", "").replace("\\end{landscape}", "")
     # token scan over the body
     token_re = re.compile(
         r"\\section\*\{|\\section\{|\\subsection\{|\\begin\{table\*?\}|\\begin\{longtable\}|"
-        r"\\begin\{figure\*?\}|\\begin\{itemize\}|\\placeholder\{|\\appendix|"
+        r"\\begin\{figure\*?\}|\\begin\{itemize\}|\\begin\{enumerate\}|\\placeholder\{|\\appendix|"
         r"\x00BIB\x00")
     out = []
     tab_no = fig_no = 0
@@ -202,11 +332,17 @@ def main():
             if "\\begin{center}" in p or "\\end{center}" in p:
                 continue
             p = inline(p)
-            if p:
+            if not p or p in ("]", "}", "}]"):
+                continue
+            if p.startswith("<div") and p.endswith("</div>"):
+                out.append(p)
+            else:
                 out.append(f"<p>{p}</p>")
 
     pos = 0
     for m in token_re.finditer(raw):
+        if m.start() < pos:
+            continue
         flush_text(raw[pos:m.start()])
         tok = m.group(0)
         if tok == "\\appendix":
@@ -245,7 +381,8 @@ def main():
         if tok in ("\\begin{table}", "\\begin{table*}"):
             endtok = "\\end{table*}" if tok.endswith("*}") else "\\end{table}"
             end = raw.index(endtok, m.start()) + len(endtok)
-            caption, rows = parse_table(raw[m.start():end])
+            env = raw[m.start():end]
+            caption, rows = parse_table(env)
             tab_no += 1
             html = [f'<table><caption>Table {tab_no}. {caption}</caption>']
             for ri, row in enumerate(rows):
@@ -253,6 +390,21 @@ def main():
                 html.append("<tr>" + "".join(f"<{tag}>{c}</{tag}>" for c in row) + "</tr>")
             html.append("</table>")
             out.append("\n".join(html))
+
+            m_capfig = re.search(r"\\captionof\{figure\}\{", env)
+            if m_capfig:
+                fig_cap_raw, _ = extract_braced(env, m_capfig.end() - 1)
+                fig_caption = inline(fig_cap_raw)
+                fig_no += 1
+                ig = re.search(r"\\includegraphics(?:\[[^\]]*\])?\{([^}]*)\}", env)
+                if ig:
+                    out.append(f'<div class="fig"><img src="{ig.group(1)}" '
+                               f'style="max-width:100%">'
+                               f'<div class="cap">Figure {fig_no}. {fig_caption}</div></div>')
+                else:
+                    out.append(f'<div class="fig"><div class="figbox">Figure {fig_no} '
+                               f'— diagram (renders in the compiled PDF)</div>'
+                               f'<div class="cap">Figure {fig_no}. {fig_caption}</div></div>')
             pos = end
             continue
         if tok == "\\begin{longtable}":
@@ -285,12 +437,12 @@ def main():
                            f'<div class="cap">Figure {fig_no}. {caption}</div></div>')
             pos = end
             continue
-        if tok == "\\begin{itemize}":
-            end = raw.index("\\end{itemize}", m.start()) + len("\\end{itemize}")
-            env = raw[m.start():end]
-            env = env[:env.index("\\end{itemize}")]
-            items = [inline(i) for i in env.split("\\item")[1:]]
-            out.append("<ul>" + "".join(f"<li>{i}</li>" for i in items) + "</ul>")
+        if tok in ("\\begin{itemize}", "\\begin{enumerate}"):
+            env_name = "itemize" if tok == "\\begin{itemize}" else "enumerate"
+            list_tag = "ul" if env_name == "itemize" else "ol"
+            end = find_matching_end(raw, m.start(), env_name)
+            env_inner = raw[m.start() + len(tok):end - len(f"\\end{{{env_name}}}")]
+            out.append(render_list(env_inner, list_tag))
             pos = end
             continue
         pos = m.end()

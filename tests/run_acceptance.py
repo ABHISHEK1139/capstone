@@ -74,6 +74,11 @@ def run_acceptance_suite() -> Dict[str, Any]:
     print(f"     * Eclat (Vertical): precision {kpi1_eclat:.2f}%, recall {rec_eclat:.2f}% (Target: >= 98%)")
     assert kpi1_apriori == 100.0 and kpi1_fp == 100.0 and kpi1_eclat == 100.0
     assert rec_apriori == 100.0 and rec_fp == 100.0 and rec_eclat == 100.0
+    assert est_apriori.status_ == "EXACT" and est_apriori.is_complete_ is True
+    assert est_fp.status_ == "EXACT" and est_fp.is_complete_ is True
+    assert est_eclat.status_ == "EXACT" and est_eclat.is_complete_ is True
+    assert hasattr(est_apriori, "metadata_") and "counters" in est_apriori.metadata_
+    assert hasattr(est_apriori, "itemsets_")
 
     # -------------------------------------------------------------
     # 2. KPI-2: Rule-Metric Numerical Error
@@ -114,6 +119,10 @@ def run_acceptance_suite() -> Dict[str, Any]:
     est_nt1 = AssociationRulesEstimator(min_support=0.5, max_candidates=100, on_candidate_explosion="degrade")
     est_nt1.fit(X_dense)
     assert est_nt1.is_degraded_ is True
+    assert est_nt1.status_ == "DEGRADED"
+    assert est_nt1.is_complete_ is False
+    assert est_nt1.metadata_["status"] == "DEGRADED"
+    assert est_nt1.metadata_["future_candidates_status"] == "UNKNOWN"
     coordinator.record_failure_or_degradation(
         "NT-1", "20-item 100% dense matrix",
         f"Candidates exceeded 100", "Degraded mode safely triggered without OOM", "Deep rules omitted"
@@ -178,6 +187,9 @@ def run_acceptance_suite() -> Dict[str, Any]:
     # degradation flag is the actual acceptance criterion (verified: this
     # scenario degrades with 501 capped itemsets).
     assert est_nt6.is_degraded_ is True
+    assert est_nt6.status_ == "DEGRADED"
+    assert est_nt6.is_complete_ is False
+    assert est_nt6.metadata_["status"] == "DEGRADED"
     coordinator.record_failure_or_degradation(
         "NT-6", "18-item 75% dense matrix stress test",
         "Candidate generation halted at 500", "Logged telemetry and entered degraded mode", "Residual higher order capped"

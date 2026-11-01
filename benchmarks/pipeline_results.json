@@ -1,0 +1,310 @@
+{
+  "metadata": {
+    "title": "SKARM Scikit-Learn Integration & Pipeline Evaluation (RQ4)",
+    "timestamp": "2026-11-01T06:20:32Z",
+    "platform": "AMD64, Windows 11",
+    "python_version": "3.12.10"
+  },
+  "pipeline_basics": {
+    "dataset": "groceries.csv",
+    "n_transactions": 9835,
+    "sparse_mode": {
+      "fit_time_s": 0.1584,
+      "transform_time_s": 0.2054,
+      "n_itemsets": 122,
+      "n_rules": 49,
+      "transform_shape": [
+        9835,
+        49
+      ],
+      "feature_names_count": 49,
+      "status": "EXACT",
+      "is_degraded": false
+    },
+    "dense_mode": {
+      "fit_time_s": 0.156,
+      "transform_time_s": 0.0463,
+      "n_itemsets": 135,
+      "n_rules": 62,
+      "transform_shape": [
+        2000,
+        62
+      ],
+      "feature_names_count": 62,
+      "status": "EXACT",
+      "is_degraded": false
+    }
+  },
+  "set_output_pandas": {
+    "encoder_set_output": {
+      "returns_dataframe": true,
+      "columns_match_feature_names": true,
+      "n_columns": 147,
+      "sample_columns": [
+        "Instant food products",
+        "UHT-milk",
+        "abrasive cleaner",
+        "artif. sweetener",
+        "baby cosmetics"
+      ]
+    },
+    "estimator_set_output": {
+      "returns_dataframe": true,
+      "columns_match_feature_names": true,
+      "n_columns": 24,
+      "sample_columns": [
+        "{sausage} -> {rolls/buns}",
+        "{frankfurter} -> {rolls/buns}",
+        "{root vegetables} -> {whole milk}",
+        "{root vegetables} -> {other vegetables}",
+        "{tropical fruit} -> {whole milk}"
+      ]
+    },
+    "pipeline_set_output": {
+      "returns_dataframe": true,
+      "shape": [
+        500,
+        24
+      ],
+      "columns_sample": [
+        "{sausage} -> {rolls/buns}",
+        "{frankfurter} -> {rolls/buns}",
+        "{root vegetables} -> {whole milk}",
+        "{root vegetables} -> {other vegetables}",
+        "{tropical fruit} -> {whole milk}"
+      ]
+    }
+  },
+  "gridsearchcv": {
+    "param_grid": {
+      "min_support": [
+        0.08,
+        0.12,
+        0.18
+      ],
+      "min_threshold": [
+        0.3,
+        0.5,
+        0.7
+      ]
+    },
+    "n_samples": 300,
+    "n_items": 20,
+    "scorers": {
+      "mean_confidence": {
+        "best_params": {
+          "min_support": 0.08,
+          "min_threshold": 0.7
+        },
+        "best_score": 0.902535,
+        "tuning_time_s": 0.549,
+        "candidates_evaluated": 9,
+        "mean_test_scores": [
+          0.400712,
+          0.690684,
+          0.902535,
+          0.489262,
+          0.640529,
+          0.886254,
+          0.716475,
+          0.716475,
+          0.886254
+        ],
+        "params_list": [
+          {
+            "min_support": 0.08,
+            "min_threshold": 0.3
+          },
+          {
+            "min_support": 0.08,
+            "min_threshold": 0.5
+          },
+          {
+            "min_support": 0.08,
+            "min_threshold": 0.7
+          },
+          {
+            "min_support": 0.12,
+            "min_threshold": 0.3
+          },
+          {
+            "min_support": 0.12,
+            "min_threshold": 0.5
+          },
+          {
+            "min_support": 0.12,
+            "min_threshold": 0.7
+          },
+          {
+            "min_support": 0.18,
+            "min_threshold": 0.3
+          },
+          {
+            "min_support": 0.18,
+            "min_threshold": 0.5
+          },
+          {
+            "min_support": 0.18,
+            "min_threshold": 0.7
+          }
+        ],
+        "best_rules_count": 2,
+        "best_itemsets_count": 58
+      },
+      "total_support": {
+        "best_params": {
+          "min_support": 0.08,
+          "min_threshold": 0.3
+        },
+        "best_score": 10.076667,
+        "tuning_time_s": 0.4205,
+        "candidates_evaluated": 9,
+        "mean_test_scores": [
+          10.076667,
+          10.076667,
+          10.076667,
+          6.031667,
+          6.031667,
+          6.031667,
+          5.331667,
+          5.331667,
+          5.331667
+        ],
+        "params_list": [
+          {
+            "min_support": 0.08,
+            "min_threshold": 0.3
+          },
+          {
+            "min_support": 0.08,
+            "min_threshold": 0.5
+          },
+          {
+            "min_support": 0.08,
+            "min_threshold": 0.7
+          },
+          {
+            "min_support": 0.12,
+            "min_threshold": 0.3
+          },
+          {
+            "min_support": 0.12,
+            "min_threshold": 0.5
+          },
+          {
+            "min_support": 0.12,
+            "min_threshold": 0.7
+          },
+          {
+            "min_support": 0.18,
+            "min_threshold": 0.3
+          },
+          {
+            "min_support": 0.18,
+            "min_threshold": 0.5
+          },
+          {
+            "min_support": 0.18,
+            "min_threshold": 0.7
+          }
+        ],
+        "best_rules_count": 54,
+        "best_itemsets_count": 58
+      },
+      "mean_lift": {
+        "best_params": {
+          "min_support": 0.08,
+          "min_threshold": 0.7
+        },
+        "best_score": 2.196492,
+        "tuning_time_s": 0.4139,
+        "candidates_evaluated": 9,
+        "mean_test_scores": [
+          1.295701,
+          1.980065,
+          2.196492,
+          1.399891,
+          1.783765,
+          2.081694,
+          2.081694,
+          2.081694,
+          2.081694
+        ],
+        "params_list": [
+          {
+            "min_support": 0.08,
+            "min_threshold": 0.3
+          },
+          {
+            "min_support": 0.08,
+            "min_threshold": 0.5
+          },
+          {
+            "min_support": 0.08,
+            "min_threshold": 0.7
+          },
+          {
+            "min_support": 0.12,
+            "min_threshold": 0.3
+          },
+          {
+            "min_support": 0.12,
+            "min_threshold": 0.5
+          },
+          {
+            "min_support": 0.12,
+            "min_threshold": 0.7
+          },
+          {
+            "min_support": 0.18,
+            "min_threshold": 0.3
+          },
+          {
+            "min_support": 0.18,
+            "min_threshold": 0.5
+          },
+          {
+            "min_support": 0.18,
+            "min_threshold": 0.7
+          }
+        ],
+        "best_rules_count": 2,
+        "best_itemsets_count": 58
+      }
+    }
+  },
+  "downstream_classification": {
+    "tic_tac_toe": {
+      "n_samples": 958,
+      "n_train": 670,
+      "n_test": 288,
+      "discovered_rules": 142,
+      "fit_time_s": 0.2545,
+      "pipeline_metrics": {
+        "train_accuracy": 0.9925,
+        "test_accuracy": 0.9618,
+        "test_precision": 0.9447,
+        "test_recall": 1.0,
+        "test_f1": 0.9716
+      },
+      "raw_item_baseline_accuracy": 0.9792,
+      "accuracy_gain": -0.0174
+    },
+    "mushroom": {
+      "n_samples": 8124,
+      "n_train": 5686,
+      "n_test": 2438,
+      "discovered_rules": 10786,
+      "fit_time_s": 64.9831,
+      "pipeline_metrics": {
+        "train_accuracy": 0.9989,
+        "test_accuracy": 0.9992,
+        "test_precision": 0.9983,
+        "test_recall": 1.0,
+        "test_f1": 0.9991
+      },
+      "raw_item_baseline_accuracy": 0.9992,
+      "accuracy_gain": 0.0
+    }
+  }
+}

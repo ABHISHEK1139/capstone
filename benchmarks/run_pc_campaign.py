@@ -50,6 +50,12 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from skarm.datasets import load_transactions
 from skarm.preprocessing import TransactionEncoder
 from skarm.estimator import AssociationRulesEstimator
+from skarm.apriori import apriori
+from skarm.fpgrowth import fpgrowth
+from skarm.eclat import eclat
+from skarm.rules import association_rules
+from skarm.pruning import PruningPolicy
+from skarm.telemetry import TelemetryLogger
 
 BASE = os.path.dirname(__file__)
 DEFAULT_DATA_DIR = os.path.join(BASE, "..", "data")
@@ -217,27 +223,70 @@ def run_dataset(task):
     t0 = time.perf_counter()
     encoder = TransactionEncoder(sparse_output=True)
     X = encoder.fit_transform(tx)
-    encode_sec = round(time.perf_counter() - t0, 3)
+    encode_sec = round(time.perf_counter() - t0, 4)
     columns = [str(c) for c in encoder.columns_]
     del tx
     dense_bytes = int(X.shape[0]) * int(X.shape[1])
     mlxtend_feasible = dense_bytes <= MLXTEND_DENSE_BYTE_CAP
 
+    # Pre-build dense DataFrame for mlxtend if feasible to ensure strictly
+    # equivalent measurement boundaries (encoding time measured separately).
+    df_mlxtend = None
+    ml_encode_sec = None
+    if mlxtend_feasible and not SKIP_MLXTEND:
+        import pandas as pd
+        t0_ml_enc = time.perf_counter()
+        df_mlxtend = pd.DataFrame(X.toarray(), columns=columns, dtype=bool)
+        ml_encode_sec = round(time.perf_counter() - t0_ml_enc, 4)
+
     for thr in thresholds:
         trial1_itemsets = {}
         for eng in ENGINES:
             def run_eng(_eng=eng):
-                est = AssociationRulesEstimator(
-                    min_support=thr, metric="confidence", min_threshold=0.25,
-                    algorithm=_eng, max_candidates=2_000_000, sparse_output=True,
+                policy = PruningPolicy(
+                    max_candidates=2_000_000,
+                    min_support=thr,
+                    on_candidate_explosion="degrade",
                 )
-                est.fit(X)
+                telemetry = TelemetryLogger()
+
+                # Phase 2: Pure Frequent Itemset Mining on Encoded Matrix
+                t0_mine = time.perf_counter()
+                if _eng == "apriori":
+                    freq = apriori(X, min_support=thr, max_candidates=2_000_000, pruning_policy=policy, telemetry=telemetry)
+                elif _eng == "fpgrowth":
+                    freq = fpgrowth(X, min_support=thr, max_candidates=2_000_000, pruning_policy=policy, telemetry=telemetry)
+                elif _eng == "eclat":
+                    freq = eclat(X, min_support=thr, max_candidates=2_000_000, pruning_policy=policy, telemetry=telemetry)
+                t_mine = time.perf_counter() - t0_mine
+
+                # Phase 3: Association Rule Generation from Discovered Itemsets
+                t0_rules = time.perf_counter()
+                rules = association_rules(freq, metric="confidence", min_threshold=0.25, feature_names=columns)
+                t_rules = time.perf_counter() - t0_rules
+
+                # Phase 4: Total End-to-End Time
+                t_total = encode_sec + t_mine + t_rules
+                is_degraded = bool(policy.is_degraded)
+                status_state = "DEGRADED" if is_degraded else "EXACT"
+
                 return {
-                    "n_itemsets": len(est.frequent_itemsets_),
-                    "n_rules": len(est.rules_),
-                    "is_degraded": bool(est.is_degraded_),
-                    "peak_candidates": int(est.pruning_policy_.peak_candidate_count),
-                    "_itemsets": est.frequent_itemsets_,
+                    "n_itemsets": len(freq),
+                    "n_rules": len(rules),
+                    "is_degraded": is_degraded,
+                    "status_state": status_state,
+                    "peak_candidates": int(policy.peak_candidate_count),
+                    "t_encode_s": round(encode_sec, 4),
+                    "t_mine_s": round(t_mine, 4),
+                    "t_rules_s": round(t_rules, 4),
+                    "t_total_s": round(t_total, 4),
+                    "timing": {
+                        "t_encode_s": round(encode_sec, 4),
+                        "t_mine_s": round(t_mine, 4),
+                        "t_rules_s": round(t_rules, 4),
+                        "t_total_s": round(t_total, 4),
+                    },
+                    "_itemsets": freq,
                 }
             rec = timed_trial(run_eng)
             itemsets = rec.pop("_itemsets", None)
@@ -253,6 +302,7 @@ def run_dataset(task):
                     bundle["records"].append(
                         {"dataset": name, "threshold": thr, "engine": eng, "trial": t,
                          "status": "skipped", "seconds": 0,
+                         "timing": {"t_encode_s": round(encode_sec, 4), "t_mine_s": 0.0, "t_rules_s": 0.0, "t_total_s": 0.0},
                          "error": "skipped after trial-0 timeout (600 s cap)"})
                 bundle["skips"].append(
                     {"dataset": name, "threshold": thr, "engine": eng,
@@ -277,16 +327,49 @@ def run_dataset(task):
                 continue
             for t in range(1, n_trials):
                 def run_eng2(_eng=eng):
-                    est = AssociationRulesEstimator(
-                        min_support=thr, metric="confidence", min_threshold=0.25,
-                        algorithm=_eng, max_candidates=2_000_000, sparse_output=True,
+                    policy = PruningPolicy(
+                        max_candidates=2_000_000,
+                        min_support=thr,
+                        on_candidate_explosion="degrade",
                     )
-                    est.fit(X)
+                    telemetry = TelemetryLogger()
+
+                    # Phase 2: Pure Frequent Itemset Mining on Encoded Matrix
+                    t0_mine = time.perf_counter()
+                    if _eng == "apriori":
+                        freq = apriori(X, min_support=thr, max_candidates=2_000_000, pruning_policy=policy, telemetry=telemetry)
+                    elif _eng == "fpgrowth":
+                        freq = fpgrowth(X, min_support=thr, max_candidates=2_000_000, pruning_policy=policy, telemetry=telemetry)
+                    elif _eng == "eclat":
+                        freq = eclat(X, min_support=thr, max_candidates=2_000_000, pruning_policy=policy, telemetry=telemetry)
+                    t_mine = time.perf_counter() - t0_mine
+
+                    # Phase 3: Association Rule Generation from Discovered Itemsets
+                    t0_rules = time.perf_counter()
+                    rules = association_rules(freq, metric="confidence", min_threshold=0.25, feature_names=columns)
+                    t_rules = time.perf_counter() - t0_rules
+
+                    # Phase 4: Total End-to-End Time
+                    t_total = encode_sec + t_mine + t_rules
+                    is_degraded = bool(policy.is_degraded)
+                    status_state = "DEGRADED" if is_degraded else "EXACT"
+
                     return {
-                        "n_itemsets": len(est.frequent_itemsets_),
-                        "n_rules": len(est.rules_),
-                        "is_degraded": bool(est.is_degraded_),
-                        "peak_candidates": int(est.pruning_policy_.peak_candidate_count),
+                        "n_itemsets": len(freq),
+                        "n_rules": len(rules),
+                        "is_degraded": is_degraded,
+                        "status_state": status_state,
+                        "peak_candidates": int(policy.peak_candidate_count),
+                        "t_encode_s": round(encode_sec, 4),
+                        "t_mine_s": round(t_mine, 4),
+                        "t_rules_s": round(t_rules, 4),
+                        "t_total_s": round(t_total, 4),
+                        "timing": {
+                            "t_encode_s": round(encode_sec, 4),
+                            "t_mine_s": round(t_mine, 4),
+                            "t_rules_s": round(t_rules, 4),
+                            "t_total_s": round(t_total, 4),
+                        },
                     }
                 rec = timed_trial(run_eng2)
                 rec.update({"dataset": name, "threshold": thr, "engine": eng, "trial": t,
@@ -307,16 +390,42 @@ def run_dataset(task):
             ml_itemsets_named = None
             for t in range(MLXTEND_TRIALS):
                 def run_ml():
-                    import pandas as pd
                     from mlxtend.frequent_patterns import apriori as ml_apriori
                     from mlxtend.frequent_patterns import association_rules as ml_rules
-                    df = pd.DataFrame(X.toarray(), columns=columns, dtype=bool)
-                    freq = ml_apriori(df, min_support=thr, use_colnames=True)
+
+                    # Phase 2: Pure Frequent Itemset Mining on Encoded DataFrame
+                    t0_mine = time.perf_counter()
+                    freq = ml_apriori(df_mlxtend, min_support=thr, use_colnames=True)
+                    t_mine = time.perf_counter() - t0_mine
+
+                    # Phase 3: Association Rule Generation from Discovered Itemsets
+                    t0_rules = time.perf_counter()
                     rules = ml_rules(freq, metric="confidence", min_threshold=0.25)
+                    t_rules = time.perf_counter() - t0_rules
+
+                    # Phase 4: Total End-to-End Time
+                    enc_s = ml_encode_sec if ml_encode_sec is not None else encode_sec
+                    t_total = enc_s + t_mine + t_rules
+
                     named = {frozenset(r): float(s) for r, s in
                              zip(freq["itemsets"], freq["support"])}
-                    return {"n_itemsets": len(freq), "n_rules": len(rules),
-                            "_named": named}
+                    return {
+                        "n_itemsets": len(freq),
+                        "n_rules": len(rules),
+                        "is_degraded": False,
+                        "status_state": "EXACT",
+                        "t_encode_s": round(enc_s, 4),
+                        "t_mine_s": round(t_mine, 4),
+                        "t_rules_s": round(t_rules, 4),
+                        "t_total_s": round(t_total, 4),
+                        "timing": {
+                            "t_encode_s": round(enc_s, 4),
+                            "t_mine_s": round(t_mine, 4),
+                            "t_rules_s": round(t_rules, 4),
+                            "t_total_s": round(t_total, 4),
+                        },
+                        "_named": named,
+                    }
                 rec = timed_trial(run_ml)
                 named = rec.pop("_named", None)
                 if named is not None and ml_itemsets_named is None:
@@ -327,10 +436,12 @@ def run_dataset(task):
                             if rec["status"] == "ok" and rec["seconds"] > 0 else 0})
                 bundle["records"].append(rec)
                 if rec["status"] == "timeout":
+                    enc_s = ml_encode_sec if ml_encode_sec is not None else encode_sec
                     for tt in range(t + 1, MLXTEND_TRIALS):
                         bundle["records"].append(
                             {"dataset": name, "threshold": thr, "engine": "mlxtend",
                              "trial": tt, "status": "skipped", "seconds": 0,
+                             "timing": {"t_encode_s": round(enc_s, 4), "t_mine_s": 0.0, "t_rules_s": 0.0, "t_total_s": 0.0},
                              "error": "skipped after timeout (600 s cap)"})
                     bundle["skips"].append(
                         {"dataset": name, "threshold": thr, "engine": "mlxtend",
@@ -338,11 +449,13 @@ def run_dataset(task):
                     break
             if ml_itemsets_named is not None and "apriori" in trial1_itemsets:
                 named_skarm = {frozenset(columns[i] for i in k): v
-                               for k, v in trial1_itemsets["apriori"].items()}
+                                for k, v in trial1_itemsets["apriori"].items()}
                 bundle["correctness"][cell_key]["skarm_apriori_vs_mlxtend"] = \
                     compare_itemsets(named_skarm, ml_itemsets_named)
 
     bundle["encode_times"][name] = encode_sec
+    if ml_encode_sec is not None:
+        bundle["encode_times"][f"{name}_mlxtend"] = ml_encode_sec
     bundle["complete"] = True
     _write_cell(name, bundle)
     n_ok = sum(1 for r in bundle["records"] if r["status"] == "ok")
@@ -390,10 +503,10 @@ def assemble(workers):
             "trial_timeout_s": TRIAL_TIMEOUT_S,
             "memory_method": "peak RSS sampled every 10 ms from /proc/self/status VmRSS, "
                              "minus pre-trial baseline RSS (0.0 where /proc is unavailable)",
-            "runtime_method": "time.perf_counter around AssociationRulesEstimator.fit on a "
-                             "pre-encoded matrix (encoding time reported separately per dataset); "
-                             "mlxtend runtime covers TransactionEncoder-equivalent dense DataFrame "
-                             "build + apriori + association_rules",
+            "runtime_method": "3-stage timing protocol: t_encode (transaction encoding/matrix preparation), "
+                             "t_mine (pure frequent itemset discovery), t_rules (association rule generation "
+                             "from itemsets), and t_total = t_encode + t_mine + t_rules; skarm and mlxtend "
+                             "measured across strictly equivalent boundaries",
             "trial_counts": {"subset_30": SUBSET_30, "other": 5, "mlxtend": MLXTEND_TRIALS},
             "threshold_rationale": {k: v["rationale"] for k, v in datasets_cfg.items()},
         },

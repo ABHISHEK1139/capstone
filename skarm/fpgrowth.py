@@ -9,6 +9,29 @@ from skarm.pruning import PruningPolicy
 from skarm.telemetry import TelemetryLogger
 
 
+def _validate_matrix(X: Union[np.ndarray, sparse.spmatrix]):
+    """Validate that input matrix values are strictly binary {0, 1} or boolean."""
+    if sparse.issparse(X):
+        if X.data.dtype.kind in ('f', 'c'):
+            if np.isnan(X.data).any():
+                raise ValueError("Input matrix contains NaNs.")
+            if np.isinf(X.data).any():
+                raise ValueError("Input matrix contains infinite values.")
+        if X.data.dtype != bool:
+            if not np.all((X.data == 0) | (X.data == 1)):
+                raise ValueError("Input matrix values must be strictly binary (0, 1, or boolean). Continuous, negative, or non-binary values are not allowed.")
+    else:
+        arr = np.asarray(X)
+        if arr.dtype.kind in ('f', 'c'):
+            if np.isnan(arr).any():
+                raise ValueError("Input matrix contains NaNs.")
+            if np.isinf(arr).any():
+                raise ValueError("Input matrix contains infinite values.")
+        if arr.dtype != bool:
+            if not np.all((arr == 0) | (arr == 1)):
+                raise ValueError("Input matrix values must be strictly binary (0, 1, or boolean). Continuous, negative, or non-binary values are not allowed.")
+
+
 class FPNode:
     """A node in the FP-Tree."""
     __slots__ = ("item", "count", "parent", "children", "node_link")
@@ -24,10 +47,14 @@ class FPNode:
 class FPTree:
     """Frequent Pattern Tree data structure."""
 
-    def __init__(self):
+    def __init__(self, counters: Optional[Dict[str, int]] = None):
         self.root = FPNode(-1, 0.0, None)
         # header_table maps item -> [head_node, tail_node, total_count]
         self.header_table: Dict[int, List[Any]] = {}
+        self.counters = counters
+        if self.counters is not None:
+            self.counters["trees_constructed"] += 1
+            self.counters["nodes_created"] += 1
 
     def add_transaction(self, items: List[int], count: float):
         """Insert a transaction into the FP-tree with O(1) linked list tail append."""
@@ -38,6 +65,8 @@ class FPTree:
             else:
                 new_node = FPNode(item, count, curr)
                 curr.children[item] = new_node
+                if self.counters is not None:
+                    self.counters["nodes_created"] += 1
                 # Update header table linked list in O(1) via tail pointer
                 entry = self.header_table[item]
                 if entry[0] is None:
@@ -82,6 +111,8 @@ def fpgrowth(
     frequent_itemsets : dict
         Mapping from frozenset of item indices to support value.
     """
+    _validate_matrix(X)
+
     if pruning_policy is None:
         pruning_policy = PruningPolicy(
             max_candidates=max_candidates,
@@ -96,11 +127,15 @@ def fpgrowth(
     if n_samples == 0 or n_features == 0:
         return {}
 
-    # Weight validation (NT-3)
+    # Weight validation (NT-3, B10)
     if sample_weight is not None:
         sample_weight = np.asarray(sample_weight, dtype=float)
         if len(sample_weight) != n_samples:
             raise ValueError(f"sample_weight length {len(sample_weight)} != n_samples {n_samples}")
+        if np.isnan(sample_weight).any():
+            raise ValueError("sample_weight cannot contain NaN values.")
+        if np.isinf(sample_weight).any():
+            raise ValueError("sample_weight cannot contain infinite values.")
         if np.any(sample_weight < 0):
             raise ValueError("sample_weight cannot contain negative values.")
         total_weight = float(np.sum(sample_weight))
@@ -110,6 +145,13 @@ def fpgrowth(
         total_weight = float(n_samples)
 
     min_count = min_support * total_weight
+
+    # Operation counters (R3)
+    counters = {
+        "trees_constructed": 0,
+        "nodes_created": 0,
+        "paths_traversed": 0,
+    }
 
     # Step 1: Calculate 1-itemset frequencies
     is_sparse = sparse.issparse(X)
@@ -137,8 +179,10 @@ def fpgrowth(
     }
 
     if not frequent_1:
+        pruning_policy.counters = counters
         if telemetry is not None:
-            telemetry.stop({"algorithm": "fpgrowth", "total_frequent_itemsets": 0})
+            telemetry.counters = counters
+            telemetry.stop({"algorithm": "fpgrowth", "total_frequent_itemsets": 0, "counters": counters})
         return {}
 
     # Rank items: higher frequency first; break ties by item index
@@ -146,7 +190,7 @@ def fpgrowth(
     rank_map = {item: idx for idx, item in enumerate(rank_order)}
 
     # Step 2: Build initial FP-Tree
-    tree = FPTree()
+    tree = FPTree(counters=counters)
     for item in rank_order:
         tree.header_table[item] = [None, None, frequent_1[item]]
 
@@ -190,7 +234,17 @@ def fpgrowth(
             frequent_itemsets[new_itemset] = float(item_count / total_weight)
 
             # Check candidate/itemset explosion guardrail
-            if not pruning_policy.check_candidate_count(len(frequent_itemsets), level=len(new_prefix)):
+            can_proceed = pruning_policy.check_budget(
+                candidate_count=len(frequent_itemsets),
+                level=len(new_prefix),
+            )
+            if not can_proceed:
+                return
+
+            if pruning_policy.on_candidate_explosion == "truncate" and len(frequent_itemsets) >= pruning_policy.max_candidates:
+                pruning_policy.is_degraded = True
+                pruning_policy.future_candidates_status = "UNKNOWN"
+                pruning_policy.degradation_reason = "max_candidates_reached"
                 return
 
             if not pruning_policy.should_continue_length(len(new_prefix)):
@@ -200,6 +254,7 @@ def fpgrowth(
             cond_patterns: List[Tuple[List[int], float]] = []
             node = head_node
             while node is not None:
+                counters["paths_traversed"] += 1
                 path: List[int] = []
                 p = node.parent
                 while p is not None and p.item != -1:
@@ -228,7 +283,7 @@ def fpgrowth(
             cond_rank_order = sorted(cond_frequent.keys(), key=lambda x: (cond_frequent[x], -x), reverse=True)
             cond_rank_map = {it: idx for idx, it in enumerate(cond_rank_order)}
 
-            cond_tree = FPTree()
+            cond_tree = FPTree(counters=counters)
             for it in cond_rank_order:
                 cond_tree.header_table[it] = [None, None, cond_frequent[it]]
 
@@ -245,12 +300,15 @@ def fpgrowth(
 
     mine_tree(tree, ())
 
+    pruning_policy.counters = counters
     if telemetry is not None:
+        telemetry.counters = counters
         telemetry.stop({
             "algorithm": "fpgrowth",
             "total_frequent_itemsets": len(frequent_itemsets),
             "is_degraded": pruning_policy.is_degraded,
             "peak_candidates": pruning_policy.peak_candidate_count,
+            "counters": counters,
         })
 
     return frequent_itemsets

@@ -7,6 +7,15 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 
+def _is_missing_token(item: Any) -> bool:
+    """Return True if item represents a missing/NaN token (None or np.nan)."""
+    if item is None:
+        return True
+    if isinstance(item, float) and np.isnan(item):
+        return True
+    return False
+
+
 class TransactionEncoder(BaseEstimator, TransformerMixin):
     """Encodes transactions (iterables of items) into one-hot boolean matrices.
 
@@ -69,14 +78,16 @@ class TransactionEncoder(BaseEstimator, TransformerMixin):
             if isinstance(transaction, (str, bytes)):
                 # A bare string/bytes transaction is a single item, not an
                 # iterable of characters (transform must agree with fit).
-                unique_items.add(transaction)
+                if not _is_missing_token(transaction):
+                    unique_items.add(transaction)
                 continue
             if not hasattr(transaction, "__iter__"):
                 raise ValueError(
                     f"Each transaction must be an iterable of items, got {type(transaction).__name__!r}."
                 )
             for item in transaction:
-                unique_items.add(item)
+                if not _is_missing_token(item):
+                    unique_items.add(item)
 
         if not has_transactions:
             raise ValueError("Empty transaction list provided to fit().")
@@ -128,6 +139,8 @@ class TransactionEncoder(BaseEstimator, TransformerMixin):
                 # Deduplicate items within transaction (NT-2 requirement)
                 seen_indices = set()
                 for item in transaction:
+                    if _is_missing_token(item):
+                        continue
                     if item in self.item_to_idx_:
                         seen_indices.add(self.item_to_idx_[item])
                     elif self.handle_unknown == "error":
@@ -150,6 +163,8 @@ class TransactionEncoder(BaseEstimator, TransformerMixin):
                 if isinstance(transaction, (str, bytes)):
                     transaction = [transaction]
                 for item in transaction:
+                    if _is_missing_token(item):
+                        continue
                     if item in self.item_to_idx_:
                         col_idx = self.item_to_idx_[item]
                         matrix[row_idx, col_idx] = 1
@@ -197,3 +212,16 @@ class TransactionEncoder(BaseEstimator, TransformerMixin):
         """Get output feature names for transformation."""
         check_is_fitted(self, attributes=["columns_"])
         return np.array(self.columns_, dtype=object)
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.target_tags.required = False
+        tags.input_tags.sparse = False
+        tags.input_tags.two_d_array = False
+        try:
+            from sklearn.utils._tags import TransformerTags
+            tags.transformer_tags = TransformerTags(preserves_dtype=[])
+        except Exception:
+            pass
+        return tags
+

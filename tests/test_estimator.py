@@ -56,3 +56,212 @@ def test_estimator_serialization_joblib():
     assert loaded_est.min_support == est.min_support
     assert len(loaded_est.rules_) == len(est.rules_)
     assert loaded_est.frequent_itemsets_ == est.frequent_itemsets_
+
+
+def test_estimator_get_feature_names_out():
+    """Verify Bug B8: get_feature_names_out() returns formatted rule strings."""
+    est = AssociationRulesEstimator(min_support=0.4, metric="confidence", min_threshold=0.6)
+    est.fit(HAND_COMPUTED_TRANSACTIONS)
+
+    feature_names = est.get_feature_names_out()
+    assert isinstance(feature_names, np.ndarray)
+    assert len(feature_names) == len(est.rules_)
+    assert all("->" in str(name) for name in feature_names)
+
+    # Empty rules check
+    est_empty = AssociationRulesEstimator(min_support=0.99)
+    est_empty.fit(HAND_COMPUTED_TRANSACTIONS)
+    assert len(est_empty.get_feature_names_out()) == 0
+
+
+def test_estimator_score_and_metrics():
+    """Verify Bug B9 & R3: .score() and skarm.metrics scorers for hyperparameter tuning."""
+    from skarm.metrics import (
+        mean_confidence_scorer,
+        mean_lift_scorer,
+        total_support_scorer,
+        rule_count_scorer,
+    )
+
+    est = AssociationRulesEstimator(min_support=0.4, metric="confidence", min_threshold=0.6)
+    est.fit(HAND_COMPUTED_TRANSACTIONS)
+
+    # Default score: mean confidence
+    score_val = est.score()
+    expected_mean_conf = float(est.rules_["confidence"].mean())
+    assert np.isclose(score_val, expected_mean_conf)
+
+    # Scorer functions
+    assert np.isclose(mean_confidence_scorer(est), expected_mean_conf)
+    assert np.isclose(mean_lift_scorer(est), float(est.rules_["lift"].mean()))
+    assert np.isclose(total_support_scorer(est), float(sum(est.frequent_itemsets_.values())))
+    assert rule_count_scorer(est) == float(len(est.rules_))
+
+    # Test scoring parameter configurations
+    est_lift = AssociationRulesEstimator(min_support=0.4, scoring="mean_lift")
+    est_lift.fit(HAND_COMPUTED_TRANSACTIONS)
+    assert np.isclose(est_lift.score(), float(est_lift.rules_["lift"].mean()))
+
+
+def test_estimator_formal_contracts_r2():
+    """Verify R2: status_ in {EXACT, DEGRADED, FAILED}, itemsets_ DataFrame, structured metadata_."""
+    import pandas as pd
+    est = AssociationRulesEstimator(min_support=0.4, algorithm="apriori")
+    est.fit(HAND_COMPUTED_TRANSACTIONS)
+
+    # Tri-state attributes
+    assert est.status_ == "EXACT"
+    assert est.is_complete_ is True
+    assert est.is_degraded_ is False
+    assert est.termination_reason_ is None
+
+    # itemsets_ DataFrame
+    assert hasattr(est, "itemsets_")
+    assert isinstance(est.itemsets_, pd.DataFrame)
+    assert "itemsets" in est.itemsets_.columns
+    assert "support" in est.itemsets_.columns
+    assert "length" in est.itemsets_.columns
+    assert len(est.itemsets_) == len(est.frequent_itemsets_)
+
+    # metadata_ structured dictionary
+    assert hasattr(est, "metadata_")
+    meta = est.metadata_
+    assert meta["status"] == "EXACT"
+    assert meta["is_complete"] is True
+    assert meta["termination_reason"] is None
+    assert meta["future_candidates_status"] == "EXHAUSTED"
+    assert meta["frequent_itemsets_discovered"] == len(est.frequent_itemsets_)
+    assert meta["is_candidate_count_exact"] is True
+    assert "counters" in meta
+    assert meta["counters"]["candidates_generated"] > 0
+    assert meta["counters"]["joins_attempted"] > 0
+
+
+def test_estimator_sklearn_tags():
+    """Verify R3: __sklearn_tags__() declared on Estimator and TransactionEncoder."""
+    from skarm.preprocessing import TransactionEncoder
+
+    est = AssociationRulesEstimator()
+    tags = est.__sklearn_tags__()
+    assert tags.target_tags.required is False
+    assert tags.input_tags.two_d_array is True
+
+    te = TransactionEncoder()
+    te_tags = te.__sklearn_tags__()
+    assert te_tags.target_tags.required is False
+
+
+def test_estimator_algorithm_counters():
+    """Verify R3: algorithm-specific counters populated in metadata_['counters']."""
+    for algo, expected_keys in [
+        ("apriori", {"candidates_generated", "joins_attempted", "scans_performed"}),
+        ("fpgrowth", {"trees_constructed", "nodes_created", "paths_traversed"}),
+        ("eclat", {"intersections_performed", "tid_elements_scanned"}),
+    ]:
+        est = AssociationRulesEstimator(min_support=0.4, algorithm=algo)
+        est.fit(HAND_COMPUTED_TRANSACTIONS)
+        counters = est.metadata_["counters"]
+        for key in expected_keys:
+            assert key in counters, f"Missing counter {key} for algorithm {algo}"
+            assert counters[key] >= 0, f"Counter {key} must be non-negative"
+
+
+def test_estimator_multidimensional_budgets():
+    """Verify R3: multi-dimensional resource budgets (candidates, time, memory)."""
+    from skarm.pruning import BoundaryConditionError
+
+    # Invalid negative budget raises BoundaryConditionError
+    with pytest.raises(BoundaryConditionError, match="max_time_seconds must be positive"):
+        AssociationRulesEstimator(max_time_seconds=-1.0).fit(HAND_COMPUTED_TRANSACTIONS)
+
+    with pytest.raises(BoundaryConditionError, match="max_memory_mb must be positive"):
+        AssociationRulesEstimator(max_memory_mb=-5.0).fit(HAND_COMPUTED_TRANSACTIONS)
+
+    # Valid parameters store correctly and clone cleanly
+    est = AssociationRulesEstimator(max_time_seconds=60.0, max_memory_mb=512.0)
+    assert est.max_time_seconds == 60.0
+    assert est.max_memory_mb == 512.0
+    cloned = clone(est)
+    assert cloned.max_time_seconds == 60.0
+    assert cloned.max_memory_mb == 512.0
+
+
+def test_estimator_pipeline_pandas_output():
+    """Verify Pipeline with .set_output(transform='pandas') outputs DataFrame with rule column names (R3)."""
+    import pandas as pd
+    from sklearn.pipeline import Pipeline
+    from sklearn.feature_selection import VarianceThreshold
+
+    pipe = Pipeline([
+        ("rules", AssociationRulesEstimator(min_support=0.4, metric="confidence", min_threshold=0.6)),
+        ("sel", VarianceThreshold(0.01)),
+    ])
+    pipe.set_output(transform="pandas")
+    df = pipe.fit_transform(HAND_COMPUTED_TRANSACTIONS)
+
+    assert isinstance(df, pd.DataFrame)
+    assert df.shape[0] == len(HAND_COMPUTED_TRANSACTIONS)
+    assert df.shape[1] > 0
+    assert all("->" in str(col) for col in df.columns)
+
+
+def test_estimator_pipeline_feature_names_out_provenance():
+    """Verify Pipeline get_feature_names_out() propagates upstream item names (R3)."""
+    from sklearn.pipeline import Pipeline
+    from skarm.preprocessing import TransactionEncoder
+
+    pipe = Pipeline([
+        ("encoder", TransactionEncoder(sparse_output=False)),
+        ("rules", AssociationRulesEstimator(min_support=0.4, metric="confidence", min_threshold=0.6)),
+    ])
+    pipe.fit(HAND_COMPUTED_TRANSACTIONS)
+    feature_names = pipe.get_feature_names_out()
+
+    assert isinstance(feature_names, np.ndarray)
+    assert len(feature_names) > 0
+    # Rule names should contain original items 'A', 'B', 'C', not generic 'item_0'
+    assert any("{C} -> {A}" in str(n) for n in feature_names)
+    assert not any("item_" in str(n) for n in feature_names)
+
+    # Test length mismatch raises ValueError
+    rules_est = pipe.named_steps["rules"]
+    with pytest.raises(ValueError, match="input_features has length 2, but 6 features were seen"):
+        rules_est.get_feature_names_out(input_features=["X", "Y"])
+
+
+def test_estimator_scoring_validation():
+    """Verify scoring parameter validation in _validate_parameters (R3)."""
+    with pytest.raises(ValueError, match="Invalid scoring metric: invalid_metric"):
+        AssociationRulesEstimator(scoring="invalid_metric").fit([["A", "B"]])
+
+    # Valid string scorers
+    for valid_scoring in ["mean_confidence", "mean_lift", "total_support", "rule_count"]:
+        est = AssociationRulesEstimator(scoring=valid_scoring, min_support=0.4)
+        est.fit(HAND_COMPUTED_TRANSACTIONS)
+        score_val = est.score()
+        assert isinstance(score_val, float)
+
+    # Valid callable scorer
+    custom_scorer = lambda estimator, X=None, y=None: 42.0
+    est_custom = AssociationRulesEstimator(scoring=custom_scorer, min_support=0.4)
+    est_custom.fit(HAND_COMPUTED_TRANSACTIONS)
+    assert est_custom.score() == 42.0
+
+
+def test_fpgrowth_truncate_degraded_metadata():
+    """Verify FP-Growth truncation sets future_candidates_status='UNKNOWN' and degradation_reason."""
+    X = (np.random.RandomState(42).rand(50, 10) > 0.3).astype(int)
+    est = AssociationRulesEstimator(
+        min_support=0.1,
+        algorithm="fpgrowth",
+        max_candidates=5,
+        on_candidate_explosion="truncate",
+    ).fit(X)
+
+    assert est.status_ == "DEGRADED"
+    assert est.is_degraded_ is True
+    assert est.is_complete_ is False
+    assert est.metadata_["future_candidates_status"] == "UNKNOWN"
+    assert est.termination_reason_ == "max_candidates_reached"
+
+

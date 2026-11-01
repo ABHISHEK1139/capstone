@@ -5,8 +5,15 @@ Satisfies AC-2 and requirements FR-7, NFR-2, and NT-1..6.
 
 import pytest
 import numpy as np
+import pandas as pd
 import warnings
+from scipy import sparse
 from skarm.estimator import AssociationRulesEstimator
+from skarm.preprocessing import TransactionEncoder
+from skarm.rules import compute_zhangs_metric
+from skarm.apriori import apriori
+from skarm.fpgrowth import fpgrowth
+from skarm.eclat import eclat
 from skarm.pruning import CandidateExplosionError, BoundaryConditionError, DegradedModeWarning
 from skarm.telemetry import RecoveryCoordinator
 
@@ -245,3 +252,105 @@ def test_nt6_dense_transactions_stress_test(recovery_coordinator):
         safe_response="Maintained telemetry log and capped resource envelope",
         residual_risk="Higher order itemsets capped at safety threshold",
     )
+
+
+def test_b1_zhangs_metric_bounds():
+    """Verify Bug B1: Zhang's metric denominator and bounds in [-1, 1] for negative associations."""
+    # Negative association: supp_ac < supp_a * supp_c
+    val_neg = compute_zhangs_metric(supp_ac=0.05, supp_a=0.6, supp_c=0.7)
+    assert -1.0 <= val_neg <= 1.0, f"Expected in [-1, 1], got {val_neg}"
+    assert val_neg < 0.0, f"Expected negative association, got {val_neg}"
+
+    # Extreme negative association: disjoint itemsets
+    val_disjoint = compute_zhangs_metric(supp_ac=0.0, supp_a=0.5, supp_c=0.5)
+    assert np.isclose(val_disjoint, -1.0)
+
+    # Perfect positive association
+    val_pos = compute_zhangs_metric(supp_ac=0.5, supp_a=0.5, supp_c=0.5)
+    assert np.isclose(val_pos, 1.0)
+
+
+def test_b2_transaction_encoder_nan_tokens():
+    """Verify Bug B2: None and np.nan tokens handled idempotently without dropping valid items."""
+    tx = [
+        ["milk", None, "bread"],
+        ["bread", float("nan"), "butter"],
+        [None, np.nan],
+        ["milk", "bread"],
+    ]
+    te = TransactionEncoder()
+    X = te.fit_transform(tx)
+    assert te.columns_ == ["bread", "butter", "milk"]
+    assert X.shape == (4, 3)
+
+    # Check idempotent second transform
+    X2 = te.transform(tx)
+    assert np.array_equal(X, X2)
+
+
+def test_b3_matrix_validation_rejects_non_binary():
+    """Verify Bug B3: miners validate that input values are strictly binary {0, 1}."""
+    for miner in [apriori, fpgrowth, eclat]:
+        # Continuous floats
+        with pytest.raises(ValueError, match="strictly binary"):
+            miner(np.array([[0.5, 0.0], [0.0, 1.0]]))
+        # Negative values
+        with pytest.raises(ValueError, match="strictly binary"):
+            miner(np.array([[-1.0, 1.0], [0.0, 1.0]]))
+        # NaNs
+        with pytest.raises(ValueError, match="NaNs"):
+            miner(np.array([[np.nan, 1.0], [0.0, 1.0]]))
+        # Sparse non-binary values
+        with pytest.raises(ValueError, match="strictly binary"):
+            miner(sparse.csr_matrix([[2.0, 0.0], [0.0, 1.0]]))
+
+
+def test_b4_dataframe_column_names_preserved():
+    """Verify Bug B4: DataFrame column names are preserved in columns_ and feature_names_in_."""
+    df = pd.DataFrame({
+        "electronics": [1, 1, 0, 1],
+        "warranty": [1, 0, 1, 1],
+        "accessories": [0, 1, 1, 0],
+    })
+    est = AssociationRulesEstimator(min_support=0.3)
+    est.fit(df)
+    assert est.columns_ == ["electronics", "warranty", "accessories"]
+    assert list(est.feature_names_in_) == ["electronics", "warranty", "accessories"]
+    assert est.n_features_in_ == 3
+
+
+def test_b5_decode_transactions_when_fitted_on_matrix():
+    """Verify Bug B5: predict() and transform() decode transaction lists when fitted on matrix."""
+    X_mat = np.array([
+        [1, 1, 0],
+        [1, 1, 1],
+        [0, 1, 1],
+    ], dtype=bool)
+    est = AssociationRulesEstimator(min_support=0.3, min_threshold=0.5)
+    est.fit(X_mat)
+
+    # Query with transaction lists using default item_0, item_1 names
+    query_by_names = [["item_0", "item_1"], ["item_2"]]
+    preds_names = est.predict(query_names := query_by_names)
+    assert isinstance(preds_names, list)
+    assert len(preds_names) == 2
+    trans_names = est.transform(query_names)
+    assert trans_names.shape == (2, len(est.rules_))
+
+    # Query with transaction lists using integer indices
+    query_by_idx = [[0, 1], [2]]
+    preds_idx = est.predict(query_by_idx)
+    assert preds_idx == preds_names
+    trans_idx = est.transform(query_by_idx)
+    assert np.array_equal(trans_names, trans_idx)
+
+
+def test_b10_sample_weight_nan_inf_rejected():
+    """Verify Bug B10: sample_weight with NaN or Inf raises ValueError across all miners."""
+    X = np.array([[1, 0], [0, 1]], dtype=bool)
+    for miner in [apriori, fpgrowth, eclat]:
+        with pytest.raises(ValueError, match="NaN"):
+            miner(X, sample_weight=np.array([np.nan, 1.0]))
+        with pytest.raises(ValueError, match="infinite"):
+            miner(X, sample_weight=np.array([np.inf, 1.0]))
+

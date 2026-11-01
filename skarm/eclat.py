@@ -9,6 +9,29 @@ from skarm.pruning import PruningPolicy
 from skarm.telemetry import TelemetryLogger
 
 
+def _validate_matrix(X: Union[np.ndarray, sparse.spmatrix]):
+    """Validate that input matrix values are strictly binary {0, 1} or boolean."""
+    if sparse.issparse(X):
+        if X.data.dtype.kind in ('f', 'c'):
+            if np.isnan(X.data).any():
+                raise ValueError("Input matrix contains NaNs.")
+            if np.isinf(X.data).any():
+                raise ValueError("Input matrix contains infinite values.")
+        if X.data.dtype != bool:
+            if not np.all((X.data == 0) | (X.data == 1)):
+                raise ValueError("Input matrix values must be strictly binary (0, 1, or boolean). Continuous, negative, or non-binary values are not allowed.")
+    else:
+        arr = np.asarray(X)
+        if arr.dtype.kind in ('f', 'c'):
+            if np.isnan(arr).any():
+                raise ValueError("Input matrix contains NaNs.")
+            if np.isinf(arr).any():
+                raise ValueError("Input matrix contains infinite values.")
+        if arr.dtype != bool:
+            if not np.all((arr == 0) | (arr == 1)):
+                raise ValueError("Input matrix values must be strictly binary (0, 1, or boolean). Continuous, negative, or non-binary values are not allowed.")
+
+
 def eclat(
     X: Union[np.ndarray, sparse.csr_matrix],
     min_support: float = 0.1,
@@ -44,6 +67,8 @@ def eclat(
     frequent_itemsets : dict
         Mapping from frozenset of item indices to support value.
     """
+    _validate_matrix(X)
+
     if pruning_policy is None:
         pruning_policy = PruningPolicy(
             max_candidates=max_candidates,
@@ -58,11 +83,15 @@ def eclat(
     if n_samples == 0 or n_features == 0:
         return {}
 
-    # Weight validation (NT-3)
+    # Weight validation (NT-3, B10)
     if sample_weight is not None:
         sample_weight = np.asarray(sample_weight, dtype=float)
         if len(sample_weight) != n_samples:
             raise ValueError(f"sample_weight length {len(sample_weight)} != n_samples {n_samples}")
+        if np.isnan(sample_weight).any():
+            raise ValueError("sample_weight cannot contain NaN values.")
+        if np.isinf(sample_weight).any():
+            raise ValueError("sample_weight cannot contain infinite values.")
         if np.any(sample_weight < 0):
             raise ValueError("sample_weight cannot contain negative values.")
         total_weight = float(np.sum(sample_weight))
@@ -98,6 +127,11 @@ def eclat(
             if w_sum >= min_weight - 1e-12:
                 tid_lists[j] = tids
 
+    counters = {
+        "intersections_performed": 0,
+        "tid_elements_scanned": 0,
+    }
+
     frequent_itemsets: Dict[FrozenSet[int], float] = {}
 
     def get_support(tids: Set[int]) -> float:
@@ -121,11 +155,12 @@ def eclat(
             for j in range(i + 1, n_items):
                 item_j, tids_j = items_with_tids[j]
                 inter_tids = tids_i.intersection(tids_j)
+                counters["intersections_performed"] += 1
+                counters["tid_elements_scanned"] += len(tids_i) + len(tids_j)
 
-                if sample_weight is not None:
-                    inter_weight = sum(sample_weight[t] for t in inter_tids)
-                else:
-                    inter_weight = len(inter_tids)
+                if inter_weight_check := (sum(sample_weight[t] for t in inter_tids) if sample_weight is not None else len(inter_tids)):
+                    pass
+                inter_weight = inter_weight_check
 
                 if inter_weight >= min_weight - 1e-12:
                     supp = float(inter_weight / total_weight)
@@ -133,7 +168,15 @@ def eclat(
                     frequent_itemsets[pair_itemset] = supp
 
                     # Guardrail check
-                    if not pruning_policy.check_candidate_count(len(frequent_itemsets), level=len(pair_itemset)):
+                    can_proceed = pruning_policy.check_budget(
+                        candidate_count=len(frequent_itemsets),
+                        level=len(pair_itemset),
+                    )
+                    if not can_proceed:
+                        return
+
+                    if pruning_policy.on_candidate_explosion == "truncate" and len(frequent_itemsets) >= pruning_policy.max_candidates:
+                        pruning_policy.is_degraded = True
                         return
 
                     new_items_with_tids.append((item_j, inter_tids))
@@ -150,12 +193,15 @@ def eclat(
     if pruning_policy.should_continue_length(1):
         extend((), init_pairs)
 
+    pruning_policy.counters = counters
     if telemetry is not None:
+        telemetry.counters = counters
         telemetry.stop({
             "algorithm": "eclat",
             "total_frequent_itemsets": len(frequent_itemsets),
             "is_degraded": pruning_policy.is_degraded,
             "peak_candidates": pruning_policy.peak_candidate_count,
+            "counters": counters,
         })
 
     return frequent_itemsets

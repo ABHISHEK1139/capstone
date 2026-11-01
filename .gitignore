@@ -25,3 +25,7 @@ env/
 *.synctex.gz
 *.fls
 *.fdb_latexmk
+*.egg-info/
+.agents/
+paper/inspect_pages/page-01-current.png
+

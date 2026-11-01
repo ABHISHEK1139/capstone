@@ -10,6 +10,7 @@ Produces:
 """
 
 import os
+import json
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -42,7 +43,7 @@ def draw_engines():
             fontsize=12, fontweight="bold", color=b_apriori)
 
     steps_a = [
-        ("Step 1: Scan & Count\nFrequent 1-Itemsets", "Find $L_1 = \{i \\mid \\sigma(i) \\geq \\theta N\}$\nDatabase scan 1", 5, 75, 18, 14),
+        (r"Step 1: Scan & Count\nFrequent 1-Itemsets", r"Find $L_1 = \{i \mid \sigma(i) \geq \theta N\}$" + "\nDatabase scan 1", 5, 75, 18, 14),
         ("Step 2: Candidate Join\n$C_k = L_{k-1} \\bowtie L_{k-1}$", "Self-join itemsets sharing\nprefix of length $k-2$", 27, 75, 18, 14),
         ("Step 3: Downward Pruning\n(Anti-Monotone)", "Discard $c \\in C_k$ if any\nsub-itemset $s \\subset c \\notin L_{k-1}$", 49, 75, 18, 14),
         ("Step 4: Matrix Scan\n& Support Counting", "Scan transactions to count\noccurrences of $c \\in C_k$", 71, 75, 18, 14),
@@ -435,10 +436,31 @@ def draw_ablation():
     """Figure 5 / Section 7.5: Pruning Ablation Study (Bounded vs Exact)."""
     fig, ax1 = plt.subplots(figsize=(8.5, 5), dpi=300)
 
-    caps = [50, 100, 250, 500, 1000, 2500, 5000]
-    recall = [0.60, 0.60, 4.53, 17.95, 100.0, 100.0, 100.0]
-    times = [0.0033, 0.0021, 0.0216, 0.1027, 2.4833, 2.4706, 2.5059]
-    itemsets = [16, 16, 121, 479, 2669, 2669, 2669]
+    ablation_json = os.path.join(os.path.dirname(__file__), "..", "benchmarks", "ablation_results.json")
+    if os.path.exists(ablation_json):
+        try:
+            with open(ablation_json, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            records = data.get("candidate_sweeps", {}).get("chess", {}).get("records", [])
+            if records:
+                caps = [r["candidate_cap"] for r in records]
+                recall = [round(r["itemset_recall"] * 100.0, 2) for r in records]
+                times = [r["fit_time_s"] for r in records]
+                itemsets = [r["n_itemsets"] for r in records]
+                print(f"Loaded {len(records)} empirical ablation data points from {ablation_json}")
+            else:
+                raise ValueError("No records found in ablation_results.json")
+        except Exception as e:
+            print(f"Warning: Failed to load ablation_results.json ({e}), using default values.")
+            caps = [50, 100, 250, 500, 1000, 2500, 5000]
+            recall = [0.60, 0.60, 4.53, 17.95, 100.0, 100.0, 100.0]
+            times = [0.0033, 0.0021, 0.0216, 0.1027, 2.4833, 2.4706, 2.5059]
+            itemsets = [16, 16, 121, 479, 2669, 2669, 2669]
+    else:
+        caps = [50, 100, 250, 500, 1000, 2500, 5000]
+        recall = [0.60, 0.60, 4.53, 17.95, 100.0, 100.0, 100.0]
+        times = [0.0033, 0.0021, 0.0216, 0.1027, 2.4833, 2.4706, 2.5059]
+        itemsets = [16, 16, 121, 479, 2669, 2669, 2669]
 
     color1 = "#2563EB"
     color2 = "#D95F02"
@@ -451,9 +473,14 @@ def draw_ablation():
     ax1.set_ylim(-5, 110)
     ax1.grid(True, linestyle="--", alpha=0.4)
 
-    # Annotate Degraded Zone vs Exact Zone
-    ax1.axvspan(35, 750, color="#FEE2E2", alpha=0.5, label="Degraded Mode (is_degraded_=True)")
-    ax1.axvspan(750, 6500, color="#DCFCE7", alpha=0.5, label="Exact Mode (is_degraded_=False)")
+    # Dynamic annotation of Degraded Zone vs Exact Zone
+    degraded_caps = [c for c, rec in zip(caps, recall) if rec < 100.0]
+    exact_caps = [c for c, rec in zip(caps, recall) if rec >= 100.0]
+    boundary = (max(degraded_caps) + min(exact_caps)) / 2 if (degraded_caps and exact_caps) else 750
+    min_x = min(caps) * 0.7
+    max_x = max(caps) * 1.3
+    ax1.axvspan(min_x, boundary, color="#FEE2E2", alpha=0.5, label="Degraded Mode (is_degraded_=True)")
+    ax1.axvspan(boundary, max_x, color="#DCFCE7", alpha=0.5, label="Exact Mode (is_degraded_=False)")
 
     ax2 = ax1.twinx()
     ax2.set_yscale("log")

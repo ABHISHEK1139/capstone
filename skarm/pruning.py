@@ -47,6 +47,8 @@ class PruningPolicy:
         max_len: Optional[int] = None,
         min_support: float = 0.1,
         on_candidate_explosion: str = "degrade",
+        max_time_seconds: Optional[float] = None,
+        max_memory_mb: Optional[float] = None,
     ):
         if not (0.0 <= min_support <= 1.0):
             raise BoundaryConditionError(f"min_support must be between 0.0 and 1.0, got {min_support}")
@@ -54,6 +56,10 @@ class PruningPolicy:
             raise BoundaryConditionError(f"max_candidates must be positive, got {max_candidates}")
         if max_len is not None and max_len < 1:
             raise BoundaryConditionError(f"max_len must be >= 1, got {max_len}")
+        if max_time_seconds is not None and max_time_seconds <= 0:
+            raise BoundaryConditionError(f"max_time_seconds must be positive, got {max_time_seconds}")
+        if max_memory_mb is not None and max_memory_mb <= 0:
+            raise BoundaryConditionError(f"max_memory_mb must be positive, got {max_memory_mb}")
         if on_candidate_explosion not in ("raise", "truncate", "degrade"):
             raise ValueError(f"Unknown on_candidate_explosion policy: {on_candidate_explosion}")
 
@@ -61,9 +67,15 @@ class PruningPolicy:
         self.max_len = max_len
         self.min_support = min_support
         self.on_candidate_explosion = on_candidate_explosion
+        self.max_time_seconds = max_time_seconds
+        self.max_memory_mb = max_memory_mb
         self.is_degraded = False
         self.degradation_reason = None
         self.peak_candidate_count = 0
+        self.level_halted: Optional[int] = None
+        self.candidates_generated_at_level: Optional[int] = None
+        self.candidates_remaining_at_level: Optional[int] = None
+        self.future_candidates_status: str = "EXHAUSTED"
 
     def check_candidate_count(self, candidate_count: int, level: int) -> bool:
         """Check if candidate count exceeds safety guardrails.
@@ -78,16 +90,68 @@ class PruningPolicy:
                 f"Candidate explosion detected at level {level}: {candidate_count} candidates "
                 f"exceeds max_candidates={self.max_candidates}."
             )
+            self.level_halted = level
+            self.candidates_generated_at_level = candidate_count
+            self.future_candidates_status = "UNKNOWN"
+
             if self.on_candidate_explosion == "raise":
                 raise CandidateExplosionError(msg)
             elif self.on_candidate_explosion == "degrade":
                 self.is_degraded = True
                 self.degradation_reason = msg
+                self.candidates_remaining_at_level = candidate_count
                 warnings.warn(msg + " Entering degraded mode (halting deeper candidate generation).", DegradedModeWarning)
                 return False
             elif self.on_candidate_explosion == "truncate":
+                self.is_degraded = True
+                self.degradation_reason = msg
+                self.candidates_remaining_at_level = candidate_count - self.max_candidates
                 warnings.warn(msg + " Truncating candidates to max_candidates limit.", DegradedModeWarning)
                 return True
+
+        return True
+
+    def check_budget(
+        self,
+        candidate_count: int = 0,
+        level: int = 0,
+        elapsed_time: Optional[float] = None,
+        peak_memory_mb: Optional[float] = None,
+    ) -> bool:
+        """Check multi-dimensional resource budget (candidates, time, memory)."""
+        if candidate_count > 0:
+            if not self.check_candidate_count(candidate_count, level=level):
+                return False
+
+        if self.max_time_seconds is not None and elapsed_time is not None:
+            if elapsed_time > self.max_time_seconds:
+                msg = (
+                    f"Time budget exceeded: {elapsed_time:.3f}s exceeds "
+                    f"max_time_seconds={self.max_time_seconds}s."
+                )
+                self.level_halted = level
+                self.future_candidates_status = "UNKNOWN"
+                if self.on_candidate_explosion == "raise":
+                    raise CandidateExplosionError(msg)
+                self.is_degraded = True
+                self.degradation_reason = msg
+                warnings.warn(msg + " Entering degraded mode (time limit reached).", DegradedModeWarning)
+                return False
+
+        if self.max_memory_mb is not None and peak_memory_mb is not None:
+            if peak_memory_mb > self.max_memory_mb:
+                msg = (
+                    f"Memory budget exceeded: {peak_memory_mb:.1f}MB exceeds "
+                    f"max_memory_mb={self.max_memory_mb}MB."
+                )
+                self.level_halted = level
+                self.future_candidates_status = "UNKNOWN"
+                if self.on_candidate_explosion == "raise":
+                    raise CandidateExplosionError(msg)
+                self.is_degraded = True
+                self.degradation_reason = msg
+                warnings.warn(msg + " Entering degraded mode (memory limit reached).", DegradedModeWarning)
+                return False
 
         return True
 
@@ -102,3 +166,7 @@ class PruningPolicy:
         self.is_degraded = False
         self.degradation_reason = None
         self.peak_candidate_count = 0
+        self.level_halted = None
+        self.candidates_generated_at_level = None
+        self.candidates_remaining_at_level = None
+        self.future_candidates_status = "EXHAUSTED"

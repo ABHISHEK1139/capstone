@@ -33,6 +33,11 @@ test = [
     "psutil>=5.9.0",
 ]
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["skarm*"]
+exclude = ["data*", "paper*", "benchmarks*", "scripts*", "tests*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
