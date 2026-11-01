@@ -276,7 +276,7 @@ def draw_pipeline():
 
 def draw_fptree():
     """Figure 4: Complete FP-Tree with Header Table, Node-Links, and O(1) Tail Optimization."""
-    fig, ax = plt.subplots(figsize=(14, 8), dpi=300)
+    fig, ax = plt.subplots(figsize=(14, 7.2), dpi=300)
     ax.set_xlim(0, 100)
     ax.set_ylim(0, 100)
     ax.axis("off")
@@ -305,13 +305,13 @@ def draw_fptree():
     rect_hdr = patches.FancyBboxPatch((28, 48), 24, 44, boxstyle="round,pad=0.5",
                                      facecolor="#EFF6FF", edgecolor="#2563EB", linewidth=1.5)
     ax.add_patch(rect_hdr)
-    ax.text(40, 88, "Header Table (skarm)", ha="center", fontsize=10, fontweight="bold", color="#1D4ED8")
+    ax.text(40, 88, "Header Table", ha="center", fontsize=10, fontweight="bold", color="#1D4ED8")
 
     # Table columns header
     ax.text(31, 82, "Item", fontsize=8.5, fontweight="bold", color="#1E293B")
     ax.text(37, 82, "Count", fontsize=8.5, fontweight="bold", color="#1E293B")
-    ax.text(44, 82, "Head", fontsize=8.5, fontweight="bold", color="#1E293B")
-    ax.text(49, 82, "Tail [NEW]", fontsize=8.5, fontweight="bold", color="#DC2626")
+    ax.text(43.5, 82, "Head", fontsize=8.5, fontweight="bold", color="#1E293B")
+    ax.text(48.5, 82, "Tail ptr", fontsize=8.5, fontweight="bold", color="#0369A1")
     ax.plot([29, 51], [80, 80], color="#93C5FD", lw=1)
 
     items_hdr = [
@@ -329,7 +329,7 @@ def draw_fptree():
         # Head pointer dot
         ax.plot(45.5, y + 1, marker="o", color="#2563EB", markersize=5)
         # Tail pointer dot
-        ax.plot(50.5, y + 1, marker="s", color="#DC2626", markersize=5)
+        ax.plot(50.5, y + 1, marker="s", color="#0284C7", markersize=5)
 
     # Panel 3: FP-Tree Nodes
     # Root
@@ -404,24 +404,25 @@ def draw_fptree():
     ax.annotate("", xy=(node_pos["p2"][0] - 3, node_pos["p2"][1]), xytext=(node_pos["p1"][0] + 3, node_pos["p1"][1] + 1),
                 arrowprops=dict(arrowstyle="-|>", color="#7C3AED", lw=1.2, linestyle="--", connectionstyle="arc3,rad=-0.3"))
 
-    # Tail pointer direct connection highlight (The Key Engineering Innovation!)
+    # Tail pointer direct connection highlight
     ax.annotate("", xy=(node_pos["p2"][0] + 3, node_pos["p2"][1]), xytext=(51.5, 52),
-                arrowprops=dict(arrowstyle="-|>", color="#DC2626", lw=1.5, linestyle="-.", connectionstyle="arc3,rad=-0.4"))
+                arrowprops=dict(arrowstyle="-|>", color="#0284C7", lw=1.5, linestyle="-.", connectionstyle="arc3,rad=-0.4"))
+    ax.text(56, 47, "O(1) tail link", fontsize=8, color="#0369A1", fontstyle="italic")
 
-    # Callout Banner for O(1) Tail Pointer
-    rect_callout = patches.FancyBboxPatch((2, 2), 96, 20, boxstyle="round,pad=0.5",
-                                         facecolor="#FEF2F2", edgecolor="#DC2626", linewidth=1.5)
+    # Callout Box for O(1) Tail Pointer
+    rect_callout = patches.FancyBboxPatch((2, 2.5), 96, 19, boxstyle="round,pad=0.5",
+                                         facecolor="#F8FAFC", edgecolor="#CBD5E1", linewidth=1.0)
     ax.add_patch(rect_callout)
-    ax.text(50, 18, "ENGINEERING INNOVATION: Dual-Pointer Header Table with O(1) Tail Appends",
-            ha="center", fontsize=10, fontweight="bold", color="#991B1B")
+    ax.text(50, 17.5, "Node-Link Maintenance Complexity in FP-Tree Construction",
+            ha="center", fontsize=9.5, fontweight="bold", color="#1E293B")
     callout_body = (
-        "* Traditional Han et al. FP-Growth: Header table stores only 'head' pointer. Appending new nodes to an item link-chain\n"
+        "* Canonical FP-Tree: Header table stores only 'head' pointer. Appending new nodes to an item link-chain\n"
         "  requires traversing the entire chain: O(L) time per insertion, degrading to O(N * L^2) on large transaction databases.\n"
-        "* skarm Optimization: Header table maintains both 'head' and 'tail' pointers. Appends execute in O(1) constant time:\n"
-        "  tail.node_link = new_node; tail = new_node. This eliminated the 3-hour bottleneck on BMS-POS (515,596 transactions),\n"
-        "  allowing all 30 evaluation trials to complete smoothly with 100% exact cross-engine itemset agreement."
+        "* Dual-Pointer Architecture: Header table maintains both 'head' and 'tail' pointers. Appends execute in O(1) constant time:\n"
+        "  tail.node_link = new_node; tail = new_node. This eliminates sequential traversal bottlenecks on deep click-stream datasets\n"
+        "  (such as BMS-POS) while preserving exact canonical tree topology and deterministic frequent itemsets."
     )
-    ax.text(5, 7.5, callout_body, fontsize=8.2, color="#7F1D1D", linespacing=1.35)
+    ax.text(5, 6.5, callout_body, fontsize=8.2, color="#334155", linespacing=1.35)
 
     plt.tight_layout()
     p = os.path.join(OUT_DIR, "fptree.png")
