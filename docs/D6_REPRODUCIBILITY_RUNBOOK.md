@@ -36,11 +36,11 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Step 2: Run Full Automated Test Suite (162 Tests)
+### Step 2: Run Full Automated Test Suite (163 Tests)
 ```bash
 pytest -v
 ```
-*(Executes 74 unit/regression tests in `tests/test_*.py` and 88 multi-tier tests in `tests/e2e/`)*
+*(Executes 75 unit/regression tests in `tests/test_*.py` and 88 multi-tier tests in `tests/e2e/`)*
 
 ### Step 2b: Run Independent 5-Tier E2E Test Suite (88 Tests)
 ```bash

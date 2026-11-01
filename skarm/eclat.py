@@ -106,9 +106,15 @@ def eclat(
     tid_lists: Dict[int, Set[int]] = {}
     is_sparse = sparse.issparse(X)
 
+    total_start = getattr(pruning_policy, "start_time", time.perf_counter())
+
     if is_sparse:
         X_csc = X.tocsc()
         for j in range(n_features):
+            if j % 1000 == 0:
+                elapsed = time.perf_counter() - total_start
+                if not pruning_policy.check_budget(candidate_count=0, level=1, elapsed_time=elapsed):
+                    return {}
             tids = set(X_csc.indices[X_csc.indptr[j]: X_csc.indptr[j + 1]])
             if sample_weight is not None:
                 w_sum = sum(sample_weight[t] for t in tids)
@@ -119,6 +125,10 @@ def eclat(
     else:
         X_arr = np.asarray(X, dtype=bool)
         for j in range(n_features):
+            if j % 1000 == 0:
+                elapsed = time.perf_counter() - total_start
+                if not pruning_policy.check_budget(candidate_count=0, level=1, elapsed_time=elapsed):
+                    return {}
             tids = set(np.where(X_arr[:, j])[0])
             if sample_weight is not None:
                 w_sum = sum(sample_weight[t] for t in tids)

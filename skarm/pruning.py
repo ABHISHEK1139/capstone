@@ -37,7 +37,7 @@ def get_current_memory_mb() -> float:
 
 
 class MemorySampler(threading.Thread):
-    """Continuous background RSS memory sampler.
+    """Continuous background RSS memory sampler (10 ms polling frequency = 100 Hz).
 
     Samples process RSS every `polling_interval` seconds (default 10 ms = 0.01 s)
     to accurately record peak memory consumption during fit operations.
@@ -47,15 +47,28 @@ class MemorySampler(threading.Thread):
         super().__init__(daemon=True)
         self.polling_interval = polling_interval
         self._stop_event = threading.Event()
+        self._lock = threading.Lock()
         self.baseline_mb: float = get_current_memory_mb()
-        self.peak_mb: float = self.baseline_mb
+        self._peak_mb: float = self.baseline_mb
+
+    @property
+    def peak_mb(self) -> float:
+        with self._lock:
+            return self._peak_mb
+
+    @peak_mb.setter
+    def peak_mb(self, val: float):
+        with self._lock:
+            if val > self._peak_mb:
+                self._peak_mb = val
 
     def run(self):
         while not self._stop_event.is_set():
             try:
                 curr = get_current_memory_mb()
-                if curr > self.peak_mb:
-                    self.peak_mb = curr
+                with self._lock:
+                    if curr > self._peak_mb:
+                        self._peak_mb = curr
             except Exception:
                 pass
             self._stop_event.wait(self.polling_interval)
@@ -65,12 +78,14 @@ class MemorySampler(threading.Thread):
         self._stop_event.set()
         try:
             curr = get_current_memory_mb()
-            if curr > self.peak_mb:
-                self.peak_mb = curr
+            with self._lock:
+                if curr > self._peak_mb:
+                    self._peak_mb = curr
         except Exception:
             pass
         self.join(timeout=1.0)
-        return self.peak_mb
+        with self._lock:
+            return self._peak_mb
 
 
 class PruningPolicy:
@@ -248,7 +263,7 @@ class PruningPolicy:
 
         # Memory Governor: poll sampler or current RSS
         if self.sampler is not None:
-            sampled_peak = max(self.sampler.peak_mb, get_current_memory_mb())
+            sampled_peak = self.sampler.peak_mb
             if sampled_peak > self.peak_memory_mb:
                 self.peak_memory_mb = sampled_peak
         else:
@@ -282,6 +297,17 @@ class PruningPolicy:
         if self.max_len is not None and current_len >= self.max_len:
             return False
         return not self.is_degraded
+
+    def __getstate__(self):
+        """Serialize PruningPolicy excluding background thread/lock objects."""
+        state = self.__dict__.copy()
+        state["sampler"] = None
+        return state
+
+    def __setstate__(self, state):
+        """Restore PruningPolicy state."""
+        self.__dict__.update(state)
+        self.sampler = None
 
     def reset(self):
         """Reset degradation and telemetry state."""

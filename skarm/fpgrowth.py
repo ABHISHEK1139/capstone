@@ -200,6 +200,11 @@ def fpgrowth(
 
     if is_sparse:
         for i in range(n_samples):
+            if i % 5000 == 0:
+                elapsed = time.perf_counter() - getattr(pruning_policy, "start_time", time.perf_counter())
+                if not pruning_policy.check_budget(candidate_count=0, level=1, elapsed_time=elapsed):
+                    pruning_policy.counters = counters
+                    return {}
             w = sample_weight[i] if sample_weight is not None else 1.0
             cols = X_csr.indices[X_csr.indptr[i]: X_csr.indptr[i + 1]]
             filtered = [col for col in cols if col in frequent_1]
@@ -208,6 +213,11 @@ def fpgrowth(
                 tree.add_transaction(filtered, w)
     else:
         for i in range(n_samples):
+            if i % 5000 == 0:
+                elapsed = time.perf_counter() - getattr(pruning_policy, "start_time", time.perf_counter())
+                if not pruning_policy.check_budget(candidate_count=0, level=1, elapsed_time=elapsed):
+                    pruning_policy.counters = counters
+                    return {}
             w = sample_weight[i] if sample_weight is not None else 1.0
             row = X_arr[i]
             cols = np.where(row)[0]

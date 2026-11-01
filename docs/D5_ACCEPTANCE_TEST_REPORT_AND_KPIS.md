@@ -11,7 +11,7 @@
 The independent acceptance testing campaign executed under conditions **AC-1** (Representative Operation), **AC-2** (Boundary and Failure Operation), **AC-3** (Independent Leakage-Resistant Partition), and **AC-4** (Frozen Resource Envelope).
 
 ### Test Suite Execution Summary
-- **Multi-Tier Pytest Suite**: **162 tests passed (74 unit/regression + 88 5-tier E2E; 100% pass rate)**
+- **Multi-Tier Pytest Suite**: **163 tests passed (75 unit/regression + 88 5-tier E2E; 100% pass rate)**
 - **Independent Acceptance Harness**: **PASSED (Exit code 0; AC-1, AC-2, AC-3, AC-4, NT-1..NT-6)**
 - **Benchmark Suite**: **KPI-1 through KPI-6 All Met / Exceeded across 25 benchmark datasets**
 

@@ -43,20 +43,20 @@ def find_pdflatex():
     )
 
 
-def compile_manuscript(repo_root: Path, passes: int = 2):
+def compile_file(tex_file: Path, repo_root: Path, passes: int = 2) -> bool:
     paper_dir = repo_root / "paper"
-    tex_file = paper_dir / "paper.tex"
-    pdf_file = paper_dir / "paper.pdf"
-    log_file = paper_dir / "paper.log"
+    pdf_file = paper_dir / f"{tex_file.stem}.pdf"
+    log_file = paper_dir / f"{tex_file.stem}.log"
 
     if not tex_file.is_file():
         print(f"Error: LaTeX source file not found at {tex_file}", file=sys.stderr)
         return False
 
     pdflatex_bin = find_pdflatex()
+    print(f"\n================ Compiling: {tex_file.name} ================")
     print(f"Using LaTeX engine: {pdflatex_bin}")
     print(f"Working directory:  {paper_dir}")
-    print(f"Compiling:          {tex_file.name} ({passes} passes)")
+    print(f"Passes:             {passes}")
 
     cmd = [
         str(pdflatex_bin),
@@ -66,7 +66,7 @@ def compile_manuscript(repo_root: Path, passes: int = 2):
     ]
 
     for p in range(1, passes + 1):
-        print(f"\n--- Pass {p} of {passes} ---")
+        print(f"--- Pass {p} of {passes} ---")
         res = subprocess.run(
             cmd,
             cwd=str(paper_dir),
@@ -99,6 +99,7 @@ def compile_manuscript(repo_root: Path, passes: int = 2):
     )
 
     print("\n================ COMPILATION AUDIT REPORT ================")
+    print(f"Document:                  {tex_file.name}")
     print(f"Fatal LaTeX Errors:        {len(fatal_errors)}")
     for err in fatal_errors:
         print(f"  [ERROR] {err}")
@@ -134,17 +135,23 @@ def compile_manuscript(repo_root: Path, passes: int = 2):
     )
 
     if passed:
-        print("[SUCCESS] Manuscript compiled and verified cleanly with 0 defects.")
+        print(f"[SUCCESS] {tex_file.name} compiled and verified cleanly with 0 defects.")
     else:
-        print("[FAILURE] Manuscript verification failed. See above details.")
+        print(f"[FAILURE] {tex_file.name} verification failed. See above details.")
 
     return passed
 
 
 def main():
     repo_root = Path(__file__).resolve().parent.parent
-    success = compile_manuscript(repo_root, passes=2)
-    sys.exit(0 if success else 1)
+    paper_dir = repo_root / "paper"
+    # Primary canonical manuscript
+    ok1 = compile_file(paper_dir / "paper.tex", repo_root, passes=2)
+    # IEEE transaction manuscript
+    ok2 = True
+    if (paper_dir / "paper-ieee.tex").is_file():
+        ok2 = compile_file(paper_dir / "paper-ieee.tex", repo_root, passes=2)
+    sys.exit(0 if (ok1 and ok2) else 1)
 
 
 if __name__ == "__main__":

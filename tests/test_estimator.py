@@ -401,25 +401,48 @@ def test_memory_budget_enforcement_fit():
         assert "baseline_rss_mb" in est_ok.metadata_["resource_usage"]
         assert "incremental_rss_mb" in est_ok.metadata_["resource_usage"]
 
-    # Case 2: Exceeded memory budget
-    # Sets a threshold just above current process baseline (base + 0.0001 MB) so baseline is valid
-    # at invocation time, but allocations during transaction processing trigger the governor.
+    # Case 2: Exceeded memory budget during an actual mining workload
+    # Uses transactions with sufficient items to generate genuine candidate/tree allocations.
+    # The budget is set with headroom above baseline so level 0 passes, but mining growth triggers the governor.
+    X_growth = rng.binomial(1, 0.5, size=(1000, 25))
     for algo in ["apriori", "fpgrowth", "eclat"]:
         curr_base = get_current_memory_mb()
         est_mem = AssociationRulesEstimator(
             algorithm=algo,
-            min_support=0.1,
-            max_memory_mb=curr_base + 0.0001,
+            min_support=0.08,
+            max_candidates=50000,
+            max_memory_mb=curr_base + 0.2,
             on_candidate_explosion="degrade",
         )
         with pytest.warns(DegradedModeWarning, match="Memory budget exceeded"):
-            est_mem.fit(X)
+            est_mem.fit(X_growth)
 
         assert est_mem.status_ == "DEGRADED"
         assert est_mem.is_degraded_ is True
         assert "Memory budget exceeded" in est_mem.termination_reason_
         assert est_mem.peak_memory_mb_ >= est_mem.baseline_memory_mb_
+        # Verifies the governor intercepted execution during mining (level >= 1), not at level 0
+        assert est_mem.metadata_["level_halted"] >= 1
         assert "candidates_observed_before_halt" in est_mem.metadata_
+
+
+def test_pruning_policy_serialization():
+    """Verify that PruningPolicy and its background sampler hooks support pickling without errors."""
+    import pickle
+    from skarm.pruning import PruningPolicy
+
+    policy = PruningPolicy(max_memory_mb=500.0)
+    policy.start_sampler(polling_interval=0.01)
+    # Serialize active policy with running sampler
+    dumped = pickle.dumps(policy)
+    loaded = pickle.loads(dumped)
+    assert loaded.max_memory_mb == 500.0
+    assert loaded.sampler is None
+    policy.stop_sampler()
+    # Serialize stopped policy
+    dumped_stopped = pickle.dumps(policy)
+    loaded_stopped = pickle.loads(dumped_stopped)
+    assert loaded_stopped.max_memory_mb == 500.0
 
 
 def test_held_out_validation_scoring():

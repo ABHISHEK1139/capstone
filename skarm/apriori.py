@@ -159,6 +159,9 @@ def apriori(
             set(X_csr.indices[X_csr.indptr[i]: X_csr.indptr[i + 1]])
             for i in range(n_samples)
         ]
+        elapsed_prep = time.perf_counter() - total_start
+        if not pruning_policy.check_budget(candidate_count=0, level=1, elapsed_time=elapsed_prep):
+            return frequent_itemsets
     else:
         row_itemsets = None
 
@@ -206,6 +209,15 @@ def apriori(
                                 candidates = candidates[: pruning_policy.max_candidates]
                                 halted = True
                                 break
+                        elif len(candidates) % 500 == 0:
+                            elapsed = time.perf_counter() - total_start
+                            if not pruning_policy.check_budget(
+                                candidate_count=0,
+                                level=k,
+                                elapsed_time=elapsed,
+                            ):
+                                halted = True
+                                break
                 else:
                     break
 
@@ -229,8 +241,8 @@ def apriori(
         # Count support for each candidate
         next_L: Dict[Tuple[int, ...], float] = {}
         for c in candidates:
-            elapsed = time.perf_counter() - total_start
-            if pruning_policy.max_time_seconds is not None and elapsed > pruning_policy.max_time_seconds:
+            if support_evaluations % 100 == 0:
+                elapsed = time.perf_counter() - total_start
                 can_proceed = pruning_policy.check_budget(
                     candidate_count=0,
                     level=k,

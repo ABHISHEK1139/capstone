@@ -2,7 +2,7 @@
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 [![scikit-learn Compatible](https://img.shields.io/badge/scikit--learn-compatible-orange.svg)](https://scikit-learn.org/)
-[![Tests Passing](https://img.shields.io/badge/tests-162%20passed%20(88%20E2E%2C%2074%20unit)-brightgreen.svg)]()
+[![Tests Passing](https://img.shields.io/badge/tests-163%20passed%20(88%20E2E%2C%2075%20unit)-brightgreen.svg)]()
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](LICENSE)
 
 > **KL University Capstone Project Framework: KLCAP-2026-00340**  
