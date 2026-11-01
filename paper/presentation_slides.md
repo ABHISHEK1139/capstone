@@ -9,8 +9,12 @@
 ### Slide 1: Title Slide
 - **Title**: Scalable Association-Rule Mining Estimator with Apriori Baseline
 - **Project ID**: KLCAP-2026-00340
-- **Team Members**: [Student Name(s) & Registration Number(s)]
-- **Project Supervisor / Faculty Guide**: [Faculty Name, Department]
+- **Team Members**:
+  - Abhishek Kumar (2300033822)
+  - Gontla Venkata Anvitha
+  - Kamma Giridhar
+  - Paladagula Venkata Rajeev
+- **Project Supervisor / Faculty Guide**: Ms. Dudigam Ramya, Department of Computer Science and Engineering, KL University
 - **Repository**: `https://github.com/ABHISHEK1139/capstone`
 > **Speaker Notes**: Introduce the project, team members, supervisor, and the capstone specialization alignment (AI for Computational Intelligence and Data Engineering for AI).
 
@@ -117,10 +121,11 @@ All 6 failure modes mandated by the project charter were explicitly audited:
 ---
 
 ### Slide 10: Deliverables & KPI Scorecard Summary
-- **Test Suite**: 25/25 automated unit & negative tests passing.
-- **Independent Acceptance Harness**: All 4 conditions (AC-1 to AC-4) satisfied with exit code 0.
+- **Test Suite**: 155/155 unit & regression tests passed + 88/88 5-tier independent E2E tests passed (100% pass rate).
+- **Independent Acceptance Harness**: All 4 conditions (AC-1 to AC-4) satisfied with 100.0/100 rubric score.
+- **Empirical Evaluation**: 25 benchmark datasets, 1,650 trial executions, 100% exact itemset agreement across all 157 engine pairs.
 - **Institutional Deliverables**: Complete documents D1 through D7 submitted.
-- **Paper Presentation**: 10-page paper compliant with KL formatting guidelines, including 7 figures (two 3D PGFPlots) and 5 tables.
+- **Camera-Ready Research Paper**: 19-page IEEE/ACM standard paper with 0 LaTeX warnings/errors, 8 figures, and full empirical tables.
 - **Open-Source Codebase**: Fully documented on GitHub with CI/CD testing pipeline.
 
 ---
