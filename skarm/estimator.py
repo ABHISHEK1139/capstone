@@ -1,5 +1,6 @@
 """Scikit-learn compatible Association Rule Mining Estimator."""
 
+import sys
 import time
 from typing import Optional, Union, Iterable, List, Dict, Any, FrozenSet, Set, Sequence
 import numpy as np
@@ -240,8 +241,8 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
 
         finally:
             self.pruning_policy_.stop_sampler()
-            # Post-fit watchdog check: catch any peak memory exceeded during fit
-            if not self.pruning_policy_.is_degraded and self.max_memory_mb is not None:
+            # Post-fit watchdog check: catch any peak memory exceeded during fit if no exception in flight
+            if sys.exc_info()[0] is None and not self.pruning_policy_.is_degraded and self.max_memory_mb is not None:
                 if self.pruning_policy_.peak_memory_mb > self.max_memory_mb:
                     self.pruning_policy_.check_budget(candidate_count=0, level=0)
 

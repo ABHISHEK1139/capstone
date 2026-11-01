@@ -98,16 +98,27 @@ def association_rules(
     # Deterministic processing (NT-5)
     multi_itemsets.sort(key=lambda x: (len(x[0]), sorted(list(x[0]))))
 
+    halt_rules = False
     for itemset, supp_ac in multi_itemsets:
+        if halt_rules:
+            break
         if pruning_policy is not None:
             if not pruning_policy.check_budget(candidate_count=0, level=len(itemset)):
                 break
         items = sorted(list(itemset))
         k = len(items)
 
+        combo_count = 0
         # Generate all non-empty proper subsets as antecedents
         for r in range(1, k):
+            if halt_rules:
+                break
             for ante_combo in combinations(items, r):
+                combo_count += 1
+                if pruning_policy is not None and (combo_count & 511) == 0:
+                    if not pruning_policy.check_budget(candidate_count=0, level=k):
+                        halt_rules = True
+                        break
                 ante = frozenset(ante_combo)
                 cons = itemset - ante
 

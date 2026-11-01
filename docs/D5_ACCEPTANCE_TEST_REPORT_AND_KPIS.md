@@ -8,7 +8,7 @@
 
 ## 1. Acceptance Campaign Summary
 
-The independent acceptance testing campaign executed under conditions **AC-1** (Representative Operation), **AC-2** (Boundary and Failure Operation), **AC-3** (Independent Leakage-Resistant Partition), and **AC-4** (Frozen Resource Envelope).
+The independent acceptance testing campaign executed under conditions **AC-1** (Representative Operation), **AC-2** (Boundary and Failure Operation), **AC-3** (Held-Out Evaluation Mechanics on 70/30 Synthetic Partition), and **AC-4** (Frozen Resource Envelope).
 
 ### Test Suite Execution Summary
 - **Multi-Tier Pytest Suite**: **163 tests passed (75 unit/regression + 88 5-tier E2E; 100% pass rate)**
@@ -77,10 +77,11 @@ Every negative condition mandated by the project charter was explicitly construc
 - **Residual Risk**: Capped at maximum configured candidate threshold.
 - **Result**: **PASS**.
 
-### AC-3: Independent Leakage-Resistant Partition & Generalization
-- **Split Protocol**: 70/30 train/validation split on transaction partitions.
-- **Verification**: Rules and frequent itemsets fitted strictly on training partition; held-out validation partition evaluated via `score()`, `transform()`, and `predict()`.
-- **Zero Leakage**: Strict feature and support isolation confirmed with no test-data leakage.
+### AC-3: Held-Out Evaluation Mechanics on 70/30 Synthetic Split
+- **Split Protocol**: 70/30 train/validation partition on a seeded synthetic 100 x 10 transaction matrix.
+- **Scope & Qualification**: Demonstrates held-out evaluation mechanics, unsupervised scoring, transformation, and prediction without data leakage; this verifies evaluation pipeline mechanics rather than extensive real-world generalization evidence.
+- **Verification**: Rules and frequent itemsets fitted strictly on training partition (70 samples); held-out validation partition (30 samples) evaluated via `score()`, `transform()`, and `predict()`.
+- **Zero Leakage**: Strict feature and support isolation confirmed with zero training-to-validation leakage.
 - **Result**: **PASS**.
 
 ---

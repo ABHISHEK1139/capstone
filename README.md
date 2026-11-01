@@ -143,11 +143,11 @@ Execute the independent acceptance test harness (AC-1..AC-4 and NT-1..NT-6):
 ```bash
 python tests/run_acceptance.py
 ```
+*(Demonstrates representative precision, negative failure boundaries, held-out evaluation mechanics on a 70/30 synthetic split, and frozen resource envelopes)*
 
 Run empirical benchmark campaigns across benchmark datasets:
 ```bash
 python benchmarks/run_benchmarks.py
-```
 ```
 
 ---

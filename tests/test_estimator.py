@@ -468,6 +468,19 @@ def test_memory_budget_enforcement_fit():
             pruning_policy=policy_raise,
         )
 
+    # Case 5: Combinatorial subset expansion halts cleanly under memory watchdog
+    large_itemsets = {frozenset([i]): 0.5 for i in range(12)}
+    large_itemsets[frozenset(range(12))] = 0.5
+    policy_combo = PruningPolicy(max_memory_mb=1.0, on_candidate_explosion="degrade")
+    with pytest.warns(DegradedModeWarning, match="Memory budget exceeded"):
+        rules_combo = association_rules(
+            large_itemsets,
+            metric="confidence",
+            min_threshold=0.1,
+            pruning_policy=policy_combo,
+        )
+    assert policy_combo.is_degraded is True
+
 
 def test_pruning_policy_serialization():
     """Verify that PruningPolicy and its background sampler hooks support pickling without errors."""
