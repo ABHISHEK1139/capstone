@@ -1,7 +1,7 @@
 {
   "metadata": {
     "title": "SKARM Scikit-Learn Integration & Pipeline Evaluation (RQ4)",
-    "timestamp": "2026-11-01T06:20:32Z",
+    "timestamp": "2026-11-01T09:51:57Z",
     "platform": "AMD64, Windows 11",
     "python_version": "3.12.10"
   },
@@ -9,8 +9,8 @@
     "dataset": "groceries.csv",
     "n_transactions": 9835,
     "sparse_mode": {
-      "fit_time_s": 0.1584,
-      "transform_time_s": 0.2054,
+      "fit_time_s": 0.2305,
+      "transform_time_s": 0.2015,
       "n_itemsets": 122,
       "n_rules": 49,
       "transform_shape": [
@@ -22,8 +22,8 @@
       "is_degraded": false
     },
     "dense_mode": {
-      "fit_time_s": 0.156,
-      "transform_time_s": 0.0463,
+      "fit_time_s": 0.1558,
+      "transform_time_s": 0.0408,
       "n_itemsets": 135,
       "n_rules": 62,
       "transform_shape": [
@@ -96,19 +96,19 @@
           "min_support": 0.08,
           "min_threshold": 0.7
         },
-        "best_score": 0.902535,
-        "tuning_time_s": 0.549,
+        "best_score": 0.899594,
+        "tuning_time_s": 0.6354,
         "candidates_evaluated": 9,
         "mean_test_scores": [
-          0.400712,
-          0.690684,
-          0.902535,
-          0.489262,
-          0.640529,
-          0.886254,
-          0.716475,
-          0.716475,
-          0.886254
+          0.331011,
+          0.655404,
+          0.899594,
+          0.442036,
+          0.585263,
+          0.887185,
+          0.716644,
+          0.716644,
+          0.887185
         ],
         "params_list": [
           {
@@ -156,19 +156,19 @@
           "min_support": 0.08,
           "min_threshold": 0.3
         },
-        "best_score": 10.076667,
-        "tuning_time_s": 0.4205,
+        "best_score": 9.006667,
+        "tuning_time_s": 0.4314,
         "candidates_evaluated": 9,
         "mean_test_scores": [
-          10.076667,
-          10.076667,
-          10.076667,
-          6.031667,
-          6.031667,
-          6.031667,
-          5.331667,
-          5.331667,
-          5.331667
+          9.006667,
+          9.006667,
+          9.006667,
+          5.903333,
+          5.903333,
+          5.903333,
+          5.306667,
+          5.306667,
+          5.306667
         ],
         "params_list": [
           {
@@ -216,19 +216,19 @@
           "min_support": 0.08,
           "min_threshold": 0.7
         },
-        "best_score": 2.196492,
-        "tuning_time_s": 0.4139,
+        "best_score": 2.164733,
+        "tuning_time_s": 0.4384,
         "candidates_evaluated": 9,
         "mean_test_scores": [
-          1.295701,
-          1.980065,
-          2.196492,
-          1.399891,
-          1.783765,
-          2.081694,
-          2.081694,
-          2.081694,
-          2.081694
+          1.120132,
+          1.950051,
+          2.164733,
+          1.306044,
+          1.688857,
+          2.098633,
+          2.098633,
+          2.098633,
+          2.098633
         ],
         "params_list": [
           {
@@ -279,7 +279,7 @@
       "n_train": 670,
       "n_test": 288,
       "discovered_rules": 142,
-      "fit_time_s": 0.2545,
+      "fit_time_s": 0.2313,
       "pipeline_metrics": {
         "train_accuracy": 0.9925,
         "test_accuracy": 0.9618,
@@ -295,7 +295,7 @@
       "n_train": 5686,
       "n_test": 2438,
       "discovered_rules": 10786,
-      "fit_time_s": 64.9831,
+      "fit_time_s": 57.8091,
       "pipeline_metrics": {
         "train_accuracy": 0.9989,
         "test_accuracy": 0.9992,

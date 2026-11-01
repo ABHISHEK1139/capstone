@@ -142,7 +142,7 @@ A central design objective of \skarm is end-to-end determinism as an evaluated e
   \end{equation}
   This property is empirically certified across all 42 benchmark cells and 157 trial-0 pairwise comparisons (Table~\ref{tab:correctness}).
   \item \textbf{Ordering Determinism}: Discovered itemsets and rules are sorted by a strict canonical key to eliminate non-deterministic row shuffling: itemsets by descending support, ascending cardinality, and lexicographical item tokens; rules by descending metric, descending confidence, descending support, and lexicographical antecedent/consequent tokens. This guarantees zero output diff churn across repeated invocations (asserted by test \texttt{NT-5}).
-  \item \textbf{Execution Determinism}: When candidate budgets ($B_{\text{cand}}$) trigger degradation, candidate pruning follows a deterministic priority queue (lowest support and lexicographical tie-breaking), ensuring that bounded executions ($\mathcal{F}_{\text{bounded}}$) recover identical pattern subsets across multiple executions and operating systems.
+  \item \textbf{Execution Determinism}: When candidate budgets ($B_{\text{cand}}$) trigger degradation, candidate generation halts via deterministic ordered enumeration, ensuring that bounded executions ($\mathcal{F}_{\text{bounded}}$) recover identical, reproducible pattern subsets within the tested environment across repeated executions.
 \end{enumerate}
 
 \subsection{Research Questions}
@@ -197,7 +197,7 @@ Table~\ref{tab:ecosystem} provides a comparative analysis of \skarm against exis
 \midrule
 \textbf{4. Memory Layout \& Input Semantics} & Sparse CSR / CSC matrix (low overhead; multi-set rows) & Dense boolean DataFrame ($O(N \cdot M)$ memory cliff) & List-of-lists transactional token sequences & Flat space-delimited text transaction files & Binary encoded vertical bitsets / Diffsets / N-lists \\
 \midrule
-\textbf{5. Formal Execution Contract} & Rigorous Tri-State: \texttt{EXACT}, \texttt{DEGRADED}, \texttt{FAILED} & Implicit: assumes exact; crashes on resource exhaust & Implicit: assumes exact; unmonitored truncation & Implicit: unmonitored JVM heap overflow or timeout & Unbounded execution until process termination \\
+\textbf{5. Formal Execution Contract} & Auditable Execution Contract: \texttt{EXACT} vs.\ \texttt{DEGRADED} state; \texttt{FAILED} via checked exception & Implicit: assumes exact; crashes on resource exhaust & Implicit: assumes exact; unmonitored truncation & Implicit: unmonitored JVM heap overflow or timeout & Unbounded execution until process termination \\
 \midrule
 \textbf{6. Multi-Axis Safety Governor} & Multi-dimensional: candidate cap ($B_{\text{cand}}$), RSS ($B_{\text{mem}}$), timeout ($B_{\text{time}}$) & None (Vulnerable to catastrophic \texttt{MemoryError}) & None & Single-axis (timeout or JVM \texttt{-Xmx} crash) & None \\
 \midrule
@@ -699,7 +699,7 @@ The empirical results across all 25 benchmark datasets and 1,650 trial records d
   \item \textbf{Apriori} was fastest on \textbf{0 datasets}, constrained by combinatorial candidate self-joins ($C_k = L_{k-1} \bowtie L_{k-1}$) and repeated full-database scans, exceeding the 600~s watchdog on dense configurations (\texttt{accidents@0.50}, \texttt{kosarak@0.005}).
 \end{itemize}
 
-\paragraph{RQ3: Bounded-Search Safety and Recall Trade-Offs.} Figure~\ref{fig:ablation} and Section~\ref{sec:ablation} demonstrate the efficacy of the candidate governor. On dense workloads where exact mining becomes intractable, capping \texttt{max\_candidates} accelerates execution by up to $790\times$ while recovering meaningful subsets ($0.60\%$ to $17.95\%$ recall). Most importantly, \skarm transitions into \texttt{DEGRADED} mode and records exact truncation metrics, eliminating silent omissions.
+\paragraph{RQ3: Bounded-Search Safety and Recall Trade-Offs.} Figure~\ref{fig:ablation} and Section~\ref{sec:ablation} demonstrate the efficacy of the candidate governor. On dense workloads where exact level-wise candidate generation exhibits severe combinatorial expansion, capping \texttt{max\_candidates} accelerates execution by up to $15.68\times$ (Chess, 0.28~s vs.\ 4.35~s exact baseline) while recovering partial pattern subsets ($0.60\%$ to $17.95\%$ itemset recall). On tree-based (FP-Growth) and vertical (Eclat) engines, candidate caps enforce explicit budget boundaries without unmonitored crashes. Most importantly, \skarm transitions audibly into \texttt{DEGRADED} mode and records exact truncation metrics, eliminating silent omissions.
 
 \paragraph{RQ4: Scikit-Learn Estimator and Pipeline Interoperability.} As documented in Section~\ref{sec:api_contracts} and Section~\ref{sec:limitations}, \skarm adheres to scikit-learn's estimator protocol: constructor parameters are immutable until explicitly modified via \texttt{set\_params()}, estimators are cloneable via \texttt{sklearn.base.clone()}, and fit state is encapsulated with trailing underscores. In \texttt{Pipeline} workflows, \skarm operates seamlessly both as a terminal estimator and as an intermediate transformer projecting transactional data into binary rule-firing indicator features.
 
@@ -707,12 +707,16 @@ The empirical results across all 25 benchmark datasets and 1,650 trial records d
 
 \subsection{Pruning-policy ablation: bounded versus exact}
 \label{sec:ablation}
-To quantify the trade-off between execution speed and completeness under candidate degradation, we conducted an ablation study on the dense Chess benchmark ($N=3{,}196$, primary support threshold $0.85$, exact baseline yielding $2{,}669$ frequent itemsets in $2.61$~seconds). As illustrated in Figure~\ref{fig:ablation}, constraining \texttt{max\_candidates} to $50$, $100$, $250$, and $500$ halts level-wise candidate generation at levels 2, 2, 3, and 4 respectively, safely triggering \texttt{is\_degraded\_ = True}. Under these bounded budgets, execution accelerates by up to $790\times$ ($0.0033$~s at cap 50) while recovering $0.60\%$, $4.53\%$, and $17.95\%$ of the frequent itemsets. Once \texttt{max\_candidates} reaches $1{,}000$, the governor operates in exact mode (\texttt{is\_degraded\_ = False}), recovering $100\%$ of all $2{,}669$ itemsets with zero candidate truncation. Crucially, across all degraded runs, \skarm explicitly flags the output via \texttt{is\_degraded\_} and records the peak candidate volume in telemetry, guaranteeing that bounded results are never conflated with exact mining.
+To quantify the trade-off between execution speed and completeness under candidate degradation, we conducted a bounded-versus-exact ablation study across three benchmark datasets representing distinct density regimes: dense Chess (Apriori), medium-density Adult Census (FP-Growth), and sparse BMS-POS (Eclat).
+
+On the dense Chess benchmark ($N=3{,}196$, support threshold $0.85$, exact baseline yielding $2{,}669$ frequent itemsets and $95{,}482$ rules in $4.35$~seconds), Figure~\ref{fig:ablation} illustrates the speedup-recall dynamics. Constraining \texttt{max\_candidates} to $50$ and $100$ halts candidate generation at level~2 ($16$ frequent 1-itemsets recovered, $0.60\%$ recall, $0$ rules), accelerating execution by $15.68\times$ ($0.28$~s) and $15.89\times$ ($0.27$~s) respectively, with \texttt{is\_degraded\_ = True}. At cap $250$, mining halts at level~3 ($121$ itemsets, $4.53\%$ recall, $210$ rules) with a $13.08\times$ speedup ($0.33$~s). At cap $500$, mining reaches level~4 ($479$ itemsets, $17.95\%$ recall, $2{,}358$ rules) with a $7.52\times$ speedup ($0.58$~s). Once \texttt{max\_candidates} reaches $1{,}000$, the governor operates in exact mode (\texttt{is\_degraded\_ = False}), recovering all $2{,}669$ itemsets and $95{,}482$ rules in $4.34$~s ($1.00\times$).
+
+On Adult Census ($N=32{,}561$, $\sigma=0.40$, exact baseline $103$ itemsets and $738$ rules in $2.14$~s via FP-Growth), capping candidates at $50$ recovers $51$ itemsets ($49.5\%$ recall, $22$ rules) in $2.46$~s ($0.87\times$ speedup), while cap $100$ recovers $101$ itemsets ($98.1\%$ recall, $610$ rules, $82.7\%$ rule recall) in $2.00$~s ($1.07\times$). On sparse BMS-POS ($N=515{,}596$, $\sigma=0.05$, exact baseline $59$ itemsets and $56$ rules in $7.14$~s via Eclat), candidate cap $50$ recovers $51$ itemsets ($86.4\%$ recall, $39$ rules) in $6.85$~s ($1.04\times$). These measurements demonstrate that candidate bounding provides massive acceleration primarily on dense Apriori workloads subject to combinatorial self-join bottlenecks, while guaranteeing predictable resource bounds across all workloads. Crucially, across all degraded runs, \skarm explicitly records degradation status and candidate counters in telemetry, ensuring bounded subsets are never conflated with exact mining.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/ablation.png}
-\caption{Pruning policy ablation on Chess ($N=3{,}196$, minsup $=0.85$, $2{,}669$ exact frequent itemsets). Bounded mode prevents combinatorial candidate explosion, offering up to $790\times$ speedups at modest candidate caps while audibly signalling degradation via \texttt{is\_\allowbreak{}degraded\_}.}
+\caption{Pruning policy ablation on Chess ($N=3{,}196$, minsup $=0.85$, $2{,}669$ exact frequent itemsets). Bounded mode halts combinatorial candidate explosion early, delivering up to $15.68\times$ speedups at low caps while audibly signalling degradation via \texttt{is\_\allowbreak{}degraded\_}.}
 \label{fig:ablation}
 \end{figure}
 
@@ -731,20 +735,22 @@ To quantify the trade-off between execution speed and completeness under candida
   in this paper is the three skarm engines plus mlxtend.
   \item \textbf{Estimator API verification.} Compliance with scikit-learn's
   estimator protocol was verified directly: \texttt{Association\allowbreak{}Rules\allowbreak{}Estimator}
-  fully implements \texttt{get\_params()}, \texttt{set\_params()}, is cloneable
-  via \texttt{sklearn.base.clone()}, supports Python pickle serialization,
-  and operates inside scikit-learn \texttt{Pipeline} workflows. Running
+  implements \texttt{get\_params()}, \texttt{set\_params()}, is cloneable
+  via \texttt{sklearn.base.clone()}, supports Python \texttt{pickle} serialization,
+  and operates inside scikit-learn \texttt{Pipeline} and \texttt{GridSearchCV} workflows
+  across scikit-learn versions 1.3 through 1.9. Running
   \texttt{sklearn.\allowbreak{}utils.\allowbreak{}estimator\_checks.\allowbreak{}check\_estimator} raises an assertion
   mandating a supervised \texttt{predict()} method. As established in
   scikit-learn issues \#32712 and \#2662, pattern mining is unsupervised
   pattern discovery rather than supervised classification; \skarm adheres
   to scikit-learn's object and parameter lifecycle conventions without
-  imposing synthetic prediction semantics.
-  \item \textbf{Pruning-policy trade-offs.} The ablation in
-  Section~\ref{sec:ablation} characterizes bounded mode on dense data;
+  imposing synthetic supervised prediction semantics.
+  \item \textbf{Pruning-policy trade-offs and determinism.} The ablation in
+  Section~\ref{sec:ablation} characterizes bounded mode across three density regimes;
   while bounded generation provides an auditable safety governor against
-  combinatorial explosion, domain-specific pattern ranking under truncation
-  remains an area for future heuristic exploration.
+  combinatorial explosion, execution determinism under degradation is guaranteed
+  within the tested runtime environment via canonical enumeration order, whereas
+  heuristic value-ranked pruning remains an area for future exploration.
   \item \textbf{Dataset provenance limits.} Mirror licences are recorded
   as unknown where unstated, never guessed; two stored files differ
   from commonly cited counts (Section~\ref{sec:data}) and the measured

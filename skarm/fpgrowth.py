@@ -212,6 +212,7 @@ def fpgrowth(
                 filtered.sort(key=lambda x: rank_map[x])
                 tree.add_transaction(filtered, w)
 
+    total_start = time.perf_counter()
     frequent_itemsets: Dict[FrozenSet[int], float] = {}
 
     # Recursive mining function
@@ -232,16 +233,19 @@ def fpgrowth(
             new_prefix = prefix + (item,)
             new_itemset = frozenset(new_prefix)
             frequent_itemsets[new_itemset] = float(item_count / total_weight)
+            discovered_count = len(frequent_itemsets)
+            elapsed = time.perf_counter() - total_start
 
             # Check candidate/itemset explosion guardrail
             can_proceed = pruning_policy.check_budget(
-                candidate_count=len(frequent_itemsets),
+                candidate_count=discovered_count,
                 level=len(new_prefix),
+                elapsed_time=elapsed,
             )
             if not can_proceed:
                 return
 
-            if pruning_policy.on_candidate_explosion == "truncate" and len(frequent_itemsets) >= pruning_policy.max_candidates:
+            if pruning_policy.on_candidate_explosion == "truncate" and discovered_count >= pruning_policy.max_candidates:
                 pruning_policy.is_degraded = True
                 pruning_policy.future_candidates_status = "UNKNOWN"
                 pruning_policy.degradation_reason = "max_candidates_reached"
@@ -299,6 +303,10 @@ def fpgrowth(
                 return
 
     mine_tree(tree, ())
+
+    counters["itemsets_discovered"] = len(frequent_itemsets)
+    counters["candidates_generated"] = len(frequent_itemsets)
+    counters["tree_nodes_created"] = counters["nodes_created"]
 
     pruning_policy.counters = counters
     if telemetry is not None:

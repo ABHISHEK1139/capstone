@@ -19,6 +19,20 @@ class DegradedModeWarning(UserWarning):
     pass
 
 
+def get_current_memory_mb() -> float:
+    """Return the current process RSS memory in megabytes."""
+    try:
+        import psutil
+        import os
+        return psutil.Process(os.getpid()).memory_info().rss / (1024.0 * 1024.0)
+    except Exception:
+        import tracemalloc
+        if tracemalloc.is_tracing():
+            _, peak = tracemalloc.get_traced_memory()
+            return peak / (1024.0 * 1024.0)
+        return 0.0
+
+
 class PruningPolicy:
     """Manages candidate generation constraints and safe degradation.
 
@@ -76,6 +90,8 @@ class PruningPolicy:
         self.candidates_generated_at_level: Optional[int] = None
         self.candidates_remaining_at_level: Optional[int] = None
         self.future_candidates_status: str = "EXHAUSTED"
+        import time as _time
+        self.start_time: float = _time.perf_counter()
 
     def check_candidate_count(self, candidate_count: int, level: int) -> bool:
         """Check if candidate count exceeds safety guardrails.
@@ -119,9 +135,14 @@ class PruningPolicy:
         peak_memory_mb: Optional[float] = None,
     ) -> bool:
         """Check multi-dimensional resource budget (candidates, time, memory)."""
+        import time as _time
+
         if candidate_count > 0:
             if not self.check_candidate_count(candidate_count, level=level):
                 return False
+
+        if elapsed_time is None and self.max_time_seconds is not None:
+            elapsed_time = _time.perf_counter() - self.start_time
 
         if self.max_time_seconds is not None and elapsed_time is not None:
             if elapsed_time > self.max_time_seconds:
@@ -137,6 +158,9 @@ class PruningPolicy:
                 self.degradation_reason = msg
                 warnings.warn(msg + " Entering degraded mode (time limit reached).", DegradedModeWarning)
                 return False
+
+        if peak_memory_mb is None and self.max_memory_mb is not None:
+            peak_memory_mb = get_current_memory_mb()
 
         if self.max_memory_mb is not None and peak_memory_mb is not None:
             if peak_memory_mb > self.max_memory_mb:
@@ -170,3 +194,5 @@ class PruningPolicy:
         self.candidates_generated_at_level = None
         self.candidates_remaining_at_level = None
         self.future_candidates_status = "EXHAUSTED"
+        import time as _time
+        self.start_time = _time.perf_counter()

@@ -1,5 +1,6 @@
 """Scikit-learn compatible Association Rule Mining Estimator."""
 
+import time
 from typing import Optional, Union, Iterable, List, Dict, Any, FrozenSet, Set, Sequence
 import numpy as np
 import pandas as pd
@@ -12,7 +13,7 @@ from skarm.apriori import apriori
 from skarm.fpgrowth import fpgrowth
 from skarm.eclat import eclat
 from skarm.rules import association_rules
-from skarm.pruning import PruningPolicy, BoundaryConditionError
+from skarm.pruning import PruningPolicy, BoundaryConditionError, get_current_memory_mb
 from skarm.telemetry import TelemetryLogger
 
 
@@ -130,6 +131,7 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
         self : AssociationRulesEstimator
             Fitted estimator.
         """
+        fit_start_time = time.perf_counter()
         self._validate_parameters()
 
         # Handle Pandas DataFrame: preserve column names (Bug B4)
@@ -221,6 +223,9 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
         # Standard fitted attribute itemsets_ as a DataFrame (retaining frequent_itemsets_ as alias)
         self.itemsets_ = self.get_frequent_itemsets(use_names=True)
 
+        total_fit_time = time.perf_counter() - fit_start_time
+        peak_rss = get_current_memory_mb()
+
         # Structured metadata dictionary (R2)
         counters = getattr(self.pruning_policy_, "counters", {})
         if not counters and hasattr(self.telemetry_, "counters"):
@@ -237,6 +242,11 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
             "frequent_itemsets_discovered": len(self.frequent_itemsets_),
             "is_candidate_count_exact": (self.status_ == "EXACT"),
             "counters": dict(counters),
+            "operations": dict(counters),
+            "resource_usage": {
+                "wall_time_seconds": round(total_fit_time, 4),
+                "peak_rss_mb": round(peak_rss, 2),
+            },
         }
 
         return self
@@ -375,9 +385,9 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
         return np.array(feature_names, dtype=object)
 
     def score(self, X: Any = None, y: Optional[Any] = None) -> float:
-        """Calculate unsupervised model score for hyperparameter tuning (Bug B9).
+        """Calculate unsupervised model score for hyperparameter tuning.
 
-        Defaults to mean rule confidence.
+        When validation data X is provided, computes held-out metrics on X.
         """
         check_is_fitted(self, attributes=["rules_"])
         if self.rules_.empty:
@@ -386,13 +396,17 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
         if callable(scoring):
             return float(scoring(self, X, y))
         elif scoring == "mean_lift":
-            return float(self.rules_["lift"].mean())
+            from skarm.metrics import mean_lift_scorer
+            return float(mean_lift_scorer(self, X, y))
         elif scoring == "total_support":
-            return float(self.rules_["support"].sum())
+            from skarm.metrics import total_support_scorer
+            return float(total_support_scorer(self, X, y))
         elif scoring == "rule_count":
-            return float(len(self.rules_))
+            from skarm.metrics import rule_count_scorer
+            return float(rule_count_scorer(self, X, y))
         else:
-            return float(self.rules_["confidence"].mean())
+            from skarm.metrics import mean_confidence_scorer
+            return float(mean_confidence_scorer(self, X, y))
 
     def get_frequent_itemsets(self, use_names: bool = True) -> pd.DataFrame:
         """Return frequent itemsets as a formatted DataFrame."""

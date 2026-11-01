@@ -6,6 +6,7 @@ import pytest
 import numpy as np
 from sklearn.base import clone
 from skarm.estimator import AssociationRulesEstimator
+from skarm.pruning import DegradedModeWarning, CandidateExplosionError
 from tests.fixtures.oracle_data import HAND_COMPUTED_TRANSACTIONS
 
 
@@ -263,5 +264,154 @@ def test_fpgrowth_truncate_degraded_metadata():
     assert est.is_complete_ is False
     assert est.metadata_["future_candidates_status"] == "UNKNOWN"
     assert est.termination_reason_ == "max_candidates_reached"
+
+
+def test_eclat_truncate_degraded_metadata():
+    """Verify Eclat truncation sets future_candidates_status='UNKNOWN' and degradation_reason (R6)."""
+    X = (np.random.RandomState(42).rand(50, 10) > 0.3).astype(int)
+    est = AssociationRulesEstimator(
+        min_support=0.1,
+        algorithm="eclat",
+        max_candidates=5,
+        on_candidate_explosion="truncate",
+    ).fit(X)
+
+    assert est.status_ == "DEGRADED"
+    assert est.is_degraded_ is True
+    assert est.is_complete_ is False
+    assert est.metadata_["future_candidates_status"] == "UNKNOWN"
+    assert est.termination_reason_ == "max_candidates_reached"
+
+
+def test_lazy_candidate_budget_apriori():
+    """Verify R1: Apriori candidate budget check halts inside candidate generation loop."""
+    dense = np.ones((5, 12), dtype=bool)
+    est = AssociationRulesEstimator(
+        algorithm="apriori",
+        min_support=0.5,
+        max_candidates=10,
+        on_candidate_explosion="degrade",
+    )
+    with pytest.warns(DegradedModeWarning):
+        est.fit(dense)
+
+    assert est.status_ == "DEGRADED"
+    assert est.is_degraded_ is True
+    # At level 2, candidates generated should not exceed max_candidates + 1
+    assert est.metadata_["candidates_generated_at_level"] <= 11
+
+
+def test_unified_telemetry_schema():
+    """Verify R2: metadata_ exposes structured 'operations' and 'resource_usage' across all engines."""
+    for algo in ["apriori", "fpgrowth", "eclat"]:
+        est = AssociationRulesEstimator(min_support=0.4, algorithm=algo)
+        est.fit(HAND_COMPUTED_TRANSACTIONS)
+        meta = est.metadata_
+
+        assert "operations" in meta
+        assert "resource_usage" in meta
+        assert "wall_time_seconds" in meta["resource_usage"]
+        assert "peak_rss_mb" in meta["resource_usage"]
+        assert meta["resource_usage"]["wall_time_seconds"] >= 0.0
+        assert meta["resource_usage"]["peak_rss_mb"] > 0.0
+        assert "itemsets_discovered" in meta["operations"]
+        assert meta["operations"]["itemsets_discovered"] == len(est.frequent_itemsets_)
+
+
+def test_runtime_budget_enforcement_all_engines():
+    """Verify R4: Runtime budget (max_time_seconds) enforced across apriori, fpgrowth, and eclat."""
+    rng = np.random.RandomState(42)
+    X = rng.binomial(1, 0.7, size=(50, 15))
+
+    for algo in ["apriori", "fpgrowth", "eclat"]:
+        # Microsecond time budget triggers graceful degradation
+        est_deg = AssociationRulesEstimator(
+            algorithm=algo,
+            min_support=0.05,
+            max_time_seconds=1e-6,
+            on_candidate_explosion="degrade",
+        )
+        with pytest.warns(DegradedModeWarning, match="Time budget exceeded"):
+            est_deg.fit(X)
+
+        assert est_deg.status_ == "DEGRADED"
+        assert est_deg.is_degraded_ is True
+        assert est_deg.is_complete_ is False
+        assert "Time budget exceeded" in est_deg.termination_reason_
+
+        # Raise policy raises CandidateExplosionError
+        est_raise = AssociationRulesEstimator(
+            algorithm=algo,
+            min_support=0.05,
+            max_time_seconds=1e-6,
+            on_candidate_explosion="raise",
+        )
+        with pytest.raises(CandidateExplosionError, match="Time budget exceeded"):
+            est_raise.fit(X)
+
+
+def test_memory_budget_enforcement_fit():
+    """Verify R3: Memory budget (max_memory_mb) monitored during fit() across engines."""
+    rng = np.random.RandomState(42)
+    X = rng.binomial(1, 0.7, size=(40, 10))
+
+    # A deliberately tiny memory budget (0.001 MB = 1 KB) will trigger memory guard
+    for algo in ["apriori", "fpgrowth", "eclat"]:
+        est_mem = AssociationRulesEstimator(
+            algorithm=algo,
+            min_support=0.1,
+            max_memory_mb=0.001,
+            on_candidate_explosion="degrade",
+        )
+        with pytest.warns(DegradedModeWarning, match="Memory budget exceeded"):
+            est_mem.fit(X)
+
+        assert est_mem.status_ == "DEGRADED"
+        assert est_mem.is_degraded_ is True
+        assert "Memory budget exceeded" in est_mem.termination_reason_
+
+
+def test_held_out_validation_scoring():
+    """Verify Section 6: scorers evaluate rules discovered during fit against held-out validation data X."""
+    from skarm.metrics import mean_confidence_scorer, mean_lift_scorer, total_support_scorer
+
+    # Training data: item 0 and item 1 always co-occur
+    # Transactions: [ [0, 1], [0, 1], [0, 1], [2] ]
+    X_train = np.array([
+        [1, 1, 0],
+        [1, 1, 0],
+        [1, 1, 0],
+        [0, 0, 1],
+    ], dtype=bool)
+
+    est = AssociationRulesEstimator(min_support=0.5, metric="confidence", min_threshold=0.5, algorithm="apriori")
+    est.fit(X_train)
+    assert not est.rules_.empty
+
+    # Validation data 1: perfect co-occurrence of 0 and 1
+    X_val_perfect = np.array([
+        [1, 1, 0],
+        [1, 1, 0],
+    ], dtype=bool)
+    score_perfect = est.score(X_val_perfect)
+    assert np.isclose(score_perfect, 1.0)
+
+    # Validation data 2: item 0 occurs but item 1 NEVER occurs
+    # {0} -> {1} confidence should drop to 0.0!
+    X_val_zero = np.array([
+        [1, 0, 0],
+        [1, 0, 0],
+    ], dtype=bool)
+    score_zero = est.score(X_val_zero)
+    assert np.isclose(score_zero, 0.0)
+
+    # Validation data 3: antecedent {0} never occurs in validation data
+    X_val_no_ante = np.array([
+        [0, 0, 1],
+        [0, 0, 1],
+    ], dtype=bool)
+    score_no_ante = est.score(X_val_no_ante)
+    assert np.isclose(score_no_ante, 0.0)
+
 
 

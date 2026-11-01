@@ -119,11 +119,12 @@ def apriori(
         else:
             col_supports = np.mean(X_arr, axis=0)
 
-    # Level 1 frequent itemsets
+    total_start = time.perf_counter()
     level_start = time.perf_counter()
     candidates_generated = n_features
     joins_attempted = 0
     scans_performed = 0
+    support_evaluations = n_features
 
     L1: Dict[Tuple[int], float] = {}
     for j in range(n_features):
@@ -158,12 +159,15 @@ def apriori(
 
     while current_L and pruning_policy.should_continue_length(k - 1):
         level_start = time.perf_counter()
-        # Generate candidates C_k from L_{k-1}
+        # Generate candidates C_k from L_{k-1} lazily with budget checks
         candidates: List[Tuple[int, ...]] = []
         L_set = set(current_L)
         n_L = len(current_L)
+        halted = False
 
         for i in range(n_L):
+            if halted:
+                break
             for j in range(i + 1, n_L):
                 joins_attempted += 1
                 l1 = current_L[i]
@@ -181,30 +185,57 @@ def apriori(
                     if is_valid:
                         candidates.append(c)
                         candidates_generated += 1
+
+                        # R1 & R3 & R4: Check budget inside the generation loop
+                        if len(candidates) > pruning_policy.max_candidates:
+                            elapsed = time.perf_counter() - total_start
+                            can_proceed = pruning_policy.check_budget(
+                                candidate_count=len(candidates),
+                                level=k,
+                                elapsed_time=elapsed,
+                            )
+                            if not can_proceed:
+                                halted = True
+                                break
+                            if pruning_policy.on_candidate_explosion == "truncate":
+                                candidates = candidates[: pruning_policy.max_candidates]
+                                halted = True
+                                break
                 else:
                     break
 
         candidate_count = len(candidates)
-        elapsed = time.perf_counter() - level_start
-        can_proceed = pruning_policy.check_budget(
-            candidate_count=candidate_count,
-            level=k,
-            elapsed_time=elapsed,
-        )
-        if not can_proceed:
-            # Degraded mode triggered (NT-1, NT-6)
-            break
+        elapsed = time.perf_counter() - total_start
+        if not halted:
+            can_proceed = pruning_policy.check_budget(
+                candidate_count=candidate_count,
+                level=k,
+                elapsed_time=elapsed,
+            )
+            if not can_proceed:
+                break
+        else:
+            if pruning_policy.is_degraded and pruning_policy.on_candidate_explosion == "degrade":
+                break
 
         if not candidates:
             break
 
-        # Truncate candidates if truncate policy (B7)
-        if candidate_count > pruning_policy.max_candidates and pruning_policy.on_candidate_explosion == "truncate":
-            candidates = candidates[: pruning_policy.max_candidates]
-
         # Count support for each candidate
         next_L: Dict[Tuple[int, ...], float] = {}
         for c in candidates:
+            elapsed = time.perf_counter() - total_start
+            if pruning_policy.max_time_seconds is not None and elapsed > pruning_policy.max_time_seconds:
+                can_proceed = pruning_policy.check_budget(
+                    candidate_count=0,
+                    level=k,
+                    elapsed_time=elapsed,
+                )
+                if not can_proceed:
+                    halted = True
+                    break
+
+            support_evaluations += 1
             c_set = set(c)
             if is_sparse:
                 scans_performed += len(row_itemsets)
@@ -241,6 +272,9 @@ def apriori(
                 elapsed_level=time.perf_counter() - level_start,
             )
 
+        if halted and pruning_policy.is_degraded:
+            break
+
         current_L = sorted(next_L.keys())
         k += 1
 
@@ -248,6 +282,8 @@ def apriori(
         "candidates_generated": candidates_generated,
         "joins_attempted": joins_attempted,
         "scans_performed": scans_performed,
+        "support_evaluations": support_evaluations,
+        "itemsets_discovered": len(frequent_itemsets),
     }
     pruning_policy.counters = counters
     if telemetry is not None:

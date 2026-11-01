@@ -127,6 +127,7 @@ def eclat(
             if w_sum >= min_weight - 1e-12:
                 tid_lists[j] = tids
 
+    total_start = time.perf_counter()
     counters = {
         "intersections_performed": 0,
         "tid_elements_scanned": 0,
@@ -166,17 +167,21 @@ def eclat(
                     supp = float(inter_weight / total_weight)
                     pair_itemset = frozenset(new_prefix + (item_j,))
                     frequent_itemsets[pair_itemset] = supp
+                    elapsed = time.perf_counter() - total_start
 
                     # Guardrail check
                     can_proceed = pruning_policy.check_budget(
                         candidate_count=len(frequent_itemsets),
                         level=len(pair_itemset),
+                        elapsed_time=elapsed,
                     )
                     if not can_proceed:
                         return
 
                     if pruning_policy.on_candidate_explosion == "truncate" and len(frequent_itemsets) >= pruning_policy.max_candidates:
                         pruning_policy.is_degraded = True
+                        pruning_policy.future_candidates_status = "UNKNOWN"
+                        pruning_policy.degradation_reason = "max_candidates_reached"
                         return
 
                     new_items_with_tids.append((item_j, inter_tids))
@@ -192,6 +197,9 @@ def eclat(
     init_pairs = [(item, tid_lists[item]) for item in initial_items]
     if pruning_policy.should_continue_length(1):
         extend((), init_pairs)
+
+    counters["itemsets_discovered"] = len(frequent_itemsets)
+    counters["candidates_generated"] = len(frequent_itemsets)
 
     pruning_policy.counters = counters
     if telemetry is not None:
