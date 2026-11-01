@@ -119,7 +119,7 @@ def apriori(
         else:
             col_supports = np.mean(X_arr, axis=0)
 
-    total_start = time.perf_counter()
+    total_start = getattr(pruning_policy, "start_time", time.perf_counter())
     level_start = time.perf_counter()
     candidates_generated = n_features
     joins_attempted = 0
@@ -143,6 +143,11 @@ def apriori(
             frequent_count=len(L1),
             elapsed_level=time.perf_counter() - level_start,
         )
+
+    # Check budget after initial 1-itemset computation
+    elapsed_init = time.perf_counter() - total_start
+    if not pruning_policy.check_budget(candidate_count=0, level=1, elapsed_time=elapsed_init):
+        return frequent_itemsets
 
     current_L = sorted(L1.keys())
     k = 2

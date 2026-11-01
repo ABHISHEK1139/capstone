@@ -17,14 +17,13 @@
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{longtable}
-\usepackage{longtable}
 \usepackage{graphicx}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,shapes.geometric}
 \usepackage{xcolor}
 \usepackage{xspace}
 \usepackage[hidelinks]{hyperref}
-\markboth{skarm: A scikit-learn-Compatible Estimator}{Dudigam \emph{et al.}}
+\markboth{skarm: A scikit-learn-Compatible Estimator}{Abhishek Kumar \emph{et al.}}
 
 \newcommand{\placeholder}[1]{%
   \begin{center}
@@ -35,7 +34,7 @@
 \title{skarm: A scikit-learn-Compatible Estimator for Association-Rule
 Mining with Auditable Pruning}
 \author{
-\IEEEauthorblockN{Dudigam Ramya, Gontla Venkata Anvitha, Abhishek Kumar, Kamma Giridhar, Paladagula Venkata Rajeev}
+\IEEEauthorblockN{Abhishek Kumar, Gontla Venkata Anvitha, Kamma Giridhar, Paladagula Venkata Rajeev, Dudigam Ramya}
 \IEEEauthorblockA{Department of Computer Science and Engineering,\\
 KL University, Vijayawada, India\\
 Capstone project KLCAP-2026-00340}
@@ -675,6 +674,23 @@ winner; the empirical ordering must be read off the measured tables,
 dataset by dataset, at matched thresholds.
 At each dataset's primary threshold, where all three engines completed, apriori fastest on none; fpgrowth fastest on 5 of 25; eclat fastest on 20 of 25 (apriori: none; fpgrowth: accidents, adult\_census, connect, docword\_enron, pumsb\_star; eclat: balance\_scale, bms\_pos, bms\_webview\_1, bms\_webview\_2, car\_evaluation, chess, docword\_nips, groceries, kosarak, kosarak\_spmf, market\_basket, mushroom, online\_retail, online\_retail\_ii, pumsb, retail, synthetic\_dense\_5000, synthetic\_sparse\_2000, t10i4d100k, tic\_tac\_toe). Apriori timed out on accidents at 0.50 and on kosarak at 0.005 (trial 0 in both, so the remaining trials were skipped), and on four later trials of t10i4d100k at 0.01 (trial 0 completed at 592.9~s), while FP-Growth and Eclat completed those cells, which is the candidate-explosion cost the methods section predicts; no other skarm engine timed out. Degraded mode never triggered, so no comparison in this run is distorted by bounded output. mlxtend is missing on 3 dense-cap cells (kosarak 0.01 and 0.005, kosarak\_spmf 0.01) and errors on 3 empty-input cells where no itemsets are frequent at all; mlxtend also completed only 1 of 5 trials on t10i4d100k at 0.01 (the rest died allocating 6.5--13.1~GiB boolean arrays, the same broadcast pattern as the dense-cap cells). Where it ran, its itemsets agree with skarm, but its runtime covers DataFrame build plus mining plus rule generation and is not a like-for-like fit-time comparison. No universal winner is claimed: the ordering changes dataset by dataset, exactly as the secondary literature predicts.
 
+\subsection{Pruning-Policy Ablation: Bounded Versus Exact}
+\label{sec:ablation}
+To quantify the trade-off between execution speed and completeness under candidate degradation, we conducted a bounded-versus-exact ablation study across three benchmark datasets representing distinct density regimes: dense Chess (Apriori), medium-density Adult Census (FP-Growth), and sparse BMS-POS (Eclat).
+
+On the dense Chess benchmark ($N=3{,}196$, support threshold $0.85$, exact baseline yielding $2{,}669$ frequent itemsets and $95{,}482$ rules in $4.016$~seconds), Figure~\ref{fig:ablation} illustrates the speedup-recall dynamics. Constraining \texttt{max\_candidates} to $50$ and $100$ halts candidate generation at level~2 ($16$ frequent 1-itemsets recovered, $0.60\%$ recall, $0$ rules), accelerating execution by $13.68\times$ ($0.2935$~s) and $15.56\times$ ($0.2581$~s) respectively, with \texttt{is\_degraded\_ = True}. At cap $250$, mining halts at level~3 ($121$ itemsets, $4.53\%$ recall, $210$ rules) with a $12.75\times$ speedup ($0.3151$~s). At cap $500$, mining reaches level~4 ($479$ itemsets, $17.95\%$ recall, $2{,}358$ rules) with a $7.32\times$ speedup ($0.5484$~s). Once \texttt{max\_candidates} reaches $1{,}000$, the governor operates in exact mode (\texttt{is\_degraded\_ = False}), recovering all $2{,}669$ itemsets and $95{,}482$ rules in $4.0187$~s ($1.00\times$).
+
+On Adult Census ($N=32{,}561$, $\sigma=0.40$, exact baseline $103$ itemsets and $738$ rules in $1.7273$~s via FP-Growth), capping candidates at $50$ recovers $51$ itemsets ($49.5\%$ recall, $22$ rules) in $1.7565$~s ($0.98\times$ speedup), while cap $100$ recovers $101$ itemsets ($98.1\%$ recall, $610$ rules, $82.7\%$ rule recall) in $1.6780$~s ($1.03\times$). On sparse BMS-POS ($N=515{,}596$, $\sigma=0.05$, exact baseline $59$ itemsets and $56$ rules in $6.5228$~s via Eclat), candidate cap $50$ recovers $51$ itemsets ($86.4\%$ recall, $39$ rules) in $6.4658$~s ($1.01\times$), and cap $100$ recovers all $59$ itemsets in $6.6338$~s ($0.98\times$).
+
+These empirical measurements highlight a critical architectural trade-off: candidate bounding yields dramatic $13.68\times$--$15.56\times$ speedups on dense workloads subject to level-wise combinatorial explosion in Apriori, whereas on tree-compressed (FP-Growth) or vertical bitset (Eclat) engines on sparse-to-medium datasets, candidate bounding acts primarily as a safety fence against memory blowout rather than a runtime accelerator ($\approx 1.0\times$ speedup), since initial tree construction and TID-list indexing constitute the bulk of the computational cost. Crucially, across all degraded runs, \skarm explicitly records degradation status, exact candidate counts observed before halt, and termination causes in \texttt{metadata\_}, ensuring bounded subsets are never conflated with exact mining.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/ablation.png}
+\caption{Pruning policy ablation on Chess ($N=3{,}196$, minsup $=0.85$, $2{,}669$ exact frequent itemsets). Bounded mode halts combinatorial candidate explosion early, delivering up to $15.56\times$ speedups at low caps while audibly signalling degradation via \texttt{is\_\allowbreak{}degraded\_}.}
+\label{fig:ablation}
+\end{figure}
+
 \section{Limitations}
 \label{sec:limitations}
 \begin{itemize}
@@ -694,10 +710,6 @@ At each dataset's primary threshold, where all three engines completed, apriori 
   \cite{sklearnchecks}; until it is run, ``sklearn-compatible'' means
   the API conventions of Section~\ref{sec:methods}, not checked
   conformance.
-  \item \textbf{Bounded-mode cost pending.} The pruning-policy ablation
-  (bounded versus exact, with truncation counts and recall against
-  exact) is pending; until it is run, no claim is made about how much
-  accuracy bounded mode trades for speed.
   \item \textbf{Dataset provenance limits.} Mirror licences are recorded
   as unknown where unstated, never guessed; two stored files differ
   from commonly cited counts (Section~\ref{sec:data}) and the measured
@@ -715,7 +727,7 @@ evaluation rests on a 25-dataset collection with full provenance and a
 protocol fixed before results were read: matched thresholds, exact
 itemset-agreement gates, a 600~s timeout rule that records skips
 instead of hiding them, and 30-trial statistics on an 8-dataset subset.
-On 25 datasets, skarm's three engines agree exactly on itemsets, apriori fastest on none; fpgrowth fastest on 5 of 25; eclat fastest on 20 of 25 at primary thresholds, with 6 timeout trials and mlxtend absent on 6 cells for stated reasons; the remaining work is the SPMF and modern-miner baselines, and the pruning-policy ablation.
+On 25 datasets, skarm's three engines agree exactly on itemsets, apriori fastest on none; fpgrowth fastest on 5 of 25; eclat fastest on 20 of 25 at primary thresholds, with 6 timeout trials and mlxtend absent on 6 cells for stated reasons; the remaining work is the external SPMF and modern-miner baselines (FIN, PrePost+, LCMFreq).
 
 \section*{Acknowledgements}
 The authors thank KL University for supporting this capstone

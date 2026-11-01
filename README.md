@@ -2,7 +2,7 @@
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 [![scikit-learn Compatible](https://img.shields.io/badge/scikit--learn-compatible-orange.svg)](https://scikit-learn.org/)
-[![Tests Passing](https://img.shields.io/badge/tests-25%20passed-brightgreen.svg)]()
+[![Tests Passing](https://img.shields.io/badge/tests-162%20passed%20(88%20E2E%2C%2074%20unit)-brightgreen.svg)]()
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](LICENSE)
 
 > **KL University Capstone Project Framework: KLCAP-2026-00340**  
@@ -14,12 +14,12 @@
 
 ## Overview
 
-`skarm` is a production-grade, scikit-learn-compatible machine learning package providing frequent-itemset mining and association-rule discovery with bounded candidate growth, certified numerical metrics, and safe degradation modes.
+`skarm` is an auditable, scikit-learn-compatible machine learning framework for frequent-itemset mining and association-rule discovery with bounded candidate growth, certified numerical metrics, peak-memory telemetry, and safe degradation modes.
 
 It unifies:
 - **Baseline Engine**: Conventional Apriori algorithm with candidate generation and support counting.
 - **Advanced Contributions**: FP-Growth (prefix tree compression) and Eclat (vertical TID-list intersection) algorithms.
-- **Safety & Pruning Engine**: Dynamic candidate explosion ceiling (`max_candidates`), maximum length control (`max_len`), and graceful degradation to prevent Out-Of-Memory (OOM) failures on dense transactional matrices.
+- **Safety & Pruning Engine**: Dynamic candidate explosion ceiling (`max_candidates`), maximum length control (`max_len`), process memory governor (`max_memory_mb`), and bounded degradation designed to safeguard computational resources against exponential candidate explosion on dense transactional datasets.
 - **Scikit-Learn Estimator**: Conforms to `BaseEstimator` with `fit`, `predict`, `transform`, `clone`, and `joblib` serialization.
 - **Rule Metrics**: Support, confidence, lift, leverage, conviction, and Zhang's metric verified against analytical hand-computed oracles to machine precision ($< 10^{-15}$).
 
@@ -126,22 +126,27 @@ python -m skarm.cli --dataset retail --min-support 0.02 --algorithm eclat --top-
 
 ---
 
-## Verification & Real-World Benchmarks
-
-Run the full automated test suite:
+## Verification & Multi-Tier Test Suite
+ 
+Run the comprehensive test suite (162 automated tests: 74 unit/regression + 88 5-tier E2E):
 ```bash
 pytest -v
 ```
-*(All 25 unit and negative tests pass)*
 
-Execute the independent acceptance test harness:
+Execute the 5-Tier End-to-End (E2E) test runner:
+```bash
+python tests/e2e/run_e2e.py
+```
+*(88 tests across Feature Coverage, Boundaries, Pairwise Interactions, Real-World Scenarios, and Adversarial Hardening)*
+
+Execute the independent acceptance test harness (AC-1..AC-4 and NT-1..NT-6):
 ```bash
 python tests/run_acceptance.py
 ```
 
-Run real-world production benchmarks across Groceries, Chess, and Retail:
+Run empirical benchmark campaigns across benchmark datasets:
 ```bash
-python benchmarks/run_real_benchmarks.py
+python benchmarks/run_benchmarks.py
 ```
 ```
 

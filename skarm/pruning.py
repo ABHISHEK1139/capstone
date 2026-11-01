@@ -19,6 +19,9 @@ class DegradedModeWarning(UserWarning):
     pass
 
 
+import threading
+
+
 def get_current_memory_mb() -> float:
     """Return the current process RSS memory in megabytes."""
     try:
@@ -33,6 +36,43 @@ def get_current_memory_mb() -> float:
         return 0.0
 
 
+class MemorySampler(threading.Thread):
+    """Continuous background RSS memory sampler.
+
+    Samples process RSS every `polling_interval` seconds (default 10 ms = 0.01 s)
+    to accurately record peak memory consumption during fit operations.
+    """
+
+    def __init__(self, polling_interval: float = 0.01):
+        super().__init__(daemon=True)
+        self.polling_interval = polling_interval
+        self._stop_event = threading.Event()
+        self.baseline_mb: float = get_current_memory_mb()
+        self.peak_mb: float = self.baseline_mb
+
+    def run(self):
+        while not self._stop_event.is_set():
+            try:
+                curr = get_current_memory_mb()
+                if curr > self.peak_mb:
+                    self.peak_mb = curr
+            except Exception:
+                pass
+            self._stop_event.wait(self.polling_interval)
+
+    def stop(self) -> float:
+        """Stop sampling and return final peak RSS in MB."""
+        self._stop_event.set()
+        try:
+            curr = get_current_memory_mb()
+            if curr > self.peak_mb:
+                self.peak_mb = curr
+        except Exception:
+            pass
+        self.join(timeout=1.0)
+        return self.peak_mb
+
+
 class PruningPolicy:
     """Manages candidate generation constraints and safe degradation.
 
@@ -42,7 +82,8 @@ class PruningPolicy:
     Parameters
     ----------
     max_candidates : int, default=100000
-        Maximum allowed candidates at any single generation step.
+        Maximum allowed candidates at any single generation step (Apriori) or
+        discovered pattern budget (FP-Growth / Eclat).
     max_len : int or None, default=None
         Maximum itemset length to discover.
     min_support : float, default=0.1
@@ -53,6 +94,14 @@ class PruningPolicy:
         - 'raise': Raise CandidateExplosionError immediately.
         - 'truncate': Prune low-heuristic candidates and continue.
         - 'degrade': Mark state as degraded, log telemetry, halt further candidate generation.
+    max_time_seconds : float or None, default=None
+        Maximum total fit time in seconds covering preprocessing, indexing, and mining.
+    max_memory_mb : float or None, default=None
+        Maximum peak process RSS memory limit in megabytes.
+    start_time : float or None, default=None
+        Authoritative start timestamp (perf_counter) for the complete fit process.
+    baseline_memory_mb : float or None, default=None
+        Pre-fit process RSS baseline in megabytes.
     """
 
     def __init__(
@@ -63,6 +112,8 @@ class PruningPolicy:
         on_candidate_explosion: str = "degrade",
         max_time_seconds: Optional[float] = None,
         max_memory_mb: Optional[float] = None,
+        start_time: Optional[float] = None,
+        baseline_memory_mb: Optional[float] = None,
     ):
         if not (0.0 <= min_support <= 1.0):
             raise BoundaryConditionError(f"min_support must be between 0.0 and 1.0, got {min_support}")
@@ -87,11 +138,42 @@ class PruningPolicy:
         self.degradation_reason = None
         self.peak_candidate_count = 0
         self.level_halted: Optional[int] = None
+
+        # Truncation and audit metadata
+        self.candidates_observed_before_halt: Optional[int] = None
+        self.excess_candidates_observed: Optional[int] = None
+        self.unexplored_candidates_count: Optional[int] = None
+        self.future_candidates_status: str = "EXHAUSTED"
+
+        # Backwards compatibility aliases
         self.candidates_generated_at_level: Optional[int] = None
         self.candidates_remaining_at_level: Optional[int] = None
-        self.future_candidates_status: str = "EXHAUSTED"
+
         import time as _time
-        self.start_time: float = _time.perf_counter()
+        self.start_time: float = start_time if start_time is not None else _time.perf_counter()
+        self.baseline_memory_mb: float = (
+            baseline_memory_mb if baseline_memory_mb is not None else get_current_memory_mb()
+        )
+        self.peak_memory_mb: float = self.baseline_memory_mb
+        self.sampler: Optional[MemorySampler] = None
+
+    def start_sampler(self, polling_interval: float = 0.01):
+        """Start continuous background 10 ms memory sampling."""
+        if self.sampler is None:
+            self.sampler = MemorySampler(polling_interval=polling_interval)
+            self.sampler.start()
+
+    def stop_sampler(self) -> float:
+        """Stop background sampler and capture peak memory."""
+        if self.sampler is not None:
+            peak = self.sampler.stop()
+            self.sampler = None
+            if peak > self.peak_memory_mb:
+                self.peak_memory_mb = peak
+        curr = get_current_memory_mb()
+        if curr > self.peak_memory_mb:
+            self.peak_memory_mb = curr
+        return self.peak_memory_mb
 
     def check_candidate_count(self, candidate_count: int, level: int) -> bool:
         """Check if candidate count exceeds safety guardrails.
@@ -107,8 +189,13 @@ class PruningPolicy:
                 f"exceeds max_candidates={self.max_candidates}."
             )
             self.level_halted = level
-            self.candidates_generated_at_level = candidate_count
+            self.candidates_observed_before_halt = candidate_count
+            self.excess_candidates_observed = max(0, candidate_count - self.max_candidates)
+            self.unexplored_candidates_count = None
             self.future_candidates_status = "UNKNOWN"
+
+            # Backwards compatibility aliases
+            self.candidates_generated_at_level = candidate_count
 
             if self.on_candidate_explosion == "raise":
                 raise CandidateExplosionError(msg)
@@ -159,13 +246,24 @@ class PruningPolicy:
                 warnings.warn(msg + " Entering degraded mode (time limit reached).", DegradedModeWarning)
                 return False
 
-        if peak_memory_mb is None and self.max_memory_mb is not None:
-            peak_memory_mb = get_current_memory_mb()
+        # Memory Governor: poll sampler or current RSS
+        if self.sampler is not None:
+            sampled_peak = max(self.sampler.peak_mb, get_current_memory_mb())
+            if sampled_peak > self.peak_memory_mb:
+                self.peak_memory_mb = sampled_peak
+        else:
+            curr_mem = get_current_memory_mb()
+            if curr_mem > self.peak_memory_mb:
+                self.peak_memory_mb = curr_mem
 
-        if self.max_memory_mb is not None and peak_memory_mb is not None:
-            if peak_memory_mb > self.max_memory_mb:
+        effective_mem = peak_memory_mb if peak_memory_mb is not None else self.peak_memory_mb
+        if effective_mem > self.peak_memory_mb:
+            self.peak_memory_mb = effective_mem
+
+        if self.max_memory_mb is not None:
+            if effective_mem > self.max_memory_mb:
                 msg = (
-                    f"Memory budget exceeded: {peak_memory_mb:.1f}MB exceeds "
+                    f"Memory budget exceeded: {effective_mem:.1f}MB exceeds "
                     f"max_memory_mb={self.max_memory_mb}MB."
                 )
                 self.level_halted = level
@@ -187,12 +285,18 @@ class PruningPolicy:
 
     def reset(self):
         """Reset degradation and telemetry state."""
+        self.stop_sampler()
         self.is_degraded = False
         self.degradation_reason = None
         self.peak_candidate_count = 0
         self.level_halted = None
+        self.candidates_observed_before_halt = None
+        self.excess_candidates_observed = None
+        self.unexplored_candidates_count = None
         self.candidates_generated_at_level = None
         self.candidates_remaining_at_level = None
         self.future_candidates_status = "EXHAUSTED"
         import time as _time
         self.start_time = _time.perf_counter()
+        self.baseline_memory_mb = get_current_memory_mb()
+        self.peak_memory_mb = self.baseline_memory_mb

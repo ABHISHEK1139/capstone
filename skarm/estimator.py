@@ -132,31 +132,11 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
             Fitted estimator.
         """
         fit_start_time = time.perf_counter()
+        self.baseline_memory_mb_ = get_current_memory_mb()
+        self.peak_memory_mb_ = self.baseline_memory_mb_
         self._validate_parameters()
 
-        # Handle Pandas DataFrame: preserve column names (Bug B4)
-        if isinstance(X, pd.DataFrame):
-            df_columns = list(X.columns)
-            X_matrix = X.to_numpy()
-            self.columns_ = df_columns
-            self.feature_names_in_ = np.array(df_columns, dtype=object)
-            self.n_features_in_ = len(df_columns)
-            self.encoder_ = None
-        elif isinstance(X, (np.ndarray, sparse.spmatrix)):
-            X_matrix = X
-            self.encoder_ = None
-            self.columns_ = [f"item_{i}" for i in range(X_matrix.shape[1])]
-            self.n_features_in_ = X_matrix.shape[1]
-            self.feature_names_in_ = np.array(self.columns_, dtype=object)
-        else:
-            # Transaction list of lists
-            self.encoder_ = TransactionEncoder(sparse_output=self.sparse_output)
-            X_matrix = self.encoder_.fit_transform(X)
-            self.columns_ = list(self.encoder_.columns_)
-            self.n_features_in_ = len(self.columns_)
-            self.feature_names_in_ = np.array(self.columns_, dtype=object)
-
-        # Setup pruning policy and telemetry
+        # Setup pruning policy and telemetry before preprocessing to cover complete execution interval
         self.pruning_policy_ = PruningPolicy(
             max_candidates=self.max_candidates,
             max_len=self.max_len,
@@ -164,48 +144,81 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
             on_candidate_explosion=self.on_candidate_explosion,
             max_time_seconds=self.max_time_seconds,
             max_memory_mb=self.max_memory_mb,
+            start_time=fit_start_time,
+            baseline_memory_mb=self.baseline_memory_mb_,
         )
         self.telemetry_ = TelemetryLogger()
+        self.pruning_policy_.start_sampler(polling_interval=0.01)
 
-        # Select algorithm
-        algo = self.algorithm
-        if algo == "auto":
-            if sparse.issparse(X_matrix):
-                algo = "eclat"
+        try:
+            # Handle Pandas DataFrame: preserve column names (Bug B4)
+            if isinstance(X, pd.DataFrame):
+                df_columns = list(X.columns)
+                X_matrix = X.to_numpy()
+                self.columns_ = df_columns
+                self.feature_names_in_ = np.array(df_columns, dtype=object)
+                self.n_features_in_ = len(df_columns)
+                self.encoder_ = None
+            elif isinstance(X, (np.ndarray, sparse.spmatrix)):
+                X_matrix = X
+                self.encoder_ = None
+                self.columns_ = [f"item_{i}" for i in range(X_matrix.shape[1])]
+                self.n_features_in_ = X_matrix.shape[1]
+                self.feature_names_in_ = np.array(self.columns_, dtype=object)
             else:
-                algo = "fpgrowth"
+                # Transaction list of lists
+                self.encoder_ = TransactionEncoder(sparse_output=self.sparse_output)
+                X_matrix = self.encoder_.fit_transform(X)
+                self.columns_ = list(self.encoder_.columns_)
+                self.n_features_in_ = len(self.columns_)
+                self.feature_names_in_ = np.array(self.columns_, dtype=object)
 
-        # Execute mining
-        if algo == "apriori":
-            self.frequent_itemsets_ = apriori(
-                X_matrix,
-                min_support=self.min_support,
-                max_len=self.max_len,
-                max_candidates=self.max_candidates,
-                sample_weight=sample_weight,
-                pruning_policy=self.pruning_policy_,
-                telemetry=self.telemetry_,
-            )
-        elif algo == "fpgrowth":
-            self.frequent_itemsets_ = fpgrowth(
-                X_matrix,
-                min_support=self.min_support,
-                max_len=self.max_len,
-                max_candidates=self.max_candidates,
-                sample_weight=sample_weight,
-                pruning_policy=self.pruning_policy_,
-                telemetry=self.telemetry_,
-            )
-        elif algo == "eclat":
-            self.frequent_itemsets_ = eclat(
-                X_matrix,
-                min_support=self.min_support,
-                max_len=self.max_len,
-                max_candidates=self.max_candidates,
-                sample_weight=sample_weight,
-                pruning_policy=self.pruning_policy_,
-                telemetry=self.telemetry_,
-            )
+            # Check budget after input encoding and conversion
+            elapsed_pre = time.perf_counter() - fit_start_time
+            if not self.pruning_policy_.check_budget(candidate_count=0, level=0, elapsed_time=elapsed_pre):
+                self.frequent_itemsets_ = {}
+            else:
+                # Select algorithm
+                algo = self.algorithm
+                if algo == "auto":
+                    if sparse.issparse(X_matrix):
+                        algo = "eclat"
+                    else:
+                        algo = "fpgrowth"
+
+                # Execute mining
+                if algo == "apriori":
+                    self.frequent_itemsets_ = apriori(
+                        X_matrix,
+                        min_support=self.min_support,
+                        max_len=self.max_len,
+                        max_candidates=self.max_candidates,
+                        sample_weight=sample_weight,
+                        pruning_policy=self.pruning_policy_,
+                        telemetry=self.telemetry_,
+                    )
+                elif algo == "fpgrowth":
+                    self.frequent_itemsets_ = fpgrowth(
+                        X_matrix,
+                        min_support=self.min_support,
+                        max_len=self.max_len,
+                        max_candidates=self.max_candidates,
+                        sample_weight=sample_weight,
+                        pruning_policy=self.pruning_policy_,
+                        telemetry=self.telemetry_,
+                    )
+                elif algo == "eclat":
+                    self.frequent_itemsets_ = eclat(
+                        X_matrix,
+                        min_support=self.min_support,
+                        max_len=self.max_len,
+                        max_candidates=self.max_candidates,
+                        sample_weight=sample_weight,
+                        pruning_policy=self.pruning_policy_,
+                        telemetry=self.telemetry_,
+                    )
+        finally:
+            self.pruning_policy_.stop_sampler()
 
         self.is_degraded_ = self.pruning_policy_.is_degraded
         self.status_ = "DEGRADED" if self.is_degraded_ else "EXACT"
@@ -224,7 +237,9 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
         self.itemsets_ = self.get_frequent_itemsets(use_names=True)
 
         total_fit_time = time.perf_counter() - fit_start_time
-        peak_rss = get_current_memory_mb()
+        curr_rss = get_current_memory_mb()
+        self.peak_memory_mb_ = max(self.baseline_memory_mb_, self.pruning_policy_.peak_memory_mb, curr_rss)
+        self.memory_growth_mb_ = max(0.0, self.peak_memory_mb_ - self.baseline_memory_mb_)
 
         # Structured metadata dictionary (R2)
         counters = getattr(self.pruning_policy_, "counters", {})
@@ -236,6 +251,9 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
             "is_complete": self.is_complete_,
             "termination_reason": self.termination_reason_,
             "level_halted": self.pruning_policy_.level_halted,
+            "candidates_observed_before_halt": self.pruning_policy_.candidates_observed_before_halt,
+            "excess_candidates_observed": self.pruning_policy_.excess_candidates_observed,
+            "unexplored_candidates_count": self.pruning_policy_.unexplored_candidates_count,
             "candidates_generated_at_level": self.pruning_policy_.candidates_generated_at_level,
             "candidates_remaining_at_level": self.pruning_policy_.candidates_remaining_at_level,
             "future_candidates_status": self.pruning_policy_.future_candidates_status,
@@ -245,7 +263,9 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
             "operations": dict(counters),
             "resource_usage": {
                 "wall_time_seconds": round(total_fit_time, 4),
-                "peak_rss_mb": round(peak_rss, 2),
+                "peak_rss_mb": round(self.peak_memory_mb_, 2),
+                "baseline_rss_mb": round(self.baseline_memory_mb_, 2),
+                "incremental_rss_mb": round(self.memory_growth_mb_, 2),
             },
         }
 

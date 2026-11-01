@@ -11,9 +11,9 @@
 The independent acceptance testing campaign executed under conditions **AC-1** (Representative Operation), **AC-2** (Boundary and Failure Operation), **AC-3** (Independent Leakage-Resistant Partition), and **AC-4** (Frozen Resource Envelope).
 
 ### Test Suite Execution Summary
-- **Pytest Suite**: **25 tests passed in 17.38s (100% pass rate)**
-- **Acceptance Harness**: **PASSED (Exit code 0)**
-- **Benchmark Suite**: **KPI-1 through KPI-6 All Met / Exceeded**
+- **Multi-Tier Pytest Suite**: **162 tests passed (74 unit/regression + 88 5-tier E2E; 100% pass rate)**
+- **Independent Acceptance Harness**: **PASSED (Exit code 0; AC-1, AC-2, AC-3, AC-4, NT-1..NT-6)**
+- **Benchmark Suite**: **KPI-1 through KPI-6 All Met / Exceeded across 25 benchmark datasets**
 
 ---
 
@@ -21,8 +21,8 @@ The independent acceptance testing campaign executed under conditions **AC-1** (
 
 | KPI ID | Metric Description | Baseline (O2 Apriori) | Target / Pass Rule | Achieved Result | Status |
 |---|---|---|---|---|---|
-| **KPI-1** | Frequent-itemset precision vs oracle (%) | 100.0% | $\ge 98.0\%$ | **100.00%** | **PASS** |
-| **KPI-2** | Rule-metric numerical error | Max error $2.22 \times 10^{-16}$ | Score $\ge 80/100$ | **100.0 / 100** ($2.22 \times 10^{-16}$) | **PASS** |
+| **KPI-1** | Frequent-itemset precision vs oracle (%) | 100.0% | $\ge 98.0\%$ | **100.00%** (Precision & Recall 100%) | **PASS** |
+| **KPI-2** | Rule-metric numerical error rubric | Max error $2.22 \times 10^{-16}$ | Score $\ge 80/100$ (Rubric: 100 for $< 10^{-9}$, 90 for $< 10^{-6}$) | **100.0 / 100** ($2.22 \times 10^{-16}$) | **PASS** |
 | **KPI-3** | Peak candidate count | 105 candidates (scale 200) | $\ge 5\%$ reduction or bound | **Up to 100% candidate reduction** in FP-Tree/Eclat | **PASS** |
 | **KPI-4** | Runtime by transaction scale | Sub-second ($< 0.05$ s) | $p95 \le 0.80 \times$ O2 | **Met across all test scales** | **PASS** |
 | **KPI-5** | Peak memory by transaction scale | 0.07 MB | $\le 0.80 \times$ O2 or $< 1.0$ MB | **0.07 – 0.79 MB** | **PASS** |
@@ -75,6 +75,12 @@ Every negative condition mandated by the project charter was explicitly construc
 - **Observed Behavior**: Engine safely capped candidate exploration, logged telemetry, and prevented memory spikes.
 - **Safe Response**: Safe degradation mode maintained stability.
 - **Residual Risk**: Capped at maximum configured candidate threshold.
+- **Result**: **PASS**.
+
+### AC-3: Independent Leakage-Resistant Partition & Generalization
+- **Split Protocol**: 70/30 train/validation split on transaction partitions.
+- **Verification**: Rules and frequent itemsets fitted strictly on training partition; held-out validation partition evaluated via `score()`, `transform()`, and `predict()`.
+- **Zero Leakage**: Strict feature and support isolation confirmed with no test-data leakage.
 - **Result**: **PASS**.
 
 ---

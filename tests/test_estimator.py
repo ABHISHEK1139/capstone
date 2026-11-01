@@ -6,7 +6,7 @@ import pytest
 import numpy as np
 from sklearn.base import clone
 from skarm.estimator import AssociationRulesEstimator
-from skarm.pruning import DegradedModeWarning, CandidateExplosionError
+from skarm.pruning import DegradedModeWarning, CandidateExplosionError, get_current_memory_mb
 from tests.fixtures.oracle_data import HAND_COMPUTED_TRANSACTIONS
 
 
@@ -380,16 +380,36 @@ def test_runtime_budget_enforcement_all_engines():
 
 
 def test_memory_budget_enforcement_fit():
-    """Verify R3: Memory budget (max_memory_mb) monitored during fit() across engines."""
+    """Verify R3: Memory governor with baseline tracking, peak RSS monitoring, and budget enforcement."""
     rng = np.random.RandomState(42)
     X = rng.binomial(1, 0.7, size=(40, 10))
 
-    # A deliberately tiny memory budget (0.001 MB = 1 KB) will trigger memory guard
+    # Case 1: Unexceeded memory budget (generous headroom above process baseline)
+    # Verifies that when the memory envelope is respected, mining completes in EXACT mode.
+    baseline = get_current_memory_mb()
     for algo in ["apriori", "fpgrowth", "eclat"]:
+        est_ok = AssociationRulesEstimator(
+            algorithm=algo,
+            min_support=0.1,
+            max_memory_mb=baseline + 1024.0,
+        )
+        est_ok.fit(X)
+        assert est_ok.status_ == "EXACT"
+        assert est_ok.is_degraded_ is False
+        assert est_ok.peak_memory_mb_ >= est_ok.baseline_memory_mb_
+        assert "resource_usage" in est_ok.metadata_
+        assert "baseline_rss_mb" in est_ok.metadata_["resource_usage"]
+        assert "incremental_rss_mb" in est_ok.metadata_["resource_usage"]
+
+    # Case 2: Exceeded memory budget
+    # Sets a threshold just above current process baseline (base + 0.0001 MB) so baseline is valid
+    # at invocation time, but allocations during transaction processing trigger the governor.
+    for algo in ["apriori", "fpgrowth", "eclat"]:
+        curr_base = get_current_memory_mb()
         est_mem = AssociationRulesEstimator(
             algorithm=algo,
             min_support=0.1,
-            max_memory_mb=0.001,
+            max_memory_mb=curr_base + 0.0001,
             on_candidate_explosion="degrade",
         )
         with pytest.warns(DegradedModeWarning, match="Memory budget exceeded"):
@@ -398,6 +418,8 @@ def test_memory_budget_enforcement_fit():
         assert est_mem.status_ == "DEGRADED"
         assert est_mem.is_degraded_ is True
         assert "Memory budget exceeded" in est_mem.termination_reason_
+        assert est_mem.peak_memory_mb_ >= est_mem.baseline_memory_mb_
+        assert "candidates_observed_before_halt" in est_mem.metadata_
 
 
 def test_held_out_validation_scoring():

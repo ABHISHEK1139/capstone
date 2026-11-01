@@ -127,7 +127,7 @@ def eclat(
             if w_sum >= min_weight - 1e-12:
                 tid_lists[j] = tids
 
-    total_start = time.perf_counter()
+    total_start = getattr(pruning_policy, "start_time", time.perf_counter())
     initial_items = sorted(tid_lists.keys())
     counters = {
         "intersections_performed": 0,
@@ -138,6 +138,13 @@ def eclat(
     }
 
     frequent_itemsets: Dict[FrozenSet[int], float] = {}
+
+    # Check budget after initial vertical TID list construction
+    elapsed_init = time.perf_counter() - total_start
+    if not pruning_policy.check_budget(candidate_count=0, level=1, elapsed_time=elapsed_init):
+        counters["itemsets_discovered"] = 0
+        pruning_policy.counters = counters
+        return frequent_itemsets
 
     def get_support(tids: Set[int]) -> float:
         if sample_weight is not None:

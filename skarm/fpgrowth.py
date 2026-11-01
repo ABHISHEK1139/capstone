@@ -216,8 +216,14 @@ def fpgrowth(
                 filtered.sort(key=lambda x: rank_map[x])
                 tree.add_transaction(filtered, w)
 
-    total_start = time.perf_counter()
+    total_start = getattr(pruning_policy, "start_time", time.perf_counter())
     frequent_itemsets: Dict[FrozenSet[int], float] = {}
+
+    # Check budget after initial FP-Tree construction
+    elapsed_init = time.perf_counter() - total_start
+    if not pruning_policy.check_budget(candidate_count=0, level=1, elapsed_time=elapsed_init):
+        pruning_policy.counters = counters
+        return frequent_itemsets
 
     # Recursive mining function
     def mine_tree(curr_tree: FPTree, prefix: Tuple[int, ...]):
