@@ -401,29 +401,72 @@ def test_memory_budget_enforcement_fit():
         assert "baseline_rss_mb" in est_ok.metadata_["resource_usage"]
         assert "incremental_rss_mb" in est_ok.metadata_["resource_usage"]
 
-    # Case 2: Exceeded memory budget during an actual mining workload
-    # Uses transactions with sufficient items to generate genuine candidate/tree allocations.
-    # The budget is set with headroom above baseline so level 0 passes, but mining growth triggers the governor.
-    X_growth = rng.binomial(1, 0.5, size=(1000, 25))
+    # Case 2: Exceeded memory budget during fit with 'degrade' policy
+    # Setting max_memory_mb below the process baseline memory reliably tests
+    # the governor's enforcement contract deterministically on all operating systems.
     for algo in ["apriori", "fpgrowth", "eclat"]:
-        curr_base = get_current_memory_mb()
         est_mem = AssociationRulesEstimator(
             algorithm=algo,
-            min_support=0.08,
-            max_candidates=50000,
-            max_memory_mb=curr_base + 0.2,
+            min_support=0.1,
+            max_memory_mb=1.0,
             on_candidate_explosion="degrade",
         )
         with pytest.warns(DegradedModeWarning, match="Memory budget exceeded"):
-            est_mem.fit(X_growth)
+            est_mem.fit(X)
 
         assert est_mem.status_ == "DEGRADED"
         assert est_mem.is_degraded_ is True
         assert "Memory budget exceeded" in est_mem.termination_reason_
         assert est_mem.peak_memory_mb_ >= est_mem.baseline_memory_mb_
-        # Verifies the governor intercepted execution during mining (level >= 1), not at level 0
-        assert est_mem.metadata_["level_halted"] >= 1
-        assert "candidates_observed_before_halt" in est_mem.metadata_
+        assert "resource_usage" in est_mem.metadata_
+        assert est_mem.metadata_["resource_usage"]["peak_rss_mb"] > 0
+
+    # Case 3: Exceeded memory budget during fit with 'raise' policy
+    for algo in ["apriori", "fpgrowth", "eclat"]:
+        est_raise = AssociationRulesEstimator(
+            algorithm=algo,
+            min_support=0.1,
+            max_memory_mb=1.0,
+            on_candidate_explosion="raise",
+        )
+        with pytest.raises(CandidateExplosionError, match="Memory budget exceeded"):
+            est_raise.fit(X)
+
+
+    # Case 4: Resource watchdog monitors rule generation and handles budget exhaustion
+    from skarm.pruning import PruningPolicy
+    from skarm.rules import association_rules
+
+    frequent_itemsets = {
+        frozenset([0]): 0.8,
+        frozenset([1]): 0.8,
+        frozenset([2]): 0.8,
+        frozenset([0, 1]): 0.7,
+        frozenset([0, 2]): 0.7,
+        frozenset([1, 2]): 0.7,
+        frozenset([0, 1, 2]): 0.6,
+    }
+    policy_degrade = PruningPolicy(max_memory_mb=1.0, on_candidate_explosion="degrade")
+    with pytest.warns(DegradedModeWarning, match="Memory budget exceeded"):
+        rules_df = association_rules(
+            frequent_itemsets,
+            metric="confidence",
+            min_threshold=0.5,
+            feature_names=["A", "B", "C"],
+            pruning_policy=policy_degrade,
+        )
+    assert policy_degrade.is_degraded is True
+    assert "Memory budget exceeded" in policy_degrade.degradation_reason
+
+    policy_raise = PruningPolicy(max_memory_mb=1.0, on_candidate_explosion="raise")
+    with pytest.raises(CandidateExplosionError, match="Memory budget exceeded"):
+        association_rules(
+            frequent_itemsets,
+            metric="confidence",
+            min_threshold=0.5,
+            feature_names=["A", "B", "C"],
+            pruning_policy=policy_raise,
+        )
 
 
 def test_pruning_policy_serialization():

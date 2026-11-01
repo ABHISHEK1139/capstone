@@ -2,7 +2,7 @@
 
 import math
 from itertools import combinations
-from typing import Dict, List, FrozenSet, Optional, Union
+from typing import Dict, List, FrozenSet, Optional, Union, Any
 import pandas as pd
 import numpy as np
 
@@ -44,6 +44,7 @@ def association_rules(
     metric: str = "confidence",
     min_threshold: float = 0.5,
     feature_names: Optional[List[str]] = None,
+    pruning_policy: Optional[Any] = None,
 ) -> pd.DataFrame:
     """Generate association rules from frequent itemsets.
 
@@ -98,6 +99,9 @@ def association_rules(
     multi_itemsets.sort(key=lambda x: (len(x[0]), sorted(list(x[0]))))
 
     for itemset, supp_ac in multi_itemsets:
+        if pruning_policy is not None:
+            if not pruning_policy.check_budget(candidate_count=0, level=len(itemset)):
+                break
         items = sorted(list(itemset))
         k = len(items)
 

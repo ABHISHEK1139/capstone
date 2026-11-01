@@ -107,7 +107,7 @@ class PruningPolicy:
     on_candidate_explosion : {'raise', 'truncate', 'degrade'}, default='degrade'
         Action when candidate count exceeds max_candidates:
         - 'raise': Raise CandidateExplosionError immediately.
-        - 'truncate': Prune low-heuristic candidates and continue.
+        - 'truncate': Retain first max_candidates via deterministic enumeration and continue.
         - 'degrade': Mark state as degraded, log telemetry, halt further candidate generation.
     max_time_seconds : float or None, default=None
         Maximum total fit time in seconds covering preprocessing, indexing, and mining.
@@ -256,9 +256,10 @@ class PruningPolicy:
                 self.future_candidates_status = "UNKNOWN"
                 if self.on_candidate_explosion == "raise":
                     raise CandidateExplosionError(msg)
+                if not (self.is_degraded and self.degradation_reason and "Time budget exceeded" in str(self.degradation_reason)):
+                    warnings.warn(msg + " Entering degraded mode (time limit reached).", DegradedModeWarning)
                 self.is_degraded = True
                 self.degradation_reason = msg
-                warnings.warn(msg + " Entering degraded mode (time limit reached).", DegradedModeWarning)
                 return False
 
         # Memory Governor: poll sampler or current RSS
@@ -285,9 +286,10 @@ class PruningPolicy:
                 self.future_candidates_status = "UNKNOWN"
                 if self.on_candidate_explosion == "raise":
                     raise CandidateExplosionError(msg)
+                if not (self.is_degraded and self.degradation_reason and "Memory budget exceeded" in str(self.degradation_reason)):
+                    warnings.warn(msg + " Entering degraded mode (memory limit reached).", DegradedModeWarning)
                 self.is_degraded = True
                 self.degradation_reason = msg
-                warnings.warn(msg + " Entering degraded mode (memory limit reached).", DegradedModeWarning)
                 return False
 
         return True

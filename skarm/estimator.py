@@ -217,24 +217,38 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
                         pruning_policy=self.pruning_policy_,
                         telemetry=self.telemetry_,
                     )
+
+            # Watchdog check after mining
+            if not self.pruning_policy_.is_degraded:
+                self.pruning_policy_.check_budget(candidate_count=0, level=0)
+
+            # Generate association rules with continuous watchdog monitoring
+            self.rules_ = association_rules(
+                self.frequent_itemsets_,
+                metric=self.metric,
+                min_threshold=self.min_threshold,
+                feature_names=self.columns_,
+                pruning_policy=self.pruning_policy_,
+            )
+
+            # Standard fitted attribute itemsets_ as a DataFrame (retaining frequent_itemsets_ as alias)
+            self.itemsets_ = self.get_frequent_itemsets(use_names=True)
+
+            # Watchdog check after itemset dataframe construction
+            if not self.pruning_policy_.is_degraded:
+                self.pruning_policy_.check_budget(candidate_count=0, level=0)
+
         finally:
             self.pruning_policy_.stop_sampler()
+            # Post-fit watchdog check: catch any peak memory exceeded during fit
+            if not self.pruning_policy_.is_degraded and self.max_memory_mb is not None:
+                if self.pruning_policy_.peak_memory_mb > self.max_memory_mb:
+                    self.pruning_policy_.check_budget(candidate_count=0, level=0)
 
         self.is_degraded_ = self.pruning_policy_.is_degraded
         self.status_ = "DEGRADED" if self.is_degraded_ else "EXACT"
         self.is_complete_ = (self.status_ == "EXACT")
         self.termination_reason_ = self.pruning_policy_.degradation_reason if self.is_degraded_ else None
-
-        # Generate association rules
-        self.rules_ = association_rules(
-            self.frequent_itemsets_,
-            metric=self.metric,
-            min_threshold=self.min_threshold,
-            feature_names=self.columns_,
-        )
-
-        # Standard fitted attribute itemsets_ as a DataFrame (retaining frequent_itemsets_ as alias)
-        self.itemsets_ = self.get_frequent_itemsets(use_names=True)
 
         total_fit_time = time.perf_counter() - fit_start_time
         curr_rss = get_current_memory_mb()

@@ -128,7 +128,7 @@ python -m skarm.cli --dataset retail --min-support 0.02 --algorithm eclat --top-
 
 ## Verification & Multi-Tier Test Suite
  
-Run the comprehensive test suite (162 automated tests: 74 unit/regression + 88 5-tier E2E):
+Run the comprehensive test suite (163 automated tests: 75 unit/regression + 88 5-tier E2E):
 ```bash
 pytest -v
 ```
