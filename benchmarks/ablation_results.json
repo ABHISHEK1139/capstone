@@ -1,7 +1,7 @@
 {
   "metadata": {
     "title": "SKARM Bounded vs Exact Pruning Ablation Campaign",
-    "timestamp": "2026-11-01T06:15:38Z",
+    "timestamp": "2026-11-01T10:06:58Z",
     "platform": "AMD64, Windows 11",
     "python_version": "3.12.10",
     "candidate_caps": [
@@ -50,13 +50,15 @@
       "baseline": {
         "n_itemsets": 2669,
         "n_rules": 95482,
-        "fit_time_s": 4.3533,
+        "fit_time_s": 4.016,
         "status": "EXACT",
         "is_degraded": false,
         "counters": {
           "candidates_generated": 2892,
           "joins_attempted": 6698,
-          "scans_performed": 9003132
+          "scans_performed": 9003132,
+          "support_evaluations": 2892,
+          "itemsets_discovered": 2669
         }
       },
       "records": [
@@ -68,20 +70,22 @@
           "itemset_precision": 1.0,
           "rule_recall": 0.0,
           "rule_precision": 1.0,
-          "fit_time_s": 0.2776,
-          "speedup_factor": 15.68,
+          "fit_time_s": 0.2935,
+          "speedup_factor": 13.68,
           "status_": "DEGRADED",
           "is_degraded_": true,
           "future_candidates_status": "UNKNOWN",
-          "termination_reason_": "Candidate explosion detected at level 2: 120 candidates exceeds max_candidates=50.",
+          "termination_reason_": "Candidate explosion detected at level 2: 51 candidates exceeds max_candidates=50.",
           "level_halted": 2,
-          "candidates_generated_at_level": 120,
-          "candidates_remaining_at_level": 120,
-          "peak_candidates": 120,
+          "candidates_generated_at_level": 51,
+          "candidates_remaining_at_level": 51,
+          "peak_candidates": 51,
           "counters": {
-            "candidates_generated": 195,
-            "joins_attempted": 120,
-            "scans_performed": 0
+            "candidates_generated": 126,
+            "joins_attempted": 51,
+            "scans_performed": 0,
+            "support_evaluations": 75,
+            "itemsets_discovered": 16
           }
         },
         {
@@ -92,20 +96,22 @@
           "itemset_precision": 1.0,
           "rule_recall": 0.0,
           "rule_precision": 1.0,
-          "fit_time_s": 0.2739,
-          "speedup_factor": 15.89,
+          "fit_time_s": 0.2581,
+          "speedup_factor": 15.56,
           "status_": "DEGRADED",
           "is_degraded_": true,
           "future_candidates_status": "UNKNOWN",
-          "termination_reason_": "Candidate explosion detected at level 2: 120 candidates exceeds max_candidates=100.",
+          "termination_reason_": "Candidate explosion detected at level 2: 101 candidates exceeds max_candidates=100.",
           "level_halted": 2,
-          "candidates_generated_at_level": 120,
-          "candidates_remaining_at_level": 120,
-          "peak_candidates": 120,
+          "candidates_generated_at_level": 101,
+          "candidates_remaining_at_level": 101,
+          "peak_candidates": 101,
           "counters": {
-            "candidates_generated": 195,
-            "joins_attempted": 120,
-            "scans_performed": 0
+            "candidates_generated": 176,
+            "joins_attempted": 101,
+            "scans_performed": 0,
+            "support_evaluations": 75,
+            "itemsets_discovered": 16
           }
         },
         {
@@ -116,20 +122,22 @@
           "itemset_precision": 1.0,
           "rule_recall": 0.002199,
           "rule_precision": 1.0,
-          "fit_time_s": 0.3328,
-          "speedup_factor": 13.08,
+          "fit_time_s": 0.308,
+          "speedup_factor": 13.04,
           "status_": "DEGRADED",
           "is_degraded_": true,
           "future_candidates_status": "UNKNOWN",
-          "termination_reason_": "Candidate explosion detected at level 3: 395 candidates exceeds max_candidates=250.",
+          "termination_reason_": "Candidate explosion detected at level 3: 251 candidates exceeds max_candidates=250.",
           "level_halted": 3,
-          "candidates_generated_at_level": 395,
-          "candidates_remaining_at_level": 395,
-          "peak_candidates": 395,
+          "candidates_generated_at_level": 251,
+          "candidates_remaining_at_level": 251,
+          "peak_candidates": 251,
           "counters": {
-            "candidates_generated": 590,
-            "joins_attempted": 642,
-            "scans_performed": 383520
+            "candidates_generated": 446,
+            "joins_attempted": 434,
+            "scans_performed": 383520,
+            "support_evaluations": 195,
+            "itemsets_discovered": 121
           }
         },
         {
@@ -140,20 +148,22 @@
           "itemset_precision": 1.0,
           "rule_recall": 0.024696,
           "rule_precision": 1.0,
-          "fit_time_s": 0.5793,
-          "speedup_factor": 7.52,
+          "fit_time_s": 0.6092,
+          "speedup_factor": 6.59,
           "status_": "DEGRADED",
           "is_degraded_": true,
           "future_candidates_status": "UNKNOWN",
-          "termination_reason_": "Candidate explosion detected at level 4: 756 candidates exceeds max_candidates=500.",
+          "termination_reason_": "Candidate explosion detected at level 4: 501 candidates exceeds max_candidates=500.",
           "level_halted": 4,
-          "candidates_generated_at_level": 756,
-          "candidates_remaining_at_level": 756,
-          "peak_candidates": 756,
+          "candidates_generated_at_level": 501,
+          "candidates_remaining_at_level": 501,
+          "peak_candidates": 501,
           "counters": {
-            "candidates_generated": 1346,
-            "joins_attempted": 1901,
-            "scans_performed": 1645940
+            "candidates_generated": 1091,
+            "joins_attempted": 1433,
+            "scans_performed": 1645940,
+            "support_evaluations": 590,
+            "itemsets_discovered": 479
           }
         },
         {
@@ -164,8 +174,8 @@
           "itemset_precision": 1.0,
           "rule_recall": 1.0,
           "rule_precision": 1.0,
-          "fit_time_s": 4.3449,
-          "speedup_factor": 1.0,
+          "fit_time_s": 4.3712,
+          "speedup_factor": 0.92,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
@@ -177,7 +187,9 @@
           "counters": {
             "candidates_generated": 2892,
             "joins_attempted": 6698,
-            "scans_performed": 9003132
+            "scans_performed": 9003132,
+            "support_evaluations": 2892,
+            "itemsets_discovered": 2669
           }
         },
         {
@@ -188,8 +200,8 @@
           "itemset_precision": 1.0,
           "rule_recall": 1.0,
           "rule_precision": 1.0,
-          "fit_time_s": 4.7996,
-          "speedup_factor": 0.91,
+          "fit_time_s": 4.1732,
+          "speedup_factor": 0.96,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
@@ -201,7 +213,9 @@
           "counters": {
             "candidates_generated": 2892,
             "joins_attempted": 6698,
-            "scans_performed": 9003132
+            "scans_performed": 9003132,
+            "support_evaluations": 2892,
+            "itemsets_discovered": 2669
           }
         },
         {
@@ -212,8 +226,8 @@
           "itemset_precision": 1.0,
           "rule_recall": 1.0,
           "rule_precision": 1.0,
-          "fit_time_s": 4.3878,
-          "speedup_factor": 0.99,
+          "fit_time_s": 3.8729,
+          "speedup_factor": 1.04,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
@@ -225,7 +239,9 @@
           "counters": {
             "candidates_generated": 2892,
             "joins_attempted": 6698,
-            "scans_performed": 9003132
+            "scans_performed": 9003132,
+            "support_evaluations": 2892,
+            "itemsets_discovered": 2669
           }
         }
       ]
@@ -234,13 +250,16 @@
       "baseline": {
         "n_itemsets": 103,
         "n_rules": 738,
-        "fit_time_s": 2.1433,
+        "fit_time_s": 1.7273,
         "status": "EXACT",
         "is_degraded": false,
         "counters": {
           "trees_constructed": 47,
           "nodes_created": 751,
-          "paths_traversed": 704
+          "paths_traversed": 704,
+          "itemsets_discovered": 103,
+          "candidates_generated": 103,
+          "tree_nodes_created": 751
         }
       },
       "records": [
@@ -252,8 +271,8 @@
           "itemset_precision": 1.0,
           "rule_recall": 0.02981,
           "rule_precision": 1.0,
-          "fit_time_s": 2.4585,
-          "speedup_factor": 0.87,
+          "fit_time_s": 1.7565,
+          "speedup_factor": 0.98,
           "status_": "DEGRADED",
           "is_degraded_": true,
           "future_candidates_status": "UNKNOWN",
@@ -265,7 +284,10 @@
           "counters": {
             "trees_constructed": 22,
             "nodes_created": 660,
-            "paths_traversed": 596
+            "paths_traversed": 596,
+            "itemsets_discovered": 51,
+            "candidates_generated": 51,
+            "tree_nodes_created": 660
           }
         },
         {
@@ -276,8 +298,8 @@
           "itemset_precision": 1.0,
           "rule_recall": 0.826558,
           "rule_precision": 1.0,
-          "fit_time_s": 2.002,
-          "speedup_factor": 1.07,
+          "fit_time_s": 1.678,
+          "speedup_factor": 1.03,
           "status_": "DEGRADED",
           "is_degraded_": true,
           "future_candidates_status": "UNKNOWN",
@@ -289,7 +311,10 @@
           "counters": {
             "trees_constructed": 46,
             "nodes_created": 749,
-            "paths_traversed": 700
+            "paths_traversed": 700,
+            "itemsets_discovered": 101,
+            "candidates_generated": 101,
+            "tree_nodes_created": 749
           }
         },
         {
@@ -300,8 +325,8 @@
           "itemset_precision": 1.0,
           "rule_recall": 1.0,
           "rule_precision": 1.0,
-          "fit_time_s": 1.9202,
-          "speedup_factor": 1.12,
+          "fit_time_s": 1.7323,
+          "speedup_factor": 1.0,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
@@ -313,7 +338,10 @@
           "counters": {
             "trees_constructed": 47,
             "nodes_created": 751,
-            "paths_traversed": 704
+            "paths_traversed": 704,
+            "itemsets_discovered": 103,
+            "candidates_generated": 103,
+            "tree_nodes_created": 751
           }
         },
         {
@@ -324,8 +352,8 @@
           "itemset_precision": 1.0,
           "rule_recall": 1.0,
           "rule_precision": 1.0,
-          "fit_time_s": 1.8749,
-          "speedup_factor": 1.14,
+          "fit_time_s": 1.7853,
+          "speedup_factor": 0.97,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
@@ -337,7 +365,10 @@
           "counters": {
             "trees_constructed": 47,
             "nodes_created": 751,
-            "paths_traversed": 704
+            "paths_traversed": 704,
+            "itemsets_discovered": 103,
+            "candidates_generated": 103,
+            "tree_nodes_created": 751
           }
         },
         {
@@ -348,8 +379,8 @@
           "itemset_precision": 1.0,
           "rule_recall": 1.0,
           "rule_precision": 1.0,
-          "fit_time_s": 1.8604,
-          "speedup_factor": 1.15,
+          "fit_time_s": 1.677,
+          "speedup_factor": 1.03,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
@@ -361,7 +392,10 @@
           "counters": {
             "trees_constructed": 47,
             "nodes_created": 751,
-            "paths_traversed": 704
+            "paths_traversed": 704,
+            "itemsets_discovered": 103,
+            "candidates_generated": 103,
+            "tree_nodes_created": 751
           }
         },
         {
@@ -372,8 +406,8 @@
           "itemset_precision": 1.0,
           "rule_recall": 1.0,
           "rule_precision": 1.0,
-          "fit_time_s": 2.2231,
-          "speedup_factor": 0.96,
+          "fit_time_s": 1.7026,
+          "speedup_factor": 1.01,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
@@ -385,7 +419,10 @@
           "counters": {
             "trees_constructed": 47,
             "nodes_created": 751,
-            "paths_traversed": 704
+            "paths_traversed": 704,
+            "itemsets_discovered": 103,
+            "candidates_generated": 103,
+            "tree_nodes_created": 751
           }
         },
         {
@@ -396,8 +433,8 @@
           "itemset_precision": 1.0,
           "rule_recall": 1.0,
           "rule_precision": 1.0,
-          "fit_time_s": 1.8373,
-          "speedup_factor": 1.17,
+          "fit_time_s": 1.8162,
+          "speedup_factor": 0.95,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
@@ -409,7 +446,10 @@
           "counters": {
             "trees_constructed": 47,
             "nodes_created": 751,
-            "paths_traversed": 704
+            "paths_traversed": 704,
+            "itemsets_discovered": 103,
+            "candidates_generated": 103,
+            "tree_nodes_created": 751
           }
         }
       ]
@@ -418,12 +458,14 @@
       "baseline": {
         "n_itemsets": 59,
         "n_rules": 56,
-        "fit_time_s": 7.1436,
+        "fit_time_s": 6.5228,
         "status": "EXACT",
         "is_degraded": false,
         "counters": {
           "intersections_performed": 451,
-          "tid_elements_scanned": 49081638
+          "tid_elements_scanned": 49081638,
+          "itemsets_discovered": 59,
+          "candidates_generated": 59
         }
       },
       "records": [
@@ -435,8 +477,8 @@
           "itemset_precision": 1.0,
           "rule_recall": 0.696429,
           "rule_precision": 1.0,
-          "fit_time_s": 6.8496,
-          "speedup_factor": 1.04,
+          "fit_time_s": 6.4658,
+          "speedup_factor": 1.01,
           "status_": "DEGRADED",
           "is_degraded_": true,
           "future_candidates_status": "UNKNOWN",
@@ -447,7 +489,9 @@
           "peak_candidates": 51,
           "counters": {
             "intersections_performed": 203,
-            "tid_elements_scanned": 24086098
+            "tid_elements_scanned": 24086098,
+            "itemsets_discovered": 51,
+            "candidates_generated": 51
           }
         },
         {
@@ -458,53 +502,7 @@
           "itemset_precision": 1.0,
           "rule_recall": 1.0,
           "rule_precision": 1.0,
-          "fit_time_s": 7.4575,
-          "speedup_factor": 0.96,
-          "status_": "EXACT",
-          "is_degraded_": false,
-          "future_candidates_status": "EXHAUSTED",
-          "termination_reason_": null,
-          "level_halted": null,
-          "candidates_generated_at_level": null,
-          "candidates_remaining_at_level": null,
-          "peak_candidates": 59,
-          "counters": {
-            "intersections_performed": 451,
-            "tid_elements_scanned": 49081638
-          }
-        },
-        {
-          "candidate_cap": 250,
-          "n_itemsets": 59,
-          "n_rules": 56,
-          "itemset_recall": 1.0,
-          "itemset_precision": 1.0,
-          "rule_recall": 1.0,
-          "rule_precision": 1.0,
-          "fit_time_s": 6.9405,
-          "speedup_factor": 1.03,
-          "status_": "EXACT",
-          "is_degraded_": false,
-          "future_candidates_status": "EXHAUSTED",
-          "termination_reason_": null,
-          "level_halted": null,
-          "candidates_generated_at_level": null,
-          "candidates_remaining_at_level": null,
-          "peak_candidates": 59,
-          "counters": {
-            "intersections_performed": 451,
-            "tid_elements_scanned": 49081638
-          }
-        },
-        {
-          "candidate_cap": 500,
-          "n_itemsets": 59,
-          "n_rules": 56,
-          "itemset_recall": 1.0,
-          "itemset_precision": 1.0,
-          "rule_recall": 1.0,
-          "rule_precision": 1.0,
-          "fit_time_s": 7.2792,
+          "fit_time_s": 6.6338,
           "speedup_factor": 0.98,
           "status_": "EXACT",
           "is_degraded_": false,
@@ -516,7 +514,59 @@
           "peak_candidates": 59,
           "counters": {
             "intersections_performed": 451,
-            "tid_elements_scanned": 49081638
+            "tid_elements_scanned": 49081638,
+            "itemsets_discovered": 59,
+            "candidates_generated": 59
+          }
+        },
+        {
+          "candidate_cap": 250,
+          "n_itemsets": 59,
+          "n_rules": 56,
+          "itemset_recall": 1.0,
+          "itemset_precision": 1.0,
+          "rule_recall": 1.0,
+          "rule_precision": 1.0,
+          "fit_time_s": 6.6614,
+          "speedup_factor": 0.98,
+          "status_": "EXACT",
+          "is_degraded_": false,
+          "future_candidates_status": "EXHAUSTED",
+          "termination_reason_": null,
+          "level_halted": null,
+          "candidates_generated_at_level": null,
+          "candidates_remaining_at_level": null,
+          "peak_candidates": 59,
+          "counters": {
+            "intersections_performed": 451,
+            "tid_elements_scanned": 49081638,
+            "itemsets_discovered": 59,
+            "candidates_generated": 59
+          }
+        },
+        {
+          "candidate_cap": 500,
+          "n_itemsets": 59,
+          "n_rules": 56,
+          "itemset_recall": 1.0,
+          "itemset_precision": 1.0,
+          "rule_recall": 1.0,
+          "rule_precision": 1.0,
+          "fit_time_s": 6.5632,
+          "speedup_factor": 0.99,
+          "status_": "EXACT",
+          "is_degraded_": false,
+          "future_candidates_status": "EXHAUSTED",
+          "termination_reason_": null,
+          "level_halted": null,
+          "candidates_generated_at_level": null,
+          "candidates_remaining_at_level": null,
+          "peak_candidates": 59,
+          "counters": {
+            "intersections_performed": 451,
+            "tid_elements_scanned": 49081638,
+            "itemsets_discovered": 59,
+            "candidates_generated": 59
           }
         },
         {
@@ -527,8 +577,8 @@
           "itemset_precision": 1.0,
           "rule_recall": 1.0,
           "rule_precision": 1.0,
-          "fit_time_s": 6.9117,
-          "speedup_factor": 1.03,
+          "fit_time_s": 6.5989,
+          "speedup_factor": 0.99,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
@@ -539,7 +589,9 @@
           "peak_candidates": 59,
           "counters": {
             "intersections_performed": 451,
-            "tid_elements_scanned": 49081638
+            "tid_elements_scanned": 49081638,
+            "itemsets_discovered": 59,
+            "candidates_generated": 59
           }
         },
         {
@@ -550,8 +602,8 @@
           "itemset_precision": 1.0,
           "rule_recall": 1.0,
           "rule_precision": 1.0,
-          "fit_time_s": 7.0084,
-          "speedup_factor": 1.02,
+          "fit_time_s": 6.6008,
+          "speedup_factor": 0.99,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
@@ -562,7 +614,9 @@
           "peak_candidates": 59,
           "counters": {
             "intersections_performed": 451,
-            "tid_elements_scanned": 49081638
+            "tid_elements_scanned": 49081638,
+            "itemsets_discovered": 59,
+            "candidates_generated": 59
           }
         },
         {
@@ -573,8 +627,8 @@
           "itemset_precision": 1.0,
           "rule_recall": 1.0,
           "rule_precision": 1.0,
-          "fit_time_s": 8.4715,
-          "speedup_factor": 0.84,
+          "fit_time_s": 6.7363,
+          "speedup_factor": 0.97,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
@@ -585,7 +639,9 @@
           "peak_candidates": 59,
           "counters": {
             "intersections_performed": 451,
-            "tid_elements_scanned": 49081638
+            "tid_elements_scanned": 49081638,
+            "itemsets_discovered": 59,
+            "candidates_generated": 59
           }
         }
       ]
@@ -596,13 +652,15 @@
       "baseline": {
         "n_itemsets": 2669,
         "n_rules": 95482,
-        "fit_time_s": 4.3533,
+        "fit_time_s": 4.016,
         "status": "EXACT",
         "is_degraded": false,
         "counters": {
           "candidates_generated": 2892,
           "joins_attempted": 6698,
-          "scans_performed": 9003132
+          "scans_performed": 9003132,
+          "support_evaluations": 2892,
+          "itemsets_discovered": 2669
         }
       },
       "records": [
@@ -615,15 +673,17 @@
           "itemset_precision": 1.0,
           "rule_recall": 0.0,
           "rule_precision": 1.0,
-          "fit_time_s": 0.2789,
-          "speedup_factor": 15.61,
+          "fit_time_s": 0.2748,
+          "speedup_factor": 14.62,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
           "counters": {
             "candidates_generated": 75,
             "joins_attempted": 0,
-            "scans_performed": 0
+            "scans_performed": 0,
+            "support_evaluations": 75,
+            "itemsets_discovered": 16
           }
         },
         {
@@ -635,15 +695,17 @@
           "itemset_precision": 1.0,
           "rule_recall": 0.002199,
           "rule_precision": 1.0,
-          "fit_time_s": 0.3323,
-          "speedup_factor": 13.1,
+          "fit_time_s": 0.3146,
+          "speedup_factor": 12.77,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
           "counters": {
             "candidates_generated": 195,
             "joins_attempted": 120,
-            "scans_performed": 383520
+            "scans_performed": 383520,
+            "support_evaluations": 195,
+            "itemsets_discovered": 121
           }
         },
         {
@@ -655,15 +717,17 @@
           "itemset_precision": 1.0,
           "rule_recall": 0.024696,
           "rule_precision": 1.0,
-          "fit_time_s": 0.5867,
-          "speedup_factor": 7.42,
+          "fit_time_s": 0.559,
+          "speedup_factor": 7.18,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
           "counters": {
             "candidates_generated": 590,
             "joins_attempted": 642,
-            "scans_performed": 1645940
+            "scans_performed": 1645940,
+            "support_evaluations": 590,
+            "itemsets_discovered": 479
           }
         },
         {
@@ -675,15 +739,17 @@
           "itemset_precision": 1.0,
           "rule_recall": 0.125867,
           "rule_precision": 1.0,
-          "fit_time_s": 1.1383,
-          "speedup_factor": 3.82,
+          "fit_time_s": 1.0297,
+          "speedup_factor": 3.9,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
           "counters": {
             "candidates_generated": 1346,
             "joins_attempted": 1901,
-            "scans_performed": 4062116
+            "scans_performed": 4062116,
+            "support_evaluations": 1346,
+            "itemsets_discovered": 1169
           }
         },
         {
@@ -695,15 +761,17 @@
           "itemset_precision": 1.0,
           "rule_recall": 0.372196,
           "rule_precision": 1.0,
-          "fit_time_s": 2.1763,
-          "speedup_factor": 2.0,
+          "fit_time_s": 2.2837,
+          "speedup_factor": 1.76,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
           "counters": {
             "candidates_generated": 2160,
             "joins_attempted": 3757,
-            "scans_performed": 6663660
+            "scans_performed": 6663660,
+            "support_evaluations": 2160,
+            "itemsets_discovered": 1953
           }
         },
         {
@@ -715,15 +783,17 @@
           "itemset_precision": 1.0,
           "rule_recall": 1.0,
           "rule_precision": 1.0,
-          "fit_time_s": 4.9202,
-          "speedup_factor": 0.88,
+          "fit_time_s": 4.3411,
+          "speedup_factor": 0.93,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
           "counters": {
             "candidates_generated": 2892,
             "joins_attempted": 6698,
-            "scans_performed": 9003132
+            "scans_performed": 9003132,
+            "support_evaluations": 2892,
+            "itemsets_discovered": 2669
           }
         }
       ]
@@ -732,13 +802,16 @@
       "baseline": {
         "n_itemsets": 103,
         "n_rules": 738,
-        "fit_time_s": 2.1433,
+        "fit_time_s": 1.7273,
         "status": "EXACT",
         "is_degraded": false,
         "counters": {
           "trees_constructed": 47,
           "nodes_created": 751,
-          "paths_traversed": 704
+          "paths_traversed": 704,
+          "itemsets_discovered": 103,
+          "candidates_generated": 103,
+          "tree_nodes_created": 751
         }
       },
       "records": [
@@ -751,15 +824,18 @@
           "itemset_precision": 1.0,
           "rule_recall": 0.0,
           "rule_precision": 1.0,
-          "fit_time_s": 2.0321,
-          "speedup_factor": 1.05,
+          "fit_time_s": 1.7312,
+          "speedup_factor": 1.0,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
           "counters": {
             "trees_constructed": 1,
             "nodes_created": 463,
-            "paths_traversed": 0
+            "paths_traversed": 0,
+            "itemsets_discovered": 10,
+            "candidates_generated": 10,
+            "tree_nodes_created": 463
           }
         },
         {
@@ -771,15 +847,18 @@
           "itemset_precision": 1.0,
           "rule_recall": 0.084011,
           "rule_precision": 1.0,
-          "fit_time_s": 1.7092,
-          "speedup_factor": 1.25,
+          "fit_time_s": 1.7653,
+          "speedup_factor": 0.98,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
           "counters": {
             "trees_constructed": 10,
             "nodes_created": 607,
-            "paths_traversed": 462
+            "paths_traversed": 462,
+            "itemsets_discovered": 41,
+            "candidates_generated": 41,
+            "tree_nodes_created": 607
           }
         },
         {
@@ -791,15 +870,18 @@
           "itemset_precision": 1.0,
           "rule_recall": 0.376694,
           "rule_precision": 1.0,
-          "fit_time_s": 1.8891,
-          "speedup_factor": 1.13,
+          "fit_time_s": 1.6977,
+          "speedup_factor": 1.02,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
           "counters": {
             "trees_constructed": 27,
             "nodes_created": 698,
-            "paths_traversed": 597
+            "paths_traversed": 597,
+            "itemsets_discovered": 77,
+            "candidates_generated": 77,
+            "tree_nodes_created": 698
           }
         },
         {
@@ -811,15 +893,18 @@
           "itemset_precision": 1.0,
           "rule_recall": 0.756098,
           "rule_precision": 1.0,
-          "fit_time_s": 1.7298,
-          "speedup_factor": 1.24,
+          "fit_time_s": 1.7892,
+          "speedup_factor": 0.97,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
           "counters": {
             "trees_constructed": 41,
             "nodes_created": 739,
-            "paths_traversed": 671
+            "paths_traversed": 671,
+            "itemsets_discovered": 97,
+            "candidates_generated": 97,
+            "tree_nodes_created": 739
           }
         },
         {
@@ -831,15 +916,18 @@
           "itemset_precision": 1.0,
           "rule_recall": 1.0,
           "rule_precision": 1.0,
-          "fit_time_s": 1.7658,
-          "speedup_factor": 1.21,
+          "fit_time_s": 1.704,
+          "speedup_factor": 1.01,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
           "counters": {
             "trees_constructed": 47,
             "nodes_created": 751,
-            "paths_traversed": 698
+            "paths_traversed": 698,
+            "itemsets_discovered": 103,
+            "candidates_generated": 103,
+            "tree_nodes_created": 751
           }
         },
         {
@@ -851,15 +939,18 @@
           "itemset_precision": 1.0,
           "rule_recall": 1.0,
           "rule_precision": 1.0,
-          "fit_time_s": 1.9826,
-          "speedup_factor": 1.08,
+          "fit_time_s": 1.7857,
+          "speedup_factor": 0.97,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
           "counters": {
             "trees_constructed": 47,
             "nodes_created": 751,
-            "paths_traversed": 704
+            "paths_traversed": 704,
+            "itemsets_discovered": 103,
+            "candidates_generated": 103,
+            "tree_nodes_created": 751
           }
         }
       ]
@@ -868,12 +959,14 @@
       "baseline": {
         "n_itemsets": 59,
         "n_rules": 56,
-        "fit_time_s": 7.1436,
+        "fit_time_s": 6.5228,
         "status": "EXACT",
         "is_degraded": false,
         "counters": {
           "intersections_performed": 451,
-          "tid_elements_scanned": 49081638
+          "tid_elements_scanned": 49081638,
+          "itemsets_discovered": 59,
+          "candidates_generated": 59
         }
       },
       "records": [
@@ -886,14 +979,16 @@
           "itemset_precision": 1.0,
           "rule_recall": 0.0,
           "rule_precision": 1.0,
-          "fit_time_s": 7.9457,
-          "speedup_factor": 0.9,
+          "fit_time_s": 5.9863,
+          "speedup_factor": 1.09,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
           "counters": {
             "intersections_performed": 0,
-            "tid_elements_scanned": 0
+            "tid_elements_scanned": 0,
+            "itemsets_discovered": 27,
+            "candidates_generated": 27
           }
         },
         {
@@ -905,14 +1000,16 @@
           "itemset_precision": 1.0,
           "rule_recall": 0.625,
           "rule_precision": 1.0,
-          "fit_time_s": 8.4362,
-          "speedup_factor": 0.85,
+          "fit_time_s": 6.3383,
+          "speedup_factor": 1.03,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
           "counters": {
             "intersections_performed": 351,
-            "tid_elements_scanned": 40256606
+            "tid_elements_scanned": 40256606,
+            "itemsets_discovered": 54,
+            "candidates_generated": 54
           }
         },
         {
@@ -924,14 +1021,16 @@
           "itemset_precision": 1.0,
           "rule_recall": 1.0,
           "rule_precision": 1.0,
-          "fit_time_s": 6.9782,
-          "speedup_factor": 1.02,
+          "fit_time_s": 6.4933,
+          "speedup_factor": 1.0,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
           "counters": {
             "intersections_performed": 450,
-            "tid_elements_scanned": 49027330
+            "tid_elements_scanned": 49027330,
+            "itemsets_discovered": 59,
+            "candidates_generated": 59
           }
         },
         {
@@ -943,14 +1042,16 @@
           "itemset_precision": 1.0,
           "rule_recall": 1.0,
           "rule_precision": 1.0,
-          "fit_time_s": 8.374,
-          "speedup_factor": 0.85,
+          "fit_time_s": 7.1162,
+          "speedup_factor": 0.92,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
           "counters": {
             "intersections_performed": 451,
-            "tid_elements_scanned": 49081638
+            "tid_elements_scanned": 49081638,
+            "itemsets_discovered": 59,
+            "candidates_generated": 59
           }
         },
         {
@@ -962,14 +1063,16 @@
           "itemset_precision": 1.0,
           "rule_recall": 1.0,
           "rule_precision": 1.0,
-          "fit_time_s": 8.3702,
-          "speedup_factor": 0.85,
+          "fit_time_s": 7.0534,
+          "speedup_factor": 0.92,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
           "counters": {
             "intersections_performed": 451,
-            "tid_elements_scanned": 49081638
+            "tid_elements_scanned": 49081638,
+            "itemsets_discovered": 59,
+            "candidates_generated": 59
           }
         },
         {
@@ -981,14 +1084,16 @@
           "itemset_precision": 1.0,
           "rule_recall": 1.0,
           "rule_precision": 1.0,
-          "fit_time_s": 8.1143,
-          "speedup_factor": 0.88,
+          "fit_time_s": 6.8818,
+          "speedup_factor": 0.95,
           "status_": "EXACT",
           "is_degraded_": false,
           "future_candidates_status": "EXHAUSTED",
           "counters": {
             "intersections_performed": 451,
-            "tid_elements_scanned": 49081638
+            "tid_elements_scanned": 49081638,
+            "itemsets_discovered": 59,
+            "candidates_generated": 59
           }
         }
       ]

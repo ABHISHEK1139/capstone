@@ -268,9 +268,9 @@ Zhang's Metric & $\frac{\mathrm{supp}(X \cup Y) - \mathrm{supp}(X)\mathrm{supp}(
 \label{sec:result_states}
 To guarantee honesty under resource constraints, \skarm enforces a formal three-state execution contract:
 \begin{enumerate}
-  \item $\mathbf{EXACT}$: The mining engine traversed the complete search space. The returned itemsets $\mathcal{F}_\sigma$ and rules $\mathcal{R}_{\sigma, \gamma}$ are provably exhaustive.
-  \item $\mathbf{DEGRADED}$: The candidate governor interrupted execution because candidate generation or memory reached the specified safety cap (\texttt{max\_candidates}). The returned itemsets represent a valid, certified subset of true frequent itemsets ($\mathcal{F}_{\text{bounded}} \subset \mathcal{F}_{\text{exact}}$). Crucially, \skarm sets \texttt{is\_degraded\_ = True} and records exact candidate counts and truncation levels in \texttt{pruning\_policy\_}, ensuring bounded results are never misrepresented as exhaustive.
-  \item $\mathbf{FAILED}$: Execution terminated abnormally due to invalid inputs (e.g., non-binary or negative matrices) or unrecoverable system limits.
+  \item $\mathbf{EXACT}$: The mining engine traversed the complete search space. The returned itemsets $\mathcal{F}_\sigma$ and rules $\mathcal{R}_{\sigma, \gamma}$ are provably exhaustive (\texttt{status\_ = "EXACT"}, \texttt{is\_complete\_ = True}, \texttt{is\_degraded\_ = False}).
+  \item $\mathbf{DEGRADED}$: The candidate governor interrupted execution because candidate generation, runtime, or memory reached the specified safety cap. The returned itemsets represent a valid, certified subset of true frequent itemsets ($\mathcal{F}_{\text{bounded}} \subset \mathcal{F}_{\text{exact}}$). Crucially, \skarm sets \texttt{status\_ = "DEGRADED"}, \texttt{is\_degraded\_ = True}, \texttt{is\_complete\_ = False}, and records exact candidate counters and degradation reasons in \texttt{metadata\_}, ensuring bounded results are never misrepresented as exhaustive.
+  \item $\mathbf{FAILED}$: Execution terminated abnormally due to invalid inputs (e.g., non-binary or negative matrices) or configured raise policies (\texttt{on\_candidate\_explosion="raise"}). In strict accordance with scikit-learn API fail-fast conventions, this state represents an unrecoverable execution outcome signaled via checked exceptions (\texttt{ValueError}, \texttt{CandidateExplosionError}), rather than returning a corrupted fitted estimator instance.
 \end{enumerate}
 
 \subsection{The Tri-Engine Core and $O(1)$ Tail Optimization}

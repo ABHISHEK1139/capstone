@@ -250,37 +250,66 @@ def test_estimator_scoring_validation():
 
 
 def test_fpgrowth_truncate_degraded_metadata():
-    """Verify FP-Growth truncation sets future_candidates_status='UNKNOWN' and degradation_reason."""
+    """Verify FP-Growth truncation sets future_candidates_status='UNKNOWN' and uniform degradation_reason (R6)."""
     X = (np.random.RandomState(42).rand(50, 10) > 0.3).astype(int)
     est = AssociationRulesEstimator(
         min_support=0.1,
         algorithm="fpgrowth",
         max_candidates=5,
         on_candidate_explosion="truncate",
-    ).fit(X)
+    )
+    with pytest.warns(DegradedModeWarning):
+        est.fit(X)
 
     assert est.status_ == "DEGRADED"
     assert est.is_degraded_ is True
     assert est.is_complete_ is False
     assert est.metadata_["future_candidates_status"] == "UNKNOWN"
-    assert est.termination_reason_ == "max_candidates_reached"
+    assert "Candidate explosion detected" in est.termination_reason_
+    assert len(est.frequent_itemsets_) == 5
 
 
 def test_eclat_truncate_degraded_metadata():
-    """Verify Eclat truncation sets future_candidates_status='UNKNOWN' and degradation_reason (R6)."""
+    """Verify Eclat truncation sets future_candidates_status='UNKNOWN' and uniform degradation_reason (R6)."""
     X = (np.random.RandomState(42).rand(50, 10) > 0.3).astype(int)
     est = AssociationRulesEstimator(
         min_support=0.1,
         algorithm="eclat",
         max_candidates=5,
         on_candidate_explosion="truncate",
-    ).fit(X)
+    )
+    with pytest.warns(DegradedModeWarning):
+        est.fit(X)
 
     assert est.status_ == "DEGRADED"
     assert est.is_degraded_ is True
     assert est.is_complete_ is False
     assert est.metadata_["future_candidates_status"] == "UNKNOWN"
-    assert est.termination_reason_ == "max_candidates_reached"
+    assert "Candidate explosion detected" in est.termination_reason_
+    assert len(est.frequent_itemsets_) == 5
+
+
+def test_exact_budget_boundary_not_degraded():
+    """Verify R6: Reaching exactly max_candidates does NOT trigger degradation; only exceeding it does."""
+    X = np.array([[1, 0], [1, 0], [1, 1]], dtype=bool)
+    for algo in ["apriori", "fpgrowth", "eclat"]:
+        est_exact = AssociationRulesEstimator(algorithm=algo, min_support=0.3, max_candidates=100)
+        est_exact.fit(X)
+        n_exact = len(est_exact.frequent_itemsets_)
+
+        for policy in ["truncate", "degrade"]:
+            est_bound = AssociationRulesEstimator(
+                algorithm=algo,
+                min_support=0.3,
+                max_candidates=n_exact,
+                on_candidate_explosion=policy,
+            )
+            est_bound.fit(X)
+            assert est_bound.status_ == "EXACT", f"{algo} with {policy} degraded prematurely at boundary"
+            assert est_bound.is_degraded_ is False
+            assert est_bound.is_complete_ is True
+            assert est_bound.termination_reason_ is None
+            assert len(est_bound.frequent_itemsets_) == n_exact
 
 
 def test_lazy_candidate_budget_apriori():

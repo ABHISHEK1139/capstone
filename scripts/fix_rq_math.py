@@ -28,7 +28,7 @@ if old_rq2 in text:
 
 # 4. Fix RQ3 speedup and recall numbers
 old_rq3 = r"accelerates execution by up to \times$ while recovering meaningful subsets (.60\%$ to .95\%$ recall)."
-new_rq3 = r"accelerates execution by up to $790\times$ while recovering meaningful subsets ($0.60\%$ to $17.95\%$ recall)."
+new_rq3 = r"accelerates execution by up to $15.68\times$ while recovering meaningful subsets ($0.60\%$ to $17.95\%$ recall)."
 if old_rq3 in text:
     text = text.replace(old_rq3, new_rq3)
     print("Fixed RQ3 speedup and recall numbers!")

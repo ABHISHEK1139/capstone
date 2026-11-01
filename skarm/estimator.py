@@ -254,7 +254,13 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
     def _to_tx_sets(self, X: Any) -> List[Set[int]]:
         """Convert query transactions or binary matrix into list of item index sets (Bug B5)."""
         if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
+            if hasattr(self, "columns_") and self.columns_ is not None and len(self.columns_) > 0:
+                if set(self.columns_).issubset(set(X.columns)):
+                    X = X[self.columns_].to_numpy()
+                else:
+                    X = X.to_numpy()
+            else:
+                X = X.to_numpy()
 
         if isinstance(X, sparse.spmatrix):
             X_csr = X.tocsr()

@@ -128,9 +128,13 @@ def eclat(
                 tid_lists[j] = tids
 
     total_start = time.perf_counter()
+    initial_items = sorted(tid_lists.keys())
     counters = {
         "intersections_performed": 0,
         "tid_elements_scanned": 0,
+        "candidates_generated": len(initial_items),
+        "support_evaluations": len(initial_items),
+        "itemsets_discovered": 0,
     }
 
     frequent_itemsets: Dict[FrozenSet[int], float] = {}
@@ -140,48 +144,81 @@ def eclat(
             return float(sum(sample_weight[t] for t in tids) / total_weight)
         return float(len(tids) / total_weight)
 
-    # Initial frequent 1-itemsets
-    initial_items = sorted(tid_lists.keys())
+    # Initial frequent 1-itemsets with budget ceiling check
     for item in initial_items:
+        if len(frequent_itemsets) >= pruning_policy.max_candidates:
+            elapsed = time.perf_counter() - total_start
+            can_proceed = pruning_policy.check_budget(
+                candidate_count=len(frequent_itemsets) + 1,
+                level=1,
+                elapsed_time=elapsed,
+            )
+            if not can_proceed:
+                break
+            if pruning_policy.on_candidate_explosion == "truncate":
+                break
         frequent_itemsets[frozenset([item])] = get_support(tid_lists[item])
 
     # Recursive equivalence class expansion
     def extend(prefix: Tuple[int, ...], items_with_tids: List[Tuple[int, Set[int]]]):
         n_items = len(items_with_tids)
         for i in range(n_items):
+            if pruning_policy.is_degraded:
+                return
             item_i, tids_i = items_with_tids[i]
             new_prefix = prefix + (item_i,)
             new_items_with_tids: List[Tuple[int, Set[int]]] = []
 
             for j in range(i + 1, n_items):
+                if pruning_policy.is_degraded:
+                    return
                 item_j, tids_j = items_with_tids[j]
                 inter_tids = tids_i.intersection(tids_j)
                 counters["intersections_performed"] += 1
                 counters["tid_elements_scanned"] += len(tids_i) + len(tids_j)
+                counters["candidates_generated"] += 1
+                counters["support_evaluations"] += 1
+
+                # Watchdog for runtime and memory during intersections
+                if counters["intersections_performed"] % 100 == 0:
+                    elapsed = time.perf_counter() - total_start
+                    if not pruning_policy.check_budget(
+                        candidate_count=0,
+                        level=len(new_prefix) + 1,
+                        elapsed_time=elapsed,
+                    ):
+                        return
 
                 if inter_weight_check := (sum(sample_weight[t] for t in inter_tids) if sample_weight is not None else len(inter_tids)):
                     pass
                 inter_weight = inter_weight_check
 
                 if inter_weight >= min_weight - 1e-12:
+                    # R6: Check candidate ceiling - trigger only when max_candidates is exceeded
+                    if len(frequent_itemsets) >= pruning_policy.max_candidates:
+                        elapsed = time.perf_counter() - total_start
+                        can_proceed = pruning_policy.check_budget(
+                            candidate_count=len(frequent_itemsets) + 1,
+                            level=len(new_prefix) + 1,
+                            elapsed_time=elapsed,
+                        )
+                        if not can_proceed:
+                            return
+                        if pruning_policy.on_candidate_explosion == "truncate":
+                            return
+
                     supp = float(inter_weight / total_weight)
                     pair_itemset = frozenset(new_prefix + (item_j,))
                     frequent_itemsets[pair_itemset] = supp
                     elapsed = time.perf_counter() - total_start
 
-                    # Guardrail check
+                    # Guardrail check for time/memory
                     can_proceed = pruning_policy.check_budget(
-                        candidate_count=len(frequent_itemsets),
+                        candidate_count=0,
                         level=len(pair_itemset),
                         elapsed_time=elapsed,
                     )
                     if not can_proceed:
-                        return
-
-                    if pruning_policy.on_candidate_explosion == "truncate" and len(frequent_itemsets) >= pruning_policy.max_candidates:
-                        pruning_policy.is_degraded = True
-                        pruning_policy.future_candidates_status = "UNKNOWN"
-                        pruning_policy.degradation_reason = "max_candidates_reached"
                         return
 
                     new_items_with_tids.append((item_j, inter_tids))
@@ -199,7 +236,6 @@ def eclat(
         extend((), init_pairs)
 
     counters["itemsets_discovered"] = len(frequent_itemsets)
-    counters["candidates_generated"] = len(frequent_itemsets)
 
     pruning_policy.counters = counters
     if telemetry is not None:

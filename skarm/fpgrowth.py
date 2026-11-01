@@ -146,11 +146,15 @@ def fpgrowth(
 
     min_count = min_support * total_weight
 
-    # Operation counters (R3)
+    # Operation counters (R2 & R3)
     counters = {
-        "trees_constructed": 0,
+        "trees_constructed": 1,
         "nodes_created": 0,
+        "tree_nodes_created": 0,
         "paths_traversed": 0,
+        "candidates_generated": 0,
+        "support_evaluations": 0,
+        "itemsets_discovered": 0,
     }
 
     # Step 1: Calculate 1-itemset frequencies
@@ -225,30 +229,42 @@ def fpgrowth(
         )
 
         for item in items_sorted:
+            if pruning_policy.is_degraded:
+                return
+
             entry = curr_tree.header_table[item]
             head_node, item_count = entry[0], entry[2]
+            counters["candidates_generated"] += 1
+            counters["support_evaluations"] += 1
             if item_count < min_count - 1e-12:
                 continue
 
             new_prefix = prefix + (item,)
             new_itemset = frozenset(new_prefix)
+
+            # R6: Check candidate ceiling - trigger only when max_candidates is exceeded
+            if len(frequent_itemsets) >= pruning_policy.max_candidates:
+                elapsed = time.perf_counter() - total_start
+                can_proceed = pruning_policy.check_budget(
+                    candidate_count=len(frequent_itemsets) + 1,
+                    level=len(new_prefix),
+                    elapsed_time=elapsed,
+                )
+                if not can_proceed:
+                    return
+                if pruning_policy.on_candidate_explosion == "truncate":
+                    return
+
             frequent_itemsets[new_itemset] = float(item_count / total_weight)
-            discovered_count = len(frequent_itemsets)
             elapsed = time.perf_counter() - total_start
 
-            # Check candidate/itemset explosion guardrail
+            # Active runtime and memory monitoring
             can_proceed = pruning_policy.check_budget(
-                candidate_count=discovered_count,
+                candidate_count=0,
                 level=len(new_prefix),
                 elapsed_time=elapsed,
             )
             if not can_proceed:
-                return
-
-            if pruning_policy.on_candidate_explosion == "truncate" and discovered_count >= pruning_policy.max_candidates:
-                pruning_policy.is_degraded = True
-                pruning_policy.future_candidates_status = "UNKNOWN"
-                pruning_policy.degradation_reason = "max_candidates_reached"
                 return
 
             if not pruning_policy.should_continue_length(len(new_prefix)):
@@ -305,7 +321,6 @@ def fpgrowth(
     mine_tree(tree, ())
 
     counters["itemsets_discovered"] = len(frequent_itemsets)
-    counters["candidates_generated"] = len(frequent_itemsets)
     counters["tree_nodes_created"] = counters["nodes_created"]
 
     pruning_policy.counters = counters
