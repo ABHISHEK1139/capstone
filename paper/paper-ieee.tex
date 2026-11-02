@@ -145,7 +145,7 @@ wins on dense versus sparse data, so this paper asserts no universal
 winner and reports its own matched-threshold measurements instead.
 
 \subsection{Libraries and baselines}
-\textbf{mlxtend} \cite{mlxtend} is the honest baseline. Its
+\textbf{mlxtend} (v0.25.0) \cite{mlxtend} is the honest baseline. Its
 \texttt{frequent\_patterns} module provides Apriori, FP-Growth, FP-Max,
 and H-Mine plus \texttt{association\_rules} (support, confidence,
 lift, leverage, conviction, Zhang's metric), but as functions over a
@@ -714,9 +714,9 @@ These empirical measurements highlight a critical architectural trade-off: candi
   were benchmarked alongside \skarm and \texttt{mlxtend} across representative
   dense (Chess @ 0.85), medium (Adult Census @ 0.40), and sparse (BMS-POS @ 0.05)
   datasets (\texttt{benchmarks/baseline\_results.json}).
-  Across all evaluations, itemset discovery was strictly verified: all algorithms identified
-  the exact identical frequent itemsets ($2{,}669$, $103$, and $59$ itemsets, respectively;
-  $\Delta_{\mathrm{supp}} = 0.0$).
+  Across all evaluations, itemset discovery was strictly verified: all completed algorithm
+  comparisons produced identical frequent itemsets and support values within reported verification
+  tolerances ($2{,}669$, $103$, and $59$ itemsets, respectively; $\Delta_{\mathrm{supp}} = 0.0$).
   Subprocess execution of compiled Java implementations achieved lower raw wall-clock times
   ($0.36$--$0.63$~s on Chess, $0.42$--$0.66$~s on Adult Census, and $0.88$--$2.15$~s on BMS-POS,
   with SPMF internal algorithm-only timers recording $0.08$--$0.30$~s, $0.14$--$0.22$~s, and
@@ -726,21 +726,26 @@ These empirical measurements highlight a critical architectural trade-off: candi
   encapsulating candidate generation, itemset mining, and rule metric derivation;
   (2)~SPMF measures end-to-end Java CLI subprocess invocation, encompassing process spawning,
   JVM startup, reading input files from disk, algorithm execution, and writing output files to disk;
-  (3)~\texttt{mlxtend} executes procedural functions over pre-materialized dense boolean DataFrames, omitting the
-  memory-intensive sparse-to-dense conversion that caused it to be omitted on BMS-POS ($814.8$~MB dense footprint).
+  (3)~\texttt{mlxtend} (v0.25.0) executes procedural functions over pre-materialized dense boolean DataFrames, omitting the
+  memory-intensive sparse-to-dense conversion; two BMS-POS mlxtend runs (Apriori and FP-Growth) were skipped due to dense-memory limits ($814.8$~MB dense footprint exceeding the $500$~MB safety budget).
   Crucially, \skarm provides native Python and scikit-learn estimator integration, full \texttt{Pipeline} support,
   and auditable bounded-search resource governors that prevent uncontrolled memory exhaustion.
   \item \textbf{Estimator API verification.} Compliance with scikit-learn's
   estimator protocol was verified directly: \texttt{Association\allowbreak{}Rules\allowbreak{}Estimator}
-  implements \texttt{get\_params()}, \texttt{set\_params()}, is cloneable
+  implements \texttt{fit()}, \texttt{transform()}, \texttt{predict()} (for transactional basket recommendation),
+  \texttt{get\_params()}, and \texttt{set\_params()}, is cloneable
   via \texttt{sklearn.base.clone()}, supports Python \texttt{pickle} serialization,
   and operates inside scikit-learn \texttt{Pipeline} and \texttt{GridSearchCV} workflows
-  under scikit-learn 1.9.1 (targeting the $\ge 1.3$ API specification). Running
-  \texttt{sklearn.\allowbreak{}utils.\allowbreak{}estimator\_checks.\allowbreak{}check\_estimator} raises an assertion
-  mandating a supervised \texttt{predict()} method. As established in
-  scikit-learn issues \#32712 and \#2662, pattern mining is unsupervised
-  pattern discovery rather than supervised classification; \skarm adheres
-  to the unsupervised estimator protocol.
+  under scikit-learn 1.9.1 (targeting the $\ge 1.3$ API specification). Under
+  \texttt{sklearn.\allowbreak{}utils.\allowbreak{}estimator\_checks.\allowbreak{}check\_estimator}, an automated audit
+  yields 13 passed checks, 40 expected domain-specific incompatibilities, 1 environment-skipped check
+  (\texttt{check\_array\_api\_input}), and 0 unexpected failures, as documented in \texttt{docs/SKLEARN\_COMPATIBILITY\_REPORT.md}.
+  Failures under standard checks arise because generic test generators synthesize continuous Gaussian float matrices rejected by \skarm's
+  binary transactional contract and expect 1D supervised target vectors $y$, whereas \skarm produces
+  unsupervised transactional recommendation outputs. As established in scikit-learn issues \#32712
+  and \#2662, association rule mining is unsupervised pattern discovery rather than supervised classification;
+  \skarm adheres to scikit-learn's object and parameter lifecycle conventions without
+  imposing synthetic supervised prediction semantics.
   \item \textbf{Dataset provenance limits.} Mirror licences are recorded
   as unknown where unstated, never guessed; two stored files differ
   from commonly cited counts (Section~\ref{sec:data}) and the measured
@@ -798,6 +803,7 @@ per-dataset checkpoint files, and trial records from different machines
 must never be merged into one results file.
 Results commit \texttt{ea5bff5d} (repository \texttt{benchmarks/campaign\_results.json} plus \texttt{benchmarks/cells/} with 25 per-dataset checkpoint files). Machine and library versions are as in Section~5. The campaign report file (\texttt{benchmarks/CAMPAIGN\_REPORT.md}) states COMPLETE. Note: \texttt{skarm/fpgrowth.py} in the repository carries a tail-pointer optimisation (O(1) node-link appends) added with the final two datasets; it changes no results (all correctness pairs agree exactly) and the methods section describes the code as it now stands. \texttt{benchmarks/thresholds.json} holds the matched ladder.
 Confirmed 2026-10-30 from the repository listing: \texttt{{data/}} holds 26 files --- all 25 dataset files plus \texttt{{generate\_synthetic.py}}. All 25 datasets in Table~2 are present; no data file is missing.
+The external modern-miner baseline benchmark campaign (Section~\ref{sec:limitations}) evaluates 3 representative datasets (dense Chess @ 0.85, medium-density Adult Census @ 0.40, and sparse BMS-POS @ 0.05) across \skarm (Apriori, FP-Growth, Eclat), \texttt{mlxtend} (v0.25.0; Apriori, FP-Growth), and SPMF Java 21 miners (\textsc{FIN}, \textsc{PrePost+}, \textsc{LCMFreq}, and \textsc{FP-Growth}) using \texttt{benchmarks/run\_baselines.py}. Full structured outputs reside in \texttt{benchmarks/baseline\_results.json}. Benchmark timings were measured on commit \texttt{ea5bff5d} (2026-11-01T18:59:27Z; \skarm Apriori/FP-Growth/Eclat: $9.53$/$6.26$/$6.28$~s on Chess, $1.14$/$2.14$/$0.39$~s on Adult Census, and $68.49$/$43.84$/$8.10$~s on BMS-POS). Mathematical itemset equivalence across all 25 completed comparisons ($\Delta_{\mathrm{supp}} = 0.0$) was independently re-verified on commit \texttt{564a7063} (2026-11-02T14:35:02Z) using the canonical itemsets cross-comparison oracle in \texttt{scripts/verify\_challenger\_m5\_baselines.py}. Two \texttt{mlxtend} runs on BMS-POS were skipped by the memory governor due to an $814.8$~MB dense matrix footprint exceeding the 500~MB safety threshold.
 
 \onecolumn
 \section{Full cell-level timing table}

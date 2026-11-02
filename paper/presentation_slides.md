@@ -121,7 +121,7 @@ All 6 failure modes mandated by the project charter were explicitly audited:
 ---
 
 ### Slide 10: Deliverables & KPI Scorecard Summary
-- **Test Suite**: 216 automated tests collected (76 unit/regression/compatibility + 88 5-tier independent E2E + 52 integration tests; 100% pass rate across verified environments).
+- **Test Suite**: 257 automated tests collected (169 unit/integration/challenge/compatibility + 88 5-tier independent E2E tests; 100% pass rate across verified environments).
 - **Independent Acceptance Harness**: All 4 conditions (AC-1 to AC-4) satisfied with 100.0/100 rubric score.
 - **Empirical Evaluation**: 25 benchmark datasets, 1,650 trial executions, 100% exact itemset agreement across all 157 engine pairs.
 - **Institutional Deliverables**: Complete documents D1 through D7 submitted.

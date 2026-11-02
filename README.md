@@ -2,7 +2,7 @@
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 [![scikit-learn Compatible](https://img.shields.io/badge/scikit--learn-compatible-orange.svg)](https://scikit-learn.org/)
-[![Tests Passing](https://img.shields.io/badge/tests-216%20passed%20(100%25%20pass%20rate)-brightgreen.svg)]()
+[![Tests: 257](https://img.shields.io/badge/tests-257%20passing-brightgreen)](#)
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](LICENSE)
 
 > **KL University Capstone Project Framework: KLCAP-2026-00340**  
@@ -129,7 +129,7 @@ python -m skarm.cli --dataset retail --min-support 0.02 --algorithm eclat --top-
 
 ## Verification & Multi-Tier Test Suite
  
-Run the comprehensive test suite (216 automated tests: 76 unit/regression/compatibility + 88 5-tier E2E + 52 integration):
+Run the comprehensive test suite (257 automated tests: 169 unit/integration/challenge + 88 5-tier E2E):
 ```bash
 pytest -v
 ```
@@ -167,10 +167,10 @@ python benchmarks/run_benchmarks.py
 ---
 
 ## Deliverables Index
-- [D1: Project Charter & System Architecture](file:///c:/Users/ak612/OneDrive/Desktop/capstone/docs/D1_PROBLEM_CHARTER_AND_SPECIFICATION.md)
-- [D2: CP1 Apriori Baseline Evaluation](file:///c:/Users/ak612/OneDrive/Desktop/capstone/docs/D2_CP1_APRIORI_BASELINE_EVALUATION.md)
-- [D3: CP2 Contributions & Trade-offs](file:///c:/Users/ak612/OneDrive/Desktop/capstone/docs/D3_CP2_CONTRIBUTION_AND_TRADEOFFS.md)
-- [D4: System Integration & Operability](file:///c:/Users/ak612/OneDrive/Desktop/capstone/docs/D4_SYSTEM_INTEGRATION_AND_OPERABILITY.md)
-- [D5: Independent Acceptance & NT-1..6 Audit](file:///c:/Users/ak612/OneDrive/Desktop/capstone/docs/D5_ACCEPTANCE_TEST_REPORT_AND_KPIS.md)
-- [D6: Reproducibility Runbook](file:///c:/Users/ak612/OneDrive/Desktop/capstone/docs/D6_REPRODUCIBILITY_RUNBOOK.md)
-- [D7: Viva Defense & Portfolio Dossier](file:///c:/Users/ak612/OneDrive/Desktop/capstone/docs/D7_EXECUTIVE_DEFENSE_AND_PORTFOLIO.md)
+- [D1: Project Charter & System Architecture](docs/D1_PROBLEM_CHARTER_AND_SPECIFICATION.md)
+- [D2: CP1 Apriori Baseline Evaluation](docs/D2_CP1_APRIORI_BASELINE_EVALUATION.md)
+- [D3: CP2 Contributions & Trade-offs](docs/D3_CP2_CONTRIBUTION_AND_TRADEOFFS.md)
+- [D4: System Integration & Operability](docs/D4_SYSTEM_INTEGRATION_AND_OPERABILITY.md)
+- [D5: Independent Acceptance & NT-1..6 Audit](docs/D5_ACCEPTANCE_TEST_REPORT_AND_KPIS.md)
+- [D6: Reproducibility Runbook](docs/D6_REPRODUCIBILITY_RUNBOOK.md)
+- [D7: Viva Defense & Portfolio Dossier](docs/D7_EXECUTIVE_DEFENSE_AND_PORTFOLIO.md)

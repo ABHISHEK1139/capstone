@@ -411,11 +411,17 @@ def run_comparative_baselines(
     except Exception:
         java_version = "Java 21"
 
+    current_utc = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     results: Dict[str, Any] = {
         "metadata": {
             "title": "SKARM External Modern Miner and Framework Baselines Benchmark",
-            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "timestamp": current_utc,
             "git_commit": git_commit,
+            "measurement_commit": "ea5bff5d657639298b197074ab35bd4bb7bb7a37",
+            "measurement_timestamp": "2026-11-01T18:59:27Z",
+            "verification_commit": git_commit,
+            "verification_timestamp": current_utc,
+            "verification_method": "canonical_itemsets_cross_comparison",
             "platform": f"{platform.machine()}, {platform.system()} {platform.release()}",
             "python_version": sys.version.split()[0],
             "java_version": java_version,
@@ -528,8 +534,8 @@ def run_comparative_baselines(
                 rec["itemsets_count_match"] = (rec["n_itemsets"] == cfg["expected_itemsets"])
                 rec["itemsets_identity_match"] = None
                 rec["max_delta_support"] = None
-                rec["exact_match"] = rec["itemsets_count_match"]
-                rec["itemsets_match"] = rec["exact_match"]
+                rec["exact_match"] = None
+                rec["itemsets_match"] = None
             else:
                 rec["itemsets_count_match"] = None
                 rec["itemsets_identity_match"] = None
@@ -538,8 +544,14 @@ def run_comparative_baselines(
                 rec["itemsets_match"] = None
 
             if verbose and rec.get("status") == "OK":
-                delta_str = f"Delta_supp={rec.get('max_delta_support', 0.0)}" if rec.get("max_delta_support") is not None else "count-only"
-                match_str = f"EXACT MATCH ({delta_str})" if rec["exact_match"] else "MISMATCH"
+                if rec["exact_match"] is True:
+                    delta_str = f"Delta_supp={rec.get('max_delta_support', 0.0)}"
+                    match_str = f"EXACT MATCH ({delta_str})"
+                elif rec["exact_match"] is False:
+                    match_str = "MISMATCH"
+                else:
+                    count_status = "COUNT MATCH" if rec["itemsets_count_match"] else "COUNT MISMATCH"
+                    match_str = f"{count_status} (unverified identity)"
                 print(f"  Verified {rec['framework']:7s} {rec['algorithm']:16s}: {rec['n_itemsets']:5d} itemsets [{match_str}]")
 
         results["datasets"][name] = {

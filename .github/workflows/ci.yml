@@ -30,7 +30,7 @@ jobs:
           pip install -r requirements.txt
           pip install pytest
 
-      - name: "Run Pytest Suite (163 Tests: 75 Unit + 88 E2E)"
+      - name: Run Pytest Suite
         run: |
           pytest -v tests/
 
