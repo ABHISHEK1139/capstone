@@ -16,7 +16,7 @@ def _is_missing_token(item: Any) -> bool:
     return False
 
 
-class TransactionEncoder(BaseEstimator, TransformerMixin):
+class TransactionEncoder(TransformerMixin, BaseEstimator):
     """Encodes transactions (iterables of items) into one-hot boolean matrices.
 
     Converts transaction data into a binary indicator matrix where each row

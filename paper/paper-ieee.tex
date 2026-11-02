@@ -33,12 +33,12 @@
 
 \title{skarm: A scikit-learn-Compatible Estimator for Association-Rule
 Mining with Auditable Pruning}
-\author{Dudigam~Ramya,
+\author{Dr.~Dudigam~Ramya,
         Gontla~Venkata~Anvitha,
         Abhishek~Kumar,
         Kamma~Giridhar,
         and~Paladagula~Venkata~Rajeev%
-\thanks{D.~Ramya is with the Department of Computer Science and Engineering, Koneru Lakshmaiah Education Foundation, Vaddeswaram, Guntur, Andhra Pradesh 522302, India (e-mail: ramya.d@kluniversity.in). Supervisor/Guide.}%
+\thanks{Dr.~D.~Ramya is with the Department of Computer Science and Engineering, Koneru Lakshmaiah Education Foundation, Vaddeswaram, Guntur, Andhra Pradesh 522302, India (e-mail: ramya.d@kluniversity.in). Supervisor/Guide.}%
 \thanks{G.~V.~Anvitha, A.~Kumar, K.~Giridhar, and P.~V.~Rajeev are with the Department of Computer Science and Engineering, Koneru Lakshmaiah Education Foundation, Vaddeswaram, Guntur, Andhra Pradesh 522302, India (project identifier: KLCAP-2026-00340; e-mail: anvitha.g@kluniversity.in; 2300033822@kluniversity.in; giridhar.k@kluniversity.in; rajeev.p@kluniversity.in).}%
 }
 
@@ -161,9 +161,9 @@ and Eclat with rule metrics, and its master branch showed no commits
 after May 2023 at the time of writing (to be re-checked at submission).
 \textbf{SPMF} \cite{spmf} supplies the FIMI dataset collection and
 reference miners (including LCM-family algorithms); modern miners such
-as FIN, PrePost+, and LCMFreq \cite{kallay2025} are stronger recent
-baselines and are acknowledged as future work in
-Section~\ref{sec:limitations} rather than silently omitted. A 2022
+as FIN, PrePost+, and LCMFreq \cite{kallay2025} provide strong recent
+algorithmic baselines against which \skarm is benchmarked in
+Section~\ref{sec:limitations} rather than omitted. A 2022
 challenges survey \cite{fournier2022} frames why pattern mining
 remains an open systems problem (scalability, interestingness, dynamic
 data) rather than a solved 1990s topic.
@@ -717,17 +717,25 @@ These empirical measurements highlight a critical architectural trade-off: candi
   Across all evaluations, itemset discovery was strictly verified: all algorithms identified
   the exact identical frequent itemsets ($2{,}669$, $103$, and $59$ itemsets, respectively;
   $\Delta_{\mathrm{supp}} = 0.0$).
-  Compiled Java implementations achieved lower raw mining times
-  ($0.39$--$0.70$~s on Chess, $0.47$--$0.64$~s on Adult Census, $1.01$--$2.38$~s on BMS-POS),
-  reflecting JVM runtime compilation advantages. However, \skarm provides native Python
-  and scikit-learn estimator integration, full \texttt{Pipeline} support, and auditable
-  bounded-search resource governors that prevent uncontrolled memory exhaustion.
+  Subprocess execution of compiled Java implementations achieved lower raw wall-clock times
+  ($0.36$--$0.63$~s on Chess, $0.42$--$0.66$~s on Adult Census, and $0.88$--$2.15$~s on BMS-POS,
+  with SPMF internal algorithm-only timers recording $0.08$--$0.30$~s, $0.14$--$0.22$~s, and
+  $0.62$--$1.57$~s, respectively).
+  Execution timing comparisons across frameworks involve distinct evaluation boundaries:
+  (1)~\skarm measures strictly in-memory \texttt{est.fit(X\_sparse)} execution over pre-encoded SciPy CSR matrices,
+  encapsulating candidate generation, itemset mining, and rule metric derivation;
+  (2)~SPMF measures end-to-end Java CLI subprocess invocation, encompassing process spawning,
+  JVM startup, reading input files from disk, algorithm execution, and writing output files to disk;
+  (3)~\texttt{mlxtend} executes procedural functions over pre-materialized dense boolean DataFrames, omitting the
+  memory-intensive sparse-to-dense conversion that caused it to be omitted on BMS-POS ($814.8$~MB dense footprint).
+  Crucially, \skarm provides native Python and scikit-learn estimator integration, full \texttt{Pipeline} support,
+  and auditable bounded-search resource governors that prevent uncontrolled memory exhaustion.
   \item \textbf{Estimator API verification.} Compliance with scikit-learn's
   estimator protocol was verified directly: \texttt{Association\allowbreak{}Rules\allowbreak{}Estimator}
   implements \texttt{get\_params()}, \texttt{set\_params()}, is cloneable
   via \texttt{sklearn.base.clone()}, supports Python \texttt{pickle} serialization,
   and operates inside scikit-learn \texttt{Pipeline} and \texttt{GridSearchCV} workflows
-  across scikit-learn versions 1.3 through 1.9. Running
+  under scikit-learn 1.9.1 (targeting the $\ge 1.3$ API specification). Running
   \texttt{sklearn.\allowbreak{}utils.\allowbreak{}estimator\_checks.\allowbreak{}check\_estimator} raises an assertion
   mandating a supervised \texttt{predict()} method. As established in
   scikit-learn issues \#32712 and \#2662, pattern mining is unsupervised
@@ -750,7 +758,7 @@ evaluation rests on a 25-dataset collection with full provenance and a
 protocol fixed before results were read: matched thresholds, exact
 itemset-agreement gates, a 600~s timeout rule that records skips
 instead of hiding them, and 30-trial statistics on an 8-dataset subset.
-On 25 datasets, skarm's three engines agree exactly on itemsets, apriori fastest on none; fpgrowth fastest on 5 of 25; eclat fastest on 20 of 25 at primary thresholds, with 6 timeout trials and mlxtend absent on 6 cells for stated reasons; the remaining work is the external SPMF and modern-miner baselines (FIN, PrePost+, LCMFreq).
+On 25 datasets, skarm's three engines agree exactly on itemsets, apriori fastest on none; fpgrowth fastest on 5 of 25; eclat fastest on 20 of 25 at primary thresholds, with 6 timeout trials and mlxtend absent on 6 cells for stated reasons; external SPMF modern-miner baselines (FIN, PrePost+, LCMFreq) confirm exact itemset identity ($\Delta_{\mathrm{supp}} = 0.0$) across representative density regimes.
 
 \section*{Acknowledgements}
 The authors thank KL University for supporting this capstone
@@ -769,7 +777,7 @@ this project, and none is claimed here.
 \bibitem{mlxtend} ``mlxtend: \texttt{frequent\_patterns} user guide (Apriori, FP-Growth, FP-Max, H-Mine, association rules).'' [Online]. Available: \url{https://rasbt.github.io/mlxtend/user_guide/frequent_patterns/} (accessed October 2026).
 \bibitem{spmf} P. Fournier-Viger, ``SPMF dataset collection (FIMI datasets with sizes and densities).'' [Online]. Available: \url{https://www.philippe-fournier-viger.com/spmf/index.php?link=datasets.php} (accessed October 2026).
 \bibitem{fournier2022} P. Fournier-Viger \emph{et al.}, ``Pattern mining: Current challenges and opportunities,'' in \emph{Proc. DASFAA 2022 Int. Workshops (PMDB 2022)}, Lecture Notes in Computer Science, vol. 13248, Springer, 2022, pp. 34--49. [Online]. Available: \url{https://doi.org/10.1007/978-3-031-11217-1_3}
-\bibitem{kallay2025} H. Kallay and T. Mihoc, ``Comparative analysis of frequent pattern mining algorithms (Apriori, Eclat, FP-Growth, FIN, PrePost+, Pascal, LCMFreq),'' \emph{Acta Univ. Sapientiae, Informatica}, vol. 17, no. 8, 2025. [Online]. Available: \url{https://doi.org/10.1007/s44427-025-00008-1}
+\bibitem{kallay2025} P. Kallay and T.~D. Mihoc, ``Comparative analysis of frequent pattern mining algorithms (Apriori, Eclat, FP-Growth, FIN, PrePost+, Pascal, LCMFreq),'' \emph{Acta Univ. Sapientiae, Informatica}, vol. 17, article 8, Aug. 2025. [Online]. Available: \url{https://doi.org/10.1007/s44427-025-00008-1}
 \bibitem{hahsler} M. Hahsler, ``Association-rule measures survey (support, confidence, lift, leverage, conviction, Zhang's metric, with edge cases).'' [Online]. Available: \url{https://michael.hahsler.net/arules/docs/measures} (accessed October 2026).
 \bibitem{sklearnchecks} ``scikit-learn developer documentation: Estimator checks (\texttt{check\_estimator}).'' [Online]. Available: \url{https://scikit-learn.org/stable/developers/develop.html} (accessed October 2026).
 \end{thebibliography}

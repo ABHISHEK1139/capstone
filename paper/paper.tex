@@ -208,7 +208,7 @@ Table~\ref{tab:ecosystem} provides a comparative analysis of \skarm against exis
 \end{tabular}
 \end{table*}
 
-\textbf{mlxtend} \cite{mlxtend} is the primary Python baseline. However, its \texttt{frequent\_patterns} module exposes procedural functions requiring dense pandas DataFrames, lacks Eclat, does not provide candidate-explosion safety governors, and does not implement scikit-learn estimator methods (\texttt{get\_params}, \texttt{set\_params}, \texttt{clone}). \textbf{scikit-mine} \cite{scikitmine} addresses pattern compression (SLIM, MDL) and maximal itemset discovery (LCMMax), but omits standard association rule generation and classic Apriori/FP-Growth/Eclat implementations. \textbf{SPMF} \cite{spmf} offers an extensive catalog of Java miners and benchmarks, serving as a valuable cross-language reference, but cannot be imported natively within Python data science workflows. Modern specialized miners such as FIN, PrePost+, and LCMFreq \cite{kallay2025} provide advanced search optimizations and are identified as compelling targets for future engine integration.
+\textbf{mlxtend} \cite{mlxtend} is the primary Python baseline. However, its \texttt{frequent\_patterns} module exposes procedural functions requiring dense pandas DataFrames, lacks Eclat, does not provide candidate-explosion safety governors, and does not implement scikit-learn estimator methods (\texttt{get\_params}, \texttt{set\_params}, \texttt{clone}). \textbf{scikit-mine} \cite{scikitmine} addresses pattern compression (SLIM, MDL) and maximal itemset discovery (LCMMax), but omits standard association rule generation and classic Apriori/FP-Growth/Eclat implementations. \textbf{SPMF} \cite{spmf} offers an extensive catalog of Java miners and benchmarks, serving as a valuable cross-language reference, but cannot be imported natively within Python data science workflows. Modern specialized miners such as FIN, PrePost+, and LCMFreq \cite{kallay2025} provide advanced search optimizations and serve as comparative external baselines in Section~\ref{sec:limitations}.
 
 \subsection{Architectural Differentiation of \skarm}
 \skarm does not propose a new combinatorial search heuristic. Instead, its research contribution is an architectural, resource-aware framework that: (1) unifies three canonical mining paradigms behind an identical scikit-learn estimator interface, (2) provides an auditable execution contract that guarantees exactness or honestly signals bounded degradation, and (3) delivers granular system and algorithmic telemetry.
@@ -739,17 +739,25 @@ On Adult Census ($N=32{,}561$, $\sigma=0.40$, exact baseline $103$ itemsets and 
   Across all evaluations, itemset discovery was strictly verified: all algorithms identified
   the exact identical frequent itemsets ($2{,}669$, $103$, and $59$ itemsets, respectively;
   $\Delta_{\mathrm{supp}} = 0.0$).
-  Compiled Java implementations achieved lower raw mining times
-  ($0.39$--$0.70$~s on Chess, $0.47$--$0.64$~s on Adult Census, $1.01$--$2.38$~s on BMS-POS),
-  reflecting JVM runtime compilation advantages. However, \skarm provides native Python
-  and scikit-learn estimator integration, full \texttt{Pipeline} support, and auditable
-  bounded-search resource governors that prevent uncontrolled memory exhaustion.
+  Subprocess execution of compiled Java implementations achieved lower raw wall-clock times
+  ($0.36$--$0.63$~s on Chess, $0.42$--$0.66$~s on Adult Census, and $0.88$--$2.15$~s on BMS-POS,
+  with SPMF internal algorithm-only timers recording $0.08$--$0.30$~s, $0.14$--$0.22$~s, and
+  $0.62$--$1.57$~s, respectively).
+  Execution timing comparisons across frameworks involve distinct evaluation boundaries:
+  (1)~\skarm measures strictly in-memory \texttt{est.fit(X\_sparse)} execution over pre-encoded SciPy CSR matrices,
+  encapsulating candidate generation, itemset mining, and rule metric derivation;
+  (2)~SPMF measures end-to-end Java CLI subprocess invocation, encompassing process spawning,
+  JVM startup, reading input files from disk, algorithm execution, and writing output files to disk;
+  (3)~\texttt{mlxtend} executes procedural functions over pre-materialized dense boolean DataFrames, omitting the
+  memory-intensive sparse-to-dense conversion that caused it to be omitted on BMS-POS ($814.8$~MB dense footprint).
+  Crucially, \skarm provides native Python and scikit-learn estimator integration, full \texttt{Pipeline} support,
+  and auditable bounded-search resource governors that prevent uncontrolled memory exhaustion.
   \item \textbf{Estimator API verification.} Compliance with scikit-learn's
   estimator protocol was verified directly: \texttt{Association\allowbreak{}Rules\allowbreak{}Estimator}
   implements \texttt{get\_params()}, \texttt{set\_params()}, is cloneable
   via \texttt{sklearn.base.clone()}, supports Python \texttt{pickle} serialization,
   and operates inside scikit-learn \texttt{Pipeline} and \texttt{GridSearchCV} workflows
-  across scikit-learn versions 1.3 through 1.9. Running
+  under scikit-learn 1.9.1 (targeting the $\ge 1.3$ API specification). Running
   \texttt{sklearn.\allowbreak{}utils.\allowbreak{}estimator\_checks.\allowbreak{}check\_estimator} raises an assertion
   mandating a supervised \texttt{predict()} method. As established in
   scikit-learn issues \#32712 and \#2662, pattern mining is unsupervised
@@ -779,7 +787,7 @@ evaluation rests on a 25-dataset collection with full provenance and a
 protocol fixed before results were read: matched thresholds, exact
 itemset-agreement gates, a 600~s timeout rule that records skips
 instead of hiding them, and 30-trial statistics on an 8-dataset subset.
-On 25 datasets, skarm's three engines agree exactly on itemsets, apriori fastest on none; fpgrowth fastest on 5 of 25; eclat fastest on 20 of 25 at primary thresholds, with 6 timeout trials and mlxtend absent on 6 cells for stated reasons; the bounded-search ablation demonstrates up to $15.56\times$ speedups under auditable degradation across Chess, Adult, and BMS-POS, with remaining work focused on external SPMF and modern-miner baseline comparisons (FIN, PrePost+, LCMFreq).
+On 25 datasets, skarm's three engines agree exactly on itemsets, apriori fastest on none; fpgrowth fastest on 5 of 25; eclat fastest on 20 of 25 at primary thresholds, with 6 timeout trials and mlxtend absent on 6 cells for stated reasons; the bounded-search ablation demonstrates up to $15.56\times$ speedups under auditable degradation across Chess, Adult, and BMS-POS, while comparative evaluations against external SPMF and modern-miner baselines (FIN, PrePost+, LCMFreq) confirm exact itemset identity ($\Delta_{\mathrm{supp}} = 0.0$) across representative density regimes.
 
 \section*{Acknowledgements}
 The authors thank KL University for supporting this capstone
@@ -831,8 +839,8 @@ Workshops (PMDB 2022)}, Lecture Notes in Computer Science, vol.~13248,
 Springer, 2022, pp.~34--49. \url{https://doi.org/10.1007/978-3-031-11217-1_3}
 \bibitem{kallay2025} Kallay, P. and Mihoc, T.~D. Comparative analysis of
 frequent pattern mining algorithms (Apriori, Eclat, FP-Growth, FIN,
-PrePost+, Pascal, LCMFreq). \emph{Acta Universitatis Sapientiae, Informatica}
-17(8), 2025. \url{https://doi.org/10.1007/s44427-025-00008-1}
+PrePost+, Pascal, LCMFreq). \emph{Acta Universitatis Sapientiae, Informatica},
+vol.~17, article~8, Aug.~2025. \url{https://doi.org/10.1007/s44427-025-00008-1}
 \bibitem{hahsler} Hahsler, M. Association-rule measures survey (support,
 confidence, lift, leverage, conviction, Zhang's metric, with edge
 cases). \url{https://michael.hahsler.net/arules/docs/measures}

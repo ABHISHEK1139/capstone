@@ -11,7 +11,7 @@
 While the Apriori baseline is theoretically elegant, it generates explosive candidate counts ($C_k$) in dense transactional workloads. To overcome this fundamental bottleneck, CP2 delivers three core engineering contributions:
 
 1. **FP-Growth Miner ([`skarm.fpgrowth`](file:///c:/Users/ak612/OneDrive/Desktop/capstone/skarm/fpgrowth.py))**: Eliminates explicit candidate generation ($C_k = \emptyset$) by encoding transactions into a prefix tree (FP-Tree) with frequency-ordered path compression and mining frequent patterns via recursive conditional pattern bases.
-2. **Eclat Vertical Miner ([`skarm.eclat`](file:///c:/Users/ak612/OneDrive/Desktop/capstone/skarm/eclat.py))**: Employs vertical transaction identification (TID) lists, converting support counting from multi-pass dataset scans into direct set/bitset intersections.
+2. **Eclat Vertical Miner ([`skarm.eclat`](file:///c:/Users/ak612/OneDrive/Desktop/capstone/skarm/eclat.py))**: Employs vertical transaction identification (TID) lists, converting support counting from multi-pass dataset scans into direct Python `set` intersections.
 3. **Safety & Pruning Policy Engine ([`skarm.pruning`](file:///c:/Users/ak612/OneDrive/Desktop/capstone/skarm/pruning.py))**: Implements real-time candidate bounding (`max_candidates`), maximum length control (`max_len`), and safe degradation modes (NT-1, NT-6) to protect against memory exhaustion.
 
 ---
@@ -63,9 +63,10 @@ Benchmarked across synthetic and real transaction scales under identical hardwar
 | **Dense Data ($> 60\%$ ones)** | Fails (candidate explosion) | **Superior (tree compression)** | Moderate (large TID sets) |
 | **Memory Footprint** | Low for small items | Moderate (node links) | Moderate to High |
 | **Simplicity & Auditability** | High | Medium | High |
-| **Automatic Selection** | Baseline benchmark | Chosen for dense inputs | Chosen for sparse CSR inputs |
+| **Automatic Selection** | Baseline benchmark | Chosen for dense inputs (density $\ge 0.15$) | Chosen for sparse inputs (sparsity $\ge 85\%$, density $< 0.15$) |
 
-In `AssociationRulesEstimator(algorithm='auto')`, the engine inspects input matrix sparsity:
-- If `scipy.sparse.issparse(X)` or sparsity $> 85\%$, it routes to **Eclat**.
-- Otherwise, it routes to **FP-Growth** for dense tree compression.
+In `AssociationRulesEstimator(algorithm='auto')`, the engine calculates exact matrix density:
+$$\text{Density} = \frac{\text{nnz}}{N \times M}, \quad \text{Sparsity} = 1.0 - \text{Density}$$
+- If sparsity $\ge 85\%$ (density $\le 0.15$), it routes to **Eclat** (fast vertical TID-list intersections over compact transaction lists), regardless of whether stored as a sparse SciPy matrix or dense NumPy array.
+- Otherwise (density $> 0.15$), it routes to **FP-Growth** for prefix-tree compression.
 - Apriori is preserved for verifiable baseline replication.

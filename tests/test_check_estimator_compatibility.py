@@ -49,8 +49,6 @@ EXPECTED_FAILED_CHECKS = {
     "check_estimator_sparse_matrix": "Custom sparse matrix validation formatting for binary scipy.sparse matrices.",
     "check_sample_weight_equivalence_on_sparse_data": "Support weighting semantics on sparse matrices vs dense matrices under duplicate rows.",
 
-    # Class inheritance / mixin architecture
-    "check_mixin_order": "TransformerMixin class declaration ordering in AssociationRulesEstimator hierarchy.",
 }
 
 

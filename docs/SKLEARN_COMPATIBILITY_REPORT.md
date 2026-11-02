@@ -13,8 +13,8 @@
 Scikit-learn provides an automated test harness, `sklearn.utils.estimator_checks.check_estimator`, designed to verify that custom estimators conform to core scikit-learn conventions (constructor purity, parameter immutability, `get_params`/`set_params` invariance, cloning, estimator tags, and state lifecycle).
 
 When invoked on `AssociationRulesEstimator()`, `check_estimator` yields **53 checks** (54 test executions, 1 environment-skipped check `check_array_api_input`).
-- **Passed Checks**: **12 passed** (structural API, constructor, cloning, tags, and immutability checks).
-- **Expected Boundary Failures**: **41 checks** (certified domain incompatibilities where standard scikit-learn checks violate the mathematical invariants of frequent-itemset and association-rule mining).
+- **Passed Checks**: **13 passed** (100% of Core Structural & Estimator API checks).
+- **Expected Boundary Failures**: **40 checks** (certified domain incompatibilities where standard scikit-learn checks violate the mathematical invariants of frequent-itemset and association-rule mining).
 - **Unexpected Failures**: **0** (100% compliance against certified `EXPECTED_FAILED_CHECKS`).
 
 This document records the mathematical justification for each category of expected failure, validating that these failures represent certified domain boundaries rather than implementation defects.
@@ -25,13 +25,13 @@ This document records the mathematical justification for each category of expect
 
 | Check Category | Total Yielded | Passed | Expected Failures | Pass Rate (Adjusted) |
 |---|---|---|---|---|
-| **Core Structural & Estimator API** | 13 | 12 | 1 (Mixin order) | 92.3% |
+| **Core Structural & Estimator API** | 13 | 13 | 0 | 100.0% |
 | **Continuous / Non-Binary Data Rejection** | 26 | 0 | 26 | 100% Boundary Rejection |
 | **Supervised Prediction ($y$) Semantics** | 4 | 0 | 4 | 100% Domain Invariance |
 | **Synthetic Mock Containers** | 2 | 0 | 2 | 100% Transaction Stream Guard |
 | **Custom Boundary Condition Formatting** | 8 | 0 | 8 | 100% Custom Exception Guard |
 | **Environment Skipped** | 1 | — | — | (SCIPY_ARRAY_API unset) |
-| **Total** | **54** | **12** | **41** | **0 Unexpected Failures** |
+| **Total** | **54** | **13** | **40** | **0 Unexpected Failures** |
 
 ---
 
@@ -58,10 +58,6 @@ This document records the mathematical justification for each category of expect
 - **Checks Affected**: `check_all_zero_sample_weights_error`, `check_complex_data`, `check_estimators_empty_data_messages`, `check_fit2d_1sample`, `check_fit2d_1feature`, `check_fit1d`, `check_estimator_sparse_array`, `check_estimator_sparse_matrix`.
 - **Root Cause**: Scikit-learn checks assert specific regular expression strings originating from `sklearn.utils.check_array`.
 - **Domain Justification**: `skarm` implements dedicated domain guardrails, raising descriptive `BoundaryConditionError` and domain-specific `ValueError` exceptions (e.g., distinguishing single-item transaction universes or empty itemset spaces).
-
-### 3.5 Category 5: Class Mixin Inheritance Ordering (1 Check)
-- **Check Affected**: `check_mixin_order`.
-- **Root Cause**: Scikit-learn's mixin inspector validates declaration order for standard estimators. `AssociationRulesEstimator(BaseEstimator, TransformerMixin)` inherits cleanly and provides all `TransformerMixin` capabilities (`fit_transform`).
 
 ---
 
@@ -113,9 +109,6 @@ EXPECTED_FAILED_CHECKS = {
     "check_estimator_sparse_array": "Custom sparse matrix validation formatting for binary scipy.sparse matrices.",
     "check_estimator_sparse_matrix": "Custom sparse matrix validation formatting for binary scipy.sparse matrices.",
     "check_sample_weight_equivalence_on_sparse_data": "Support weighting semantics on sparse matrices vs dense matrices under duplicate rows.",
-
-    # Class inheritance / mixin architecture
-    "check_mixin_order": "TransformerMixin class declaration ordering in AssociationRulesEstimator hierarchy.",
 }
 ```
 
@@ -134,4 +127,4 @@ To independently verify estimator compatibility and execution against the certif
 # 1 passed, 6 warnings in ~2.5s
 ```
 
-All 12 scikit-learn core checks pass with zero regression, and all 41 expected failures strictly align with certified domain boundaries.
+All 13 scikit-learn core checks pass with zero regression, and all 40 expected failures strictly align with certified domain boundaries.

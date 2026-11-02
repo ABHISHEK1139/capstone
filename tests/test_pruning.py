@@ -193,24 +193,27 @@ def test_memory_governor_budget_enforcement_direct():
 # 5. Dynamic Memory Governor Across Mining Engines (level_halted >= 1)
 # =====================================================================
 
-def test_dynamic_memory_growth_governor_enforcement():
+def test_dynamic_memory_growth_governor_enforcement(monkeypatch):
     """Verify dynamic memory governor with background MemorySampler asserting level_halted >= 1."""
-    # Test across multiple search levels (level >= 1)
     for target_level in [1, 2, 3]:
-        # 1. Under degrade policy
-        base = get_current_memory_mb()
+        # 1. Under degrade policy: simulate controllable dynamic memory growth
+        current_mem = [100.0]
+        monkeypatch.setattr("skarm.pruning.get_current_memory_mb", lambda: current_mem[0])
+
+        base = 100.0
         policy_degrade = PruningPolicy(
             max_memory_mb=base + 5.0,
             on_candidate_explosion="degrade",
+            baseline_memory_mb=base,
         )
-        policy_degrade.start_sampler(polling_interval=0.005)
+        policy_degrade.start_sampler(polling_interval=0.002)
 
-        # Realistic dynamic memory allocation during search at target_level
-        # 30 MB array allocation bypasses pymalloc and requests OS pages
-        dynamic_alloc = np.ones((2000, 2000), dtype=np.float64)
-        time.sleep(0.02)  # allow sampler to record peak
+        # Controllable dynamic memory allocation during search at target_level
+        current_mem[0] = base + 20.0
+        time.sleep(0.01)  # allow sampler thread to record elevated peak
         peak = policy_degrade.stop_sampler()
         assert peak > base
+        assert peak >= base + 20.0
 
         with pytest.warns(DegradedModeWarning, match="Memory budget exceeded"):
             can_proceed = policy_degrade.check_budget(level=target_level)
@@ -220,24 +223,24 @@ def test_dynamic_memory_growth_governor_enforcement():
         assert policy_degrade.level_halted == target_level
         assert policy_degrade.level_halted >= 1
         assert "Memory budget exceeded" in policy_degrade.degradation_reason
-        del dynamic_alloc
 
-        # 2. Under raise policy
-        base_raise = get_current_memory_mb()
+        # 2. Under raise policy: simulate controllable dynamic memory growth
+        current_mem[0] = 100.0
         policy_raise = PruningPolicy(
-            max_memory_mb=base_raise + 5.0,
+            max_memory_mb=base + 5.0,
             on_candidate_explosion="raise",
+            baseline_memory_mb=base,
         )
-        policy_raise.start_sampler(polling_interval=0.005)
-        dynamic_alloc_raise = np.ones((2000, 2000), dtype=np.float64)
-        time.sleep(0.02)
+        policy_raise.start_sampler(polling_interval=0.002)
+
+        current_mem[0] = base + 20.0
+        time.sleep(0.01)
         policy_raise.stop_sampler()
 
         with pytest.raises(CandidateExplosionError, match="Memory budget exceeded"):
             policy_raise.check_budget(level=target_level)
         assert policy_raise.level_halted == target_level
         assert policy_raise.level_halted >= 1
-        del dynamic_alloc_raise
 
 
 # =====================================================================

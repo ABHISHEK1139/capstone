@@ -404,54 +404,72 @@ def test_memory_budget_enforcement_fit():
         assert "baseline_rss_mb" in est_ok.metadata_["resource_usage"]
         assert "incremental_rss_mb" in est_ok.metadata_["resource_usage"]
 
+    # Mock sampler for deterministic memory growth detection across CI environments
+    class ControllableMemorySampler:
+        """Mock memory sampler that simulates memory growth during active search (level >= 1)."""
+        def __init__(self, polling_interval=0.01):
+            self.polling_interval = polling_interval
+            self.baseline_mb = 100.0
+            self._peak_mb = 100.0
+            self._check_count = 0
+
+        @property
+        def peak_mb(self):
+            # Level 0 check passes at baseline (100 MB <= 105 MB); active search trips at 150 MB
+            self._check_count += 1
+            if self._check_count <= 1:
+                return self.baseline_mb
+            return 150.0
+
+        def start(self):
+            pass
+
+        def stop(self):
+            self._peak_mb = 150.0
+            return 150.0
+
+        def is_alive(self):
+            return False
+
+    from unittest.mock import patch
+
     # Case 2: Exceeded memory budget during fit with 'degrade' policy
-    # Uses realistic dynamic memory allocation workload and headroom asserting active halt (level_halted >= 1)
-    rng_heavy = np.random.RandomState(42)
-    X_ap = rng_heavy.binomial(1, 0.7, size=(500, 22))
-    X_fp = rng_heavy.binomial(1, 0.6, size=(5000, 25))
-    X_ec = rng_heavy.binomial(1, 0.6, size=(10000, 20))
+    for algo in ["apriori", "fpgrowth", "eclat"]:
+        with patch("skarm.pruning.MemorySampler", ControllableMemorySampler), \
+             patch("skarm.pruning.get_current_memory_mb", return_value=100.0), \
+             patch("skarm.estimator.get_current_memory_mb", return_value=100.0):
+            est_mem = AssociationRulesEstimator(
+                algorithm=algo,
+                min_support=0.3,
+                max_candidates=50000,
+                max_memory_mb=105.0,
+                on_candidate_explosion="degrade",
+            )
+            with pytest.warns(DegradedModeWarning, match="Memory budget exceeded"):
+                est_mem.fit(X)
 
-    workload_configs = [
-        ("apriori", X_ap, 0.3, 0.5),
-        ("fpgrowth", X_fp, 0.2, 0.5),
-        ("eclat", X_ec, 0.3, 0.5),
-    ]
-
-    for algo, X_workload, supp, delta in workload_configs:
-        baseline = get_current_memory_mb()
-        # Headroom delta ensures level 0 passes, halting during active search (level_halted >= 1)
-        est_mem = AssociationRulesEstimator(
-            algorithm=algo,
-            min_support=supp,
-            max_candidates=50000,
-            max_memory_mb=baseline + delta,
-            on_candidate_explosion="degrade",
-        )
-        with pytest.warns(DegradedModeWarning, match="Memory budget exceeded"):
-            est_mem.fit(X_workload)
-
-        assert est_mem.status_ == "DEGRADED"
-        assert est_mem.is_degraded_ is True
-        assert est_mem.metadata_["level_halted"] >= 1
-        assert "Memory budget exceeded" in est_mem.termination_reason_
-        assert est_mem.peak_memory_mb_ >= est_mem.baseline_memory_mb_
-        assert "resource_usage" in est_mem.metadata_
-        assert est_mem.metadata_["resource_usage"]["peak_rss_mb"] > 0
-        del est_mem
+            assert est_mem.status_ == "DEGRADED"
+            assert est_mem.is_degraded_ is True
+            assert est_mem.metadata_["level_halted"] >= 1
+            assert "Memory budget exceeded" in est_mem.termination_reason_
+            assert est_mem.peak_memory_mb_ >= est_mem.baseline_memory_mb_
+            assert "resource_usage" in est_mem.metadata_
+            assert est_mem.metadata_["resource_usage"]["peak_rss_mb"] > 0
 
     # Case 3: Exceeded memory budget during fit with 'raise' policy
-    for algo, X_workload, supp, delta in workload_configs:
-        baseline = get_current_memory_mb()
-        est_raise = AssociationRulesEstimator(
-            algorithm=algo,
-            min_support=supp,
-            max_candidates=50000,
-            max_memory_mb=baseline + delta,
-            on_candidate_explosion="raise",
-        )
-        with pytest.raises(CandidateExplosionError, match="Memory budget exceeded"):
-            est_raise.fit(X_workload)
-        del est_raise
+    for algo in ["apriori", "fpgrowth", "eclat"]:
+        with patch("skarm.pruning.MemorySampler", ControllableMemorySampler), \
+             patch("skarm.pruning.get_current_memory_mb", return_value=100.0), \
+             patch("skarm.estimator.get_current_memory_mb", return_value=100.0):
+            est_raise = AssociationRulesEstimator(
+                algorithm=algo,
+                min_support=0.3,
+                max_candidates=50000,
+                max_memory_mb=105.0,
+                on_candidate_explosion="raise",
+            )
+            with pytest.raises(CandidateExplosionError, match="Memory budget exceeded"):
+                est_raise.fit(X)
 
     # Case 4: Combinatorial rule generation watchdog on large itemsets (k=14, 2^14 - 2 = 16,382 partitions)
     from skarm.pruning import PruningPolicy

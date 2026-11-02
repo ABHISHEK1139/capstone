@@ -18,7 +18,7 @@ from skarm.pruning import PruningPolicy, BoundaryConditionError, get_current_mem
 from skarm.telemetry import TelemetryLogger
 
 
-class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
+class AssociationRulesEstimator(TransformerMixin, BaseEstimator):
     """Scikit-learn compatible estimator for association rule mining.
 
     Supports Apriori, FP-Growth, and Eclat algorithms with configurable

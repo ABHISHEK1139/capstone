@@ -8,7 +8,7 @@
 
 ## 1. System Integration Overview
 
-The `skarm` library provides an end-to-end, production-grade association rule mining framework structured around standard scientific computing conventions. It connects preprocessing, pattern discovery, metric calculation, safety governance, and interactive exploration into a cohesive architecture.
+The `skarm` library provides an end-to-end, research-grade association rule mining framework structured around standard scientific computing conventions (with explicit exclusion of unattended production certification per manuscript Section 7). It connects preprocessing, pattern discovery, metric calculation, safety governance, and interactive exploration into a cohesive architecture.
 
 ### Integrated Subsystems
 1. **[`skarm.preprocessing.TransactionEncoder`](file:///c:/Users/ak612/OneDrive/Desktop/capstone/skarm/preprocessing.py)**: Scikit-learn transformer mapping raw transaction iterables to dense boolean arrays or Scipy CSR matrices.

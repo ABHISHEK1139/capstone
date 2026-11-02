@@ -45,7 +45,7 @@ SKARM is a scikit-learn-style association rule mining framework providing unifie
 | 22 | Camera-Ready LaTeX Compilation | Zero compilation errors in `paper.tex` under `miktex-pdftex.exe`, fix math unescaped `\infty` and regex text corruption | M3 | R5, Gap 22 |
 | 23 | Page 1 Layout & Snippet Fix | Remove ad-hoc `\vspace*{-1.8cm}` hack, eliminate column-breaking orphan 2-line snippet in Section 1.1 | M3 | R5, Gap 23 |
 | 24 | Restyle Figure 3 & Label Harmonization | Restyle `fptree.png` to academic slate-blue annotation; synchronize figure numbering sequence across paper and preview | M3 | R5, Gap 24 |
-| 25 | Supervisory Authorship Block | Format Ms. Dudigam Ramya (Supervisor/Guide) and student authors from KL University with code KLCAP-2026-00340 | M3 | R5, Gap 25 |
+| 25 | Supervisory Authorship Block | Format Dr. Dudigam Ramya (Supervisor/Guide) and student authors from KL University with code KLCAP-2026-00340 | M3 | R5, Gap 25 |
 | 26 | Citation Hygiene & References | Eliminate undefined citations and verify reference metadata for 12 bibitems | M3 | R5, Gap 26 |
 | 27 | Float & Table Wrapping | Fix 104 pt overfull hbox in Table 1; eliminate longtable infinite glue shrinkage in Appendix B | M3 | R5, Gap 27 |
 | 28 | Comprehensive E2E Verification Suite | Multi-tier opaque-box test suite (Tiers 1-4) verifying all requirements independently | E2E Track | Architecture |

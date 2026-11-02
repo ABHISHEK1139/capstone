@@ -57,7 +57,11 @@
           "time_seconds": 9.5298,
           "std_time_seconds": 0.4546,
           "n_itemsets": 2669,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "fpgrowth",
@@ -67,7 +71,11 @@
           "time_seconds": 6.2589,
           "std_time_seconds": 0.1752,
           "n_itemsets": 2669,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "eclat",
@@ -77,7 +85,11 @@
           "time_seconds": 6.2848,
           "std_time_seconds": 0.1086,
           "n_itemsets": 2669,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "mlxtend_apriori",
@@ -87,7 +99,11 @@
           "time_seconds": 0.2166,
           "std_time_seconds": 0.005,
           "n_itemsets": 2669,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "mlxtend_fpgrowth",
@@ -97,7 +113,11 @@
           "time_seconds": 0.6308,
           "std_time_seconds": 0.0086,
           "n_itemsets": 2669,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "FIN",
@@ -109,7 +129,11 @@
           "internal_time_seconds": 0.0967,
           "peak_memory_mb": 60.81,
           "n_itemsets": 2669,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "PrePost+",
@@ -121,7 +145,11 @@
           "internal_time_seconds": 0.0753,
           "peak_memory_mb": 53.95,
           "n_itemsets": 2669,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "LCMFreq",
@@ -133,7 +161,11 @@
           "internal_time_seconds": 0.3027,
           "peak_memory_mb": 149.78,
           "n_itemsets": 2669,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "FPGrowth_itemsets",
@@ -145,7 +177,11 @@
           "internal_time_seconds": 0.0763,
           "peak_memory_mb": 15.43,
           "n_itemsets": 2669,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         }
       ]
     },
@@ -166,7 +202,11 @@
           "time_seconds": 4.0966,
           "std_time_seconds": 0.0636,
           "n_itemsets": 103,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "fpgrowth",
@@ -176,7 +216,11 @@
           "time_seconds": 3.9643,
           "std_time_seconds": 0.1981,
           "n_itemsets": 103,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "eclat",
@@ -186,7 +230,11 @@
           "time_seconds": 2.4071,
           "std_time_seconds": 0.1261,
           "n_itemsets": 103,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "mlxtend_apriori",
@@ -196,7 +244,11 @@
           "time_seconds": 0.0576,
           "std_time_seconds": 0.007,
           "n_itemsets": 103,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "mlxtend_fpgrowth",
@@ -206,7 +258,11 @@
           "time_seconds": 2.741,
           "std_time_seconds": 0.1194,
           "n_itemsets": 103,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "FIN",
@@ -218,7 +274,11 @@
           "internal_time_seconds": 0.2167,
           "peak_memory_mb": 83.19,
           "n_itemsets": 103,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "PrePost+",
@@ -230,7 +290,11 @@
           "internal_time_seconds": 0.141,
           "peak_memory_mb": 74.03,
           "n_itemsets": 103,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "LCMFreq",
@@ -242,7 +306,11 @@
           "internal_time_seconds": 0.2083,
           "peak_memory_mb": 96.45,
           "n_itemsets": 103,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "FPGrowth_itemsets",
@@ -254,7 +322,11 @@
           "internal_time_seconds": 0.1387,
           "peak_memory_mb": 36.1,
           "n_itemsets": 103,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         }
       ]
     },
@@ -275,7 +347,11 @@
           "time_seconds": 68.4933,
           "std_time_seconds": 19.6133,
           "n_itemsets": 59,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "fpgrowth",
@@ -285,7 +361,11 @@
           "time_seconds": 43.8444,
           "std_time_seconds": 1.8568,
           "n_itemsets": 59,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "eclat",
@@ -295,7 +375,11 @@
           "time_seconds": 8.0981,
           "std_time_seconds": 0.4292,
           "n_itemsets": 59,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "mlxtend_apriori",
@@ -305,7 +389,11 @@
           "note": "Estimated dense memory 814.8 MB exceeds safe budget (>500 MB)",
           "time_seconds": null,
           "n_itemsets": null,
-          "itemsets_match": null
+          "itemsets_match": null,
+          "itemsets_count_match": null,
+          "itemsets_identity_match": null,
+          "max_delta_support": null,
+          "exact_match": null
         },
         {
           "algorithm": "mlxtend_fpgrowth",
@@ -315,7 +403,11 @@
           "note": "Estimated dense memory 814.8 MB exceeds safe budget (>500 MB)",
           "time_seconds": null,
           "n_itemsets": null,
-          "itemsets_match": null
+          "itemsets_match": null,
+          "itemsets_count_match": null,
+          "itemsets_identity_match": null,
+          "max_delta_support": null,
+          "exact_match": null
         },
         {
           "algorithm": "FIN",
@@ -327,7 +419,11 @@
           "internal_time_seconds": 1.567,
           "peak_memory_mb": 238.59,
           "n_itemsets": 59,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "PrePost+",
@@ -339,7 +435,11 @@
           "internal_time_seconds": 0.617,
           "peak_memory_mb": 57.85,
           "n_itemsets": 59,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "LCMFreq",
@@ -351,7 +451,11 @@
           "internal_time_seconds": 1.3007,
           "peak_memory_mb": 218.97,
           "n_itemsets": 59,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         },
         {
           "algorithm": "FPGrowth_itemsets",
@@ -363,7 +467,11 @@
           "internal_time_seconds": 0.707,
           "peak_memory_mb": 176.48,
           "n_itemsets": 59,
-          "itemsets_match": true
+          "itemsets_match": true,
+          "itemsets_count_match": true,
+          "itemsets_identity_match": true,
+          "max_delta_support": 0.0,
+          "exact_match": true
         }
       ]
     }

@@ -30,9 +30,9 @@ the user on 30 Oct 2026).
 | 9 | Parallel PC script + sequential script fix | DONE, PUSHED | `benchmarks/run_pc_campaign.py`, commit `6a76b6f` |
 | 10 | Paper, results-filled (25/25 datasets) | DONE, PUSHED | `paper/paper.tex` (all P1–P11 filled from cell files), two-column 10pt standard layout; author order: Ramya, Anvitha, Abhishek Kumar, Giridhar, Rajeev |
 | 11 | Paper preview (readable HTML) | DONE | `paper/paper-preview.html` (regenerate via `paper/build_preview.py ../files/paper.tex`); embeds 7 measured figures; builder handles `figure*`/`table*` |
-| 12 | Gap closure: `check_estimator` | OPEN | must run; publish expected failures with reasons |
-| 13 | Gap closure: pruning ablation (bounded vs exact) | OPEN | truncation counts + recall vs exact required |
-| 14 | Gap closure: SPMF / modern baselines | OPEN | FIN, PrePost+, LCMFreq acknowledged, not run |
+| 12 | Gap closure: `check_estimator` | DONE | `docs/SKLEARN_COMPATIBILITY_REPORT.md` (13 passing checks, 40 expected failures, mixin order verified, unsupervised protocol established) |
+| 13 | Gap closure: pruning ablation (bounded vs exact) | DONE | `benchmarks/ablation_results.json` (up to 15.56x speedups under auditable degradation across Chess, Adult Census, BMS-POS) |
+| 14 | Gap closure: SPMF / modern baselines | DONE | `benchmarks/baseline_results.json` (27 records: FIN, PrePost+, LCMFreq, SPMF FP-Growth matching 2669 / 103 / 59 itemsets) |
 | 15 | Figures from measured data | DONE for 25/25 | `paper/figures/` 7 charts + 4 TikZ diagrams = 11 figures, all from measured data or method text, visually verified (outcomes pie needed a side legend) |
 | 16 | Paper PDF (compiled) | DONE, 16 pp A4, 699 KB | compiled on the VM from `paper/paper.tex` (3 pdflatex passes, 0 overfulls, 0 undefined refs) after the TeX Live reinstall finished; `paper/paper.pdf` is local (too big for the MCP push route — add via PC git-CLI if wanted) |
 | 17 | Goal | ACTIVE | do NOT close until submission-ready |
