@@ -56,7 +56,12 @@ def run_verification():
         tic_tac_toe = [line.strip().split() for line in f if line.strip()]
     print(f"  - Medium Dense (tic_tac_toe): {len(tic_tac_toe)} transactions")
 
-    # (c) Weighted Transactions
+    # (c) Adult Census Benchmark (adult_census.dat)
+    with open("data/adult_census.dat", "r", encoding="utf-8") as f:
+        adult_census = [line.strip().split() for line in f if line.strip()]
+    print(f"  - Adult Census Benchmark: {len(adult_census)} transactions")
+
+    # (d) Weighted Transactions
     rng = np.random.default_rng(2026)
     X_weighted = rng.choice([0, 1], size=(250, 14), p=[0.75, 0.25])
     weights = rng.uniform(0.5, 4.5, size=250)
@@ -65,14 +70,15 @@ def run_verification():
     # -------------------------------------------------------------
     # 2. Result Determinism & Support Discrepancy (Delta_supp)
     # -------------------------------------------------------------
-    print("\n[2/4] Testing Result Determinism (Delta_supp < 1e-9)...")
+    print("\n[2/4] Testing Result Determinism (Delta_supp == 0.0 on unweighted, < 1e-9 on weighted)...")
     datasets = [
-        ("Sparse Retail (groceries)", groceries, 0.02, None, None),
-        ("Medium Dense (tic_tac_toe)", tic_tac_toe, 0.15, 4, None),
-        ("Weighted Transactions", X_weighted, 0.08, None, weights),
+        ("Sparse Retail (groceries)", groceries, 0.02, None, None, True),
+        ("Medium Dense (tic_tac_toe)", tic_tac_toe, 0.15, 4, None, True),
+        ("Benchmark Adult Census", adult_census, 0.40, None, None, True),
+        ("Weighted Transactions", X_weighted, 0.08, None, weights, False),
     ]
 
-    for name, data, min_supp, max_len, w in datasets:
+    for name, data, min_supp, max_len, w, is_exact_zero in datasets:
         print(f"\n  >> Dataset: {name} (min_support={min_supp})")
         ests = {}
         times = {}
@@ -103,8 +109,12 @@ def run_verification():
         print(f"     Max Delta_supp (Apriori vs FP-Growth): {max_diff_af:.3e}")
         print(f"     Max Delta_supp (Apriori vs Eclat):     {max_diff_ae:.3e}")
         print(f"     Max Delta_supp (FP-Growth vs Eclat):   {max_diff_fe:.3e}")
-        assert max(max_diff_af, max_diff_ae, max_diff_fe) < 1e-9, "Delta_supp exceeded 1e-9 threshold!"
-        print("     [VERDICT]: PASSED (Delta_supp < 1e-9 satisfied)")
+        if is_exact_zero:
+            assert max(max_diff_af, max_diff_ae, max_diff_fe) == 0.0, "Delta_supp was not strictly 0.0 on unweighted data!"
+            print("     [VERDICT]: PASSED (Delta_supp == 0.0 EXACT ZERO satisfied)")
+        else:
+            assert max(max_diff_af, max_diff_ae, max_diff_fe) < 1e-9, "Delta_supp exceeded 1e-9 threshold!"
+            print("     [VERDICT]: PASSED (Delta_supp < 1e-9 machine precision satisfied)")
 
     # -------------------------------------------------------------
     # 3. Association Rule Equivalence Across All Metrics

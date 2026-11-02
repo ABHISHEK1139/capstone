@@ -54,7 +54,11 @@ def eclat(
     max_len : int or None, default=None
         Maximum length of itemsets.
     max_candidates : int, default=100000
-        Maximum candidate limit.
+        Upper bound on cumulative discovered frequent itemsets |F| from vertical
+        TID-list intersections. In Eclat, equivalence classes are expanded recursively
+        via pairwise TID-list intersections (T(i) ∩ T(j)). If |F| >= max_candidates,
+        the configured candidate explosion policy ('raise', 'truncate', or 'degrade')
+        is triggered.
     sample_weight : np.ndarray of shape (n_samples,) or None
         Optional transaction sample weights.
     pruning_policy : PruningPolicy or None

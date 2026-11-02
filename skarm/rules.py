@@ -6,6 +6,8 @@ from typing import Dict, List, FrozenSet, Optional, Union, Any
 import pandas as pd
 import numpy as np
 
+from skarm.pruning import CandidateExplosionError, DegradedModeWarning
+
 
 def compute_leverage(supp_ac: float, supp_a: float, supp_c: float) -> float:
     """Compute leverage = supp(A U C) - (supp(A) * supp(C))."""
@@ -98,27 +100,57 @@ def association_rules(
     # Deterministic processing (NT-5)
     multi_itemsets.sort(key=lambda x: (len(x[0]), sorted(list(x[0]))))
 
+    combo_count = 0
     halt_rules = False
     for itemset, supp_ac in multi_itemsets:
         if halt_rules:
             break
-        if pruning_policy is not None:
-            if not pruning_policy.check_budget(candidate_count=0, level=len(itemset)):
-                break
         items = sorted(list(itemset))
         k = len(items)
 
-        combo_count = 0
+        if pruning_policy is not None:
+            max_cands = getattr(pruning_policy, "max_candidates", None)
+            on_expl = getattr(pruning_policy, "on_candidate_explosion", "degrade")
+            if max_cands is not None and combo_count > max_cands:
+                can_proceed = pruning_policy.check_budget(
+                    candidate_count=combo_count,
+                    level=k,
+                )
+                if on_expl == "raise":
+                    raise CandidateExplosionError("Candidate limit exceeded during rule generation")
+                if not can_proceed or on_expl == "truncate":
+                    halt_rules = True
+                    break
+            elif not pruning_policy.check_budget(candidate_count=combo_count, level=k):
+                halt_rules = True
+                break
+
         # Generate all non-empty proper subsets as antecedents
         for r in range(1, k):
             if halt_rules:
                 break
             for ante_combo in combinations(items, r):
                 combo_count += 1
-                if pruning_policy is not None and (combo_count & 511) == 0:
-                    if not pruning_policy.check_budget(candidate_count=0, level=k):
-                        halt_rules = True
-                        break
+                if pruning_policy is not None:
+                    max_cands = getattr(pruning_policy, "max_candidates", None)
+                    on_expl = getattr(pruning_policy, "on_candidate_explosion", "degrade")
+                    if max_cands is not None and combo_count > max_cands:
+                        can_proceed = pruning_policy.check_budget(
+                            candidate_count=combo_count,
+                            level=k,
+                        )
+                        if on_expl == "raise":
+                            raise CandidateExplosionError("Candidate limit exceeded during rule generation")
+                        if not can_proceed or on_expl == "truncate":
+                            halt_rules = True
+                            break
+                    elif (combo_count & 511) == 0:
+                        if not pruning_policy.check_budget(
+                            candidate_count=combo_count,
+                            level=k,
+                        ):
+                            halt_rules = True
+                            break
                 ante = frozenset(ante_combo)
                 cons = itemset - ante
 
@@ -161,6 +193,13 @@ def association_rules(
                         "conviction": float(conv),
                         "zhangs_metric": float(zhang),
                     })
+
+    if pruning_policy is not None:
+        on_expl = getattr(pruning_policy, "on_candidate_explosion", "degrade")
+        max_cands = getattr(pruning_policy, "max_candidates", None)
+        if on_expl in ("truncate", "degrade") and max_cands is not None:
+            if len(records) > max_cands:
+                records = records[:max_cands]
 
     if not records:
         df = pd.DataFrame(columns=[

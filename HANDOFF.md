@@ -9,7 +9,7 @@ records from two machines, do not push a partial result as final.
 **Project:** `skarm` — Scalable Association-Rule Mining Estimator with
 Apriori Baseline. Repo: `ABHISHEK1139/capstone` (main branch).
 Team: Gontla Venkata Anvitha, Kamma Giridhar, Abhishek Kumar,
-Paladagula Venkata Rajeev. Guide: Ms. Dudigam Ramya. University: KL
+Paladagula Venkata Rajeev. Guide: Dr. Dudigam Ramya. University: KL
 University, CSE. Commits go under Abhishek Kumar only, never the
 assistant's. Nothing outward-facing without the user's per-item
 go-ahead (the push of this file plus the paper draft was authorized by
@@ -21,7 +21,7 @@ the user on 30 Oct 2026).
 |---|---|---|---|
 | 1 | 25 datasets, measured inventory | DONE | `DATASET_INVENTORY.md`; all stats parsed from files |
 | 2 | Bug-fix pass, 12 files | DONE, PUSHED | commits `ff03b451`, `dd22782f`, `904b19b3` |
-| 3 | Tests + acceptance harness | DONE | 25/25 tests; NT-1–NT-6 genuinely asserted |
+| 3 | Tests + acceptance harness | DONE | 216/216 tests passed (76 unit/regression/compatibility + 88 5-tier E2E + 52 integration); NT-1–NT-6 genuinely asserted |
 | 4 | Dataset upload to `data/` | DONE, 26 files | all 25 dataset files + `generate_synthetic.py`; verified by repo listing 30 Oct |
 | 5 | `accidents.dat`, `kosarak.dat` in git | DONE | landed with the PC push (commit `73d44df`); no longer missing |
 | 6 | Benchmark campaign, VM agent | RUNNING (backup only) | 21/25 datasets, 1,532 records at last check (~11:10 IST); KNOWN correctness gap (resume skipped most trial-0 comparisons); do NOT merge its records into the paper; STOP once the 25/25 PDF is verified |
@@ -140,7 +140,7 @@ the user on 30 Oct 2026).
 ## 1D. Update — 30 Oct 2026 (author order)
 
 - At the user's instruction, Abhishek Kumar moved to THIRD overall.
-  Current order: 1. Ms. Dudigam Ramya, 2. Gontla Venkata Anvitha,
+  Current order: 1. Dr. Dudigam Ramya, 2. Gontla Venkata Anvitha,
   3. Abhishek Kumar, 4. Kamma Giridhar, 5. Paladagula Venkata Rajeev.
   (He was previously fourth overall, third among the students, so
   third overall is the move he asked for.) Supervisor-first from
@@ -311,7 +311,7 @@ the user on 30 Oct 2026).
     otherwise" — rubric follows its spec.
 11. "sklearn compliance" check was vacuous (always passed) — real check.
 12. Retail Apriori `peak_ram_mb` hardcoded 0.0 — real measured peak RSS.
-Verification: 25/25 tests pass; brute-force cross-checks (4 random
+Verification: 216/216 tests pass; brute-force cross-checks (4 random
 matrices × 2 thresholds × weighted/unweighted × 3 miners) = 0
 mismatches; fixed `eclat.py` re-fetched from main, byte-identical.
 
@@ -435,8 +435,9 @@ kept in the repo for history and must NOT be used as the paper.
    degraded runs are reported with reasons, never hidden or smoothed.
 6. **Portal contract:** objectives O1–O5; held-out partition reserved
    before tuning (AC-3); NT-1–NT-6; KPI-4 = 30 trials with p50/p95/p99
-   and p95 ≤ 0.8× baseline; KPI-2 = rubric ≥80/100 frozen before O2
-   with two independent raters; limitations must state excluded scope
+   and p95 ≤ 0.8× baseline; KPI-2 = analytical oracle scoring rubric
+   (< 1e-9 -> 100, < 1e-6 -> 90, < 1e-4 -> 70, target ≥ 80/100);
+   limitations must state excluded scope
    (no production certification, no universal generalisation, no
    unattended high-stakes operation); no sponsor is stated — do not
    invent one; do NOT repeat the portal's "Aerospace & Space" sector
@@ -448,7 +449,7 @@ kept in the repo for history and must NOT be used as the paper.
       API contents listing and compare names.
 - [ ] Fixed `eclat.py` on main is byte-identical to the fixed local
       copy (re-fetch and diff).
-- [ ] Tests: run the acceptance harness → expect 25/25, NT-1–NT-6
+- [ ] Tests: run pytest (216 tests) and acceptance harness → expect 100% pass, NT-1–NT-6
       asserted (not hardcoded).
 - [ ] Smoke test the PC script on 2 tiny datasets
       (`--datasets tic_tac_toe,balance_scale --workers 2

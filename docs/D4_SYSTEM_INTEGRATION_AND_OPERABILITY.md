@@ -69,6 +69,6 @@ sequenceDiagram
 ```
 
 ### Safety Guarantees
-- **No Uncaught OOM**: The process terminates deeper exploration before allocating exponential memory.
+- **Proactive Memory Governor**: The process enforces candidate and memory limits, terminating deeper exploration before uncontrolled combinatorial allocation.
 - **Auditability**: `estimator.is_degraded_` is publicly inspectable and `estimator.pruning_policy_.degradation_reason` contains the diagnostic reason.
 - **Graceful Partial Results**: All verified rules discovered up to level $k-1$ remain fully valid and accessible.

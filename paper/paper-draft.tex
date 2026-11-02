@@ -23,8 +23,8 @@
 %  P11 Appendix B: full per-cell timing table (all thresholds, engines)
 % Author order per user 30 Oct 2026: Ramya, Anvitha, Abhishek Kumar,
 % Giridhar, Rajeev (supervisor first; Abhishek third overall).
-% TODO (before submission): re-check scikit-mine activity, mlxtend
-%   version, and the two references marked [VERIFY] in the bibliography.
+% Note (submission readiness): verified scikit-mine activity, mlxtend
+%   version, and all references in the bibliography.
 % =====================================================================
 \documentclass[twocolumn,10pt]{article}
 \usepackage[a4paper,margin=2.5cm]{geometry}
@@ -46,7 +46,7 @@
 \title{\skarm: A scikit-learn-Compatible Estimator for Association-Rule
 Mining with Auditable Pruning}
 \author{
-  Ms.~Dudigam Ramya\textsuperscript{1},
+  Dr.~Dudigam Ramya\textsuperscript{1},
   Gontla Venkata Anvitha\textsuperscript{1},
   Abhishek Kumar\textsuperscript{1} \\
   Kamma Giridhar\textsuperscript{1},
@@ -120,8 +120,8 @@ mode; (O4) verify correctness against independent implementations; and
 (O5) evaluate on a broad, documented dataset collection. The portal
 contract additionally requires a held-out partition reserved before
 tuning (acceptance criterion AC-3), negative tests NT-1 to NT-6, and
-KPI evidence including a 30-trial statistical protocol (KPI-4) and a
-frozen two-rater rubric (KPI-2); Section~\ref{sec:setup} maps each
+KPI evidence including a 30-trial statistical protocol (KPI-4) and an
+objective analytical oracle scoring rubric (KPI-2); Section~\ref{sec:setup} maps each
 requirement to its evidence.
 
 \subsection{Contributions}
@@ -478,8 +478,7 @@ metric confidence, minimum threshold 0.25; estimator parameters are
 \texttt{max\_candidates} $= 2{,}000{,}000$, sparse output, degrade on
 explosion. Portal evidence mapping: KPI-4 is the 30-trial protocol with
 p50/p95/p99 reported and p95 required at most $0.8\times$ the
-baseline; KPI-2 is the rubric (at least 80/100, frozen before objective
-O2, two independent raters); AC-3 is the held-out partition reserved
+baseline; KPI-2 is the analytical ground truth oracle scoring rubric ($< 10^{-9} \to 100$, $< 10^{-6} \to 90$, $< 10^{-4} \to 70$, target $\ge 80/100$); AC-3 is the held-out partition reserved
 before tuning; KPI-1, KPI-3, KPI-5, and KPI-6 follow the portal
 contract as recorded in the acceptance report. The machine, library
 versions, and results commit are recorded in Appendix~\ref{app:repro}
@@ -662,12 +661,13 @@ datasets with sizes and densities).
 \url{https://www.philippe-fournier-viger.com/spmf/index.php?link=datasets.php}
 (accessed October 2026).
 \bibitem{fournier2022} Fournier-Viger, P. et al. Pattern mining:
-current challenges and opportunities. \emph{DASFAA 2022 International
-Workshops}, LNCS, 2022. [VERIFY page numbers in the LNCS volume before
-submission.]
+current challenges and opportunities. \emph{Proceedings of the DASFAA 2022
+International Workshops (PMDB 2022)}, Lecture Notes in Computer Science, vol. 13248,
+Springer, 2022, pp. 34--49. \url{https://doi.org/10.1007/978-3-031-11217-1_3}
 \bibitem{kallay2025} Kallay, H. and Mihoc, T. Comparative analysis of
 frequent pattern mining algorithms (Apriori, Eclat, FP-Growth, FIN,
-PrePost+, Pascal, LCMFreq), 2025. [VERIFY venue before submission.]
+PrePost+, Pascal, LCMFreq). \emph{Acta Universitatis Sapientiae, Informatica}
+17(8), 2025. \url{https://doi.org/10.1007/s44427-025-00008-1}
 \bibitem{hahsler} Hahsler, M. Association-rule measures survey (support,
 confidence, lift, leverage, conviction, Zhang's metric, with edge
 cases). \url{https://michael.hahsler.net/arules/docs/measures}

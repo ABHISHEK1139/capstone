@@ -52,7 +52,11 @@ def apriori(
     max_len : int or None, default=None
         Maximum length of itemsets to mine.
     max_candidates : int, default=100000
-        Maximum candidate limit at any level to prevent exponential explosion.
+        Upper bound on intermediate unverified level-k candidate joins |C_k|.
+        In Apriori, candidate itemsets are explicitly generated via L_{k-1} ⋈ L_{k-1}
+        joins followed by subset pruning before database support verification.
+        If |C_k| > max_candidates, the configured candidate explosion policy
+        ('raise', 'truncate', or 'degrade') is triggered.
     sample_weight : np.ndarray of shape (n_samples,) or None
         Optional transaction weights (NT-3).
     pruning_policy : PruningPolicy or None

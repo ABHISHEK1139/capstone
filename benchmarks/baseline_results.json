@@ -1,0 +1,371 @@
+{
+  "metadata": {
+    "title": "SKARM External Modern Miner and Framework Baselines Benchmark",
+    "timestamp": "2026-11-01T18:59:27Z",
+    "git_commit": "ea5bff5d657639298b197074ab35bd4bb7bb7a37",
+    "platform": "AMD64, Windows 11",
+    "python_version": "3.12.10",
+    "java_version": "java version \"21.0.9\" 2025-10-21 LTS",
+    "packages": {
+      "numpy": "2.5.4",
+      "pandas": "3.1.0",
+      "scikit-learn": "1.9.1",
+      "scipy": "1.18.1",
+      "mlxtend": "0.25.0"
+    },
+    "spmf_jar": "C:\\Users\\ak612\\OneDrive\\Desktop\\capstone\\benchmarks\\spmf.jar",
+    "trials_per_cell": 3,
+    "datasets": {
+      "chess": {
+        "file": "chess.dat",
+        "support": 0.85,
+        "type": "dense",
+        "expected_itemsets": 2669,
+        "description": "Dense game board (N=3,196, 49.3% density, L_avg=37.0)"
+      },
+      "adult_census": {
+        "file": "adult_census.dat",
+        "support": 0.4,
+        "type": "medium",
+        "expected_itemsets": 103,
+        "description": "Medium census survey (N=32,561, 6.2% density, L_avg=13.9)"
+      },
+      "bms_pos": {
+        "file": "BMS-POS.csv",
+        "support": 0.05,
+        "type": "sparse",
+        "expected_itemsets": 59,
+        "description": "Sparse point-of-sale clickstream (N=515,596, 0.4% density, L_avg=6.5)"
+      }
+    }
+  },
+  "datasets": {
+    "chess": {
+      "summary": {
+        "n_transactions": 3196,
+        "n_items": 75,
+        "density_pct": 49.33,
+        "support": 0.85,
+        "expected_itemsets": 2669
+      },
+      "records": [
+        {
+          "algorithm": "apriori",
+          "framework": "skarm",
+          "language": "Python",
+          "status": "OK",
+          "time_seconds": 9.5298,
+          "std_time_seconds": 0.4546,
+          "n_itemsets": 2669,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "fpgrowth",
+          "framework": "skarm",
+          "language": "Python",
+          "status": "OK",
+          "time_seconds": 6.2589,
+          "std_time_seconds": 0.1752,
+          "n_itemsets": 2669,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "eclat",
+          "framework": "skarm",
+          "language": "Python",
+          "status": "OK",
+          "time_seconds": 6.2848,
+          "std_time_seconds": 0.1086,
+          "n_itemsets": 2669,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "mlxtend_apriori",
+          "framework": "mlxtend",
+          "language": "Python",
+          "status": "OK",
+          "time_seconds": 0.2166,
+          "std_time_seconds": 0.005,
+          "n_itemsets": 2669,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "mlxtend_fpgrowth",
+          "framework": "mlxtend",
+          "language": "Python",
+          "status": "OK",
+          "time_seconds": 0.6308,
+          "std_time_seconds": 0.0086,
+          "n_itemsets": 2669,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "FIN",
+          "framework": "spmf",
+          "language": "Java 21",
+          "status": "OK",
+          "time_seconds": 0.4389,
+          "std_time_seconds": 0.0508,
+          "internal_time_seconds": 0.0967,
+          "peak_memory_mb": 60.81,
+          "n_itemsets": 2669,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "PrePost+",
+          "framework": "spmf",
+          "language": "Java 21",
+          "status": "OK",
+          "time_seconds": 0.3802,
+          "std_time_seconds": 0.0313,
+          "internal_time_seconds": 0.0753,
+          "peak_memory_mb": 53.95,
+          "n_itemsets": 2669,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "LCMFreq",
+          "framework": "spmf",
+          "language": "Java 21",
+          "status": "OK",
+          "time_seconds": 0.6275,
+          "std_time_seconds": 0.0163,
+          "internal_time_seconds": 0.3027,
+          "peak_memory_mb": 149.78,
+          "n_itemsets": 2669,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "FPGrowth_itemsets",
+          "framework": "spmf",
+          "language": "Java 21",
+          "status": "OK",
+          "time_seconds": 0.3644,
+          "std_time_seconds": 0.0083,
+          "internal_time_seconds": 0.0763,
+          "peak_memory_mb": 15.43,
+          "n_itemsets": 2669,
+          "itemsets_match": true
+        }
+      ]
+    },
+    "adult_census": {
+      "summary": {
+        "n_transactions": 32561,
+        "n_items": 224,
+        "density_pct": 6.19,
+        "support": 0.4,
+        "expected_itemsets": 103
+      },
+      "records": [
+        {
+          "algorithm": "apriori",
+          "framework": "skarm",
+          "language": "Python",
+          "status": "OK",
+          "time_seconds": 4.0966,
+          "std_time_seconds": 0.0636,
+          "n_itemsets": 103,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "fpgrowth",
+          "framework": "skarm",
+          "language": "Python",
+          "status": "OK",
+          "time_seconds": 3.9643,
+          "std_time_seconds": 0.1981,
+          "n_itemsets": 103,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "eclat",
+          "framework": "skarm",
+          "language": "Python",
+          "status": "OK",
+          "time_seconds": 2.4071,
+          "std_time_seconds": 0.1261,
+          "n_itemsets": 103,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "mlxtend_apriori",
+          "framework": "mlxtend",
+          "language": "Python",
+          "status": "OK",
+          "time_seconds": 0.0576,
+          "std_time_seconds": 0.007,
+          "n_itemsets": 103,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "mlxtend_fpgrowth",
+          "framework": "mlxtend",
+          "language": "Python",
+          "status": "OK",
+          "time_seconds": 2.741,
+          "std_time_seconds": 0.1194,
+          "n_itemsets": 103,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "FIN",
+          "framework": "spmf",
+          "language": "Java 21",
+          "status": "OK",
+          "time_seconds": 0.5282,
+          "std_time_seconds": 0.0276,
+          "internal_time_seconds": 0.2167,
+          "peak_memory_mb": 83.19,
+          "n_itemsets": 103,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "PrePost+",
+          "framework": "spmf",
+          "language": "Java 21",
+          "status": "OK",
+          "time_seconds": 0.4239,
+          "std_time_seconds": 0.0203,
+          "internal_time_seconds": 0.141,
+          "peak_memory_mb": 74.03,
+          "n_itemsets": 103,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "LCMFreq",
+          "framework": "spmf",
+          "language": "Java 21",
+          "status": "OK",
+          "time_seconds": 0.6578,
+          "std_time_seconds": 0.0527,
+          "internal_time_seconds": 0.2083,
+          "peak_memory_mb": 96.45,
+          "n_itemsets": 103,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "FPGrowth_itemsets",
+          "framework": "spmf",
+          "language": "Java 21",
+          "status": "OK",
+          "time_seconds": 0.4447,
+          "std_time_seconds": 0.0211,
+          "internal_time_seconds": 0.1387,
+          "peak_memory_mb": 36.1,
+          "n_itemsets": 103,
+          "itemsets_match": true
+        }
+      ]
+    },
+    "bms_pos": {
+      "summary": {
+        "n_transactions": 515596,
+        "n_items": 1657,
+        "density_pct": 0.39,
+        "support": 0.05,
+        "expected_itemsets": 59
+      },
+      "records": [
+        {
+          "algorithm": "apriori",
+          "framework": "skarm",
+          "language": "Python",
+          "status": "OK",
+          "time_seconds": 68.4933,
+          "std_time_seconds": 19.6133,
+          "n_itemsets": 59,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "fpgrowth",
+          "framework": "skarm",
+          "language": "Python",
+          "status": "OK",
+          "time_seconds": 43.8444,
+          "std_time_seconds": 1.8568,
+          "n_itemsets": 59,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "eclat",
+          "framework": "skarm",
+          "language": "Python",
+          "status": "OK",
+          "time_seconds": 8.0981,
+          "std_time_seconds": 0.4292,
+          "n_itemsets": 59,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "mlxtend_apriori",
+          "framework": "mlxtend",
+          "language": "Python",
+          "status": "SKIP",
+          "note": "Estimated dense memory 814.8 MB exceeds safe budget (>500 MB)",
+          "time_seconds": null,
+          "n_itemsets": null,
+          "itemsets_match": null
+        },
+        {
+          "algorithm": "mlxtend_fpgrowth",
+          "framework": "mlxtend",
+          "language": "Python",
+          "status": "SKIP",
+          "note": "Estimated dense memory 814.8 MB exceeds safe budget (>500 MB)",
+          "time_seconds": null,
+          "n_itemsets": null,
+          "itemsets_match": null
+        },
+        {
+          "algorithm": "FIN",
+          "framework": "spmf",
+          "language": "Java 21",
+          "status": "OK",
+          "time_seconds": 1.8321,
+          "std_time_seconds": 0.1419,
+          "internal_time_seconds": 1.567,
+          "peak_memory_mb": 238.59,
+          "n_itemsets": 59,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "PrePost+",
+          "framework": "spmf",
+          "language": "Java 21",
+          "status": "OK",
+          "time_seconds": 0.8849,
+          "std_time_seconds": 0.0337,
+          "internal_time_seconds": 0.617,
+          "peak_memory_mb": 57.85,
+          "n_itemsets": 59,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "LCMFreq",
+          "framework": "spmf",
+          "language": "Java 21",
+          "status": "OK",
+          "time_seconds": 2.1472,
+          "std_time_seconds": 0.0537,
+          "internal_time_seconds": 1.3007,
+          "peak_memory_mb": 218.97,
+          "n_itemsets": 59,
+          "itemsets_match": true
+        },
+        {
+          "algorithm": "FPGrowth_itemsets",
+          "framework": "spmf",
+          "language": "Java 21",
+          "status": "OK",
+          "time_seconds": 1.0229,
+          "std_time_seconds": 0.0143,
+          "internal_time_seconds": 0.707,
+          "peak_memory_mb": 176.48,
+          "n_itemsets": 59,
+          "itemsets_match": true
+        }
+      ]
+    }
+  }
+}

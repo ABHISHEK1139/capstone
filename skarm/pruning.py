@@ -97,8 +97,13 @@ class PruningPolicy:
     Parameters
     ----------
     max_candidates : int, default=100000
-        Maximum allowed candidates at any single generation step (Apriori) or
-        discovered pattern budget (FP-Growth / Eclat).
+        Maximum candidate limit whose exact semantic depends on the algorithm's search topology:
+        - Apriori (level-wise BFS): Bounds intermediate unverified level-k candidate joins |C_k|.
+        - FP-Growth (prefix-tree DFS): Bounds cumulative discovered frequent itemsets |F|
+          extracted from conditional pattern trees.
+        - Eclat (equivalence-class DFS): Bounds cumulative discovered frequent itemsets |F|
+          from vertical TID-list intersections.
+        - Rule Generation: Bounds candidate rule antecedent-consequent partitions evaluated.
     max_len : int or None, default=None
         Maximum itemset length to discover.
     min_support : float, default=0.1

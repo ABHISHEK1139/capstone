@@ -34,7 +34,8 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
         Minimum threshold for the chosen metric.
     algorithm : {'auto', 'apriori', 'fpgrowth', 'eclat'}, default='auto'
         Mining algorithm:
-        - 'auto': Automatically select fastest engine based on input density.
+        - 'auto': Automatically select fastest engine based on input sparsity/density
+          (eclat if sparsity >= 0.85 / density <= 0.15, else fpgrowth).
         - 'apriori': Standard level-wise Apriori baseline.
         - 'fpgrowth': Prefix-tree pattern growth.
         - 'eclat': Vertical TID-list intersection.
@@ -57,6 +58,12 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
         Item names/column headers.
     n_features_in_ : int
         Number of items/features seen during fit.
+    density_ : float
+        Density of the transaction binary indicator matrix (nnz / (N * M)).
+    sparsity_ : float
+        Sparsity of the transaction binary indicator matrix (1.0 - density_).
+    algorithm_selected_ : str
+        Algorithm executed ('apriori', 'fpgrowth', or 'eclat').
     is_degraded_ : bool
         Whether candidate bounding forced the estimator into degraded mode.
     telemetry_ : TelemetryLogger
@@ -174,21 +181,39 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
                 self.n_features_in_ = len(self.columns_)
                 self.feature_names_in_ = np.array(self.columns_, dtype=object)
 
+            # Compute matrix density and sparsity
+            n_rows, n_cols = X_matrix.shape
+            total_cells = n_rows * n_cols
+            if total_cells > 0:
+                if sparse.issparse(X_matrix):
+                    nnz = int(X_matrix.nnz)
+                else:
+                    nnz = int(np.count_nonzero(X_matrix))
+                density = float(nnz / total_cells)
+            else:
+                density = 0.0
+            sparsity = float(1.0 - density)
+            self.density_ = density
+            self.sparsity_ = sparsity
+
+            # Select algorithm
+            algo = self.algorithm
+            if algo == "auto":
+                # Documented 85% sparsity threshold (density <= 0.15)
+                if sparsity >= 0.85:
+                    algo = "eclat"
+                else:
+                    algo = "fpgrowth"
+
+            self.algorithm_selected_ = algo
+
             # Check budget after input encoding and conversion
             elapsed_pre = time.perf_counter() - fit_start_time
             if not self.pruning_policy_.check_budget(candidate_count=0, level=0, elapsed_time=elapsed_pre):
                 self.frequent_itemsets_ = {}
             else:
-                # Select algorithm
-                algo = self.algorithm
-                if algo == "auto":
-                    if sparse.issparse(X_matrix):
-                        algo = "eclat"
-                    else:
-                        algo = "fpgrowth"
-
                 # Execute mining
-                if algo == "apriori":
+                if self.algorithm_selected_ == "apriori":
                     self.frequent_itemsets_ = apriori(
                         X_matrix,
                         min_support=self.min_support,
@@ -198,7 +223,7 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
                         pruning_policy=self.pruning_policy_,
                         telemetry=self.telemetry_,
                     )
-                elif algo == "fpgrowth":
+                elif self.algorithm_selected_ == "fpgrowth":
                     self.frequent_itemsets_ = fpgrowth(
                         X_matrix,
                         min_support=self.min_support,
@@ -208,7 +233,7 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
                         pruning_policy=self.pruning_policy_,
                         telemetry=self.telemetry_,
                     )
-                elif algo == "eclat":
+                elif self.algorithm_selected_ == "eclat":
                     self.frequent_itemsets_ = eclat(
                         X_matrix,
                         min_support=self.min_support,
@@ -220,8 +245,9 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
                     )
 
             # Watchdog check after mining
+            mining_level = max((len(s) for s in self.frequent_itemsets_.keys()), default=1) if getattr(self, "frequent_itemsets_", None) else 1
             if not self.pruning_policy_.is_degraded:
-                self.pruning_policy_.check_budget(candidate_count=0, level=0)
+                self.pruning_policy_.check_budget(candidate_count=0, level=mining_level)
 
             # Generate association rules with continuous watchdog monitoring
             self.rules_ = association_rules(
@@ -237,14 +263,15 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
 
             # Watchdog check after itemset dataframe construction
             if not self.pruning_policy_.is_degraded:
-                self.pruning_policy_.check_budget(candidate_count=0, level=0)
+                self.pruning_policy_.check_budget(candidate_count=0, level=mining_level)
 
         finally:
             self.pruning_policy_.stop_sampler()
             # Post-fit watchdog check: catch any peak memory exceeded during fit if no exception in flight
             if sys.exc_info()[0] is None and not self.pruning_policy_.is_degraded and self.max_memory_mb is not None:
                 if self.pruning_policy_.peak_memory_mb > self.max_memory_mb:
-                    self.pruning_policy_.check_budget(candidate_count=0, level=0)
+                    halt_level = max((len(s) for s in self.frequent_itemsets_.keys()), default=1) if getattr(self, "frequent_itemsets_", None) else 1
+                    self.pruning_policy_.check_budget(candidate_count=0, level=halt_level)
 
         self.is_degraded_ = self.pruning_policy_.is_degraded
         self.status_ = "DEGRADED" if self.is_degraded_ else "EXACT"
@@ -274,6 +301,11 @@ class AssociationRulesEstimator(BaseEstimator, TransformerMixin):
             "future_candidates_status": self.pruning_policy_.future_candidates_status,
             "frequent_itemsets_discovered": len(self.frequent_itemsets_),
             "is_candidate_count_exact": (self.status_ == "EXACT"),
+            "algorithm_selected": getattr(self, "algorithm_selected_", self.algorithm),
+            "density": getattr(self, "density_", 0.0),
+            "sparsity": getattr(self, "sparsity_", 1.0),
+            "matrix_density": round(getattr(self, "density_", 0.0), 6),
+            "matrix_sparsity": round(getattr(self, "sparsity_", 1.0), 6),
             "counters": dict(counters),
             "operations": dict(counters),
             "resource_usage": {

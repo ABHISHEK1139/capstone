@@ -2,10 +2,11 @@
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 [![scikit-learn Compatible](https://img.shields.io/badge/scikit--learn-compatible-orange.svg)](https://scikit-learn.org/)
-[![Tests Passing](https://img.shields.io/badge/tests-163%20passed%20(88%20E2E%2C%2075%20unit)-brightgreen.svg)]()
+[![Tests Passing](https://img.shields.io/badge/tests-216%20passed%20(100%25%20pass%20rate)-brightgreen.svg)]()
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](LICENSE)
 
 > **KL University Capstone Project Framework: KLCAP-2026-00340**  
+> **Faculty Guide / Supervisor**: Dr. Dudigam Ramya  
 > **Specialization**: AI for Computational Intelligence  
 > **Related Specializations**: Data Engineering for AI · SOFTWARE MODELLING & DEVOPS  
 > **Upstream Reference**: scikit-learn Issue #32712 ("Add Apriori algorithm for association rule mining")
@@ -128,7 +129,7 @@ python -m skarm.cli --dataset retail --min-support 0.02 --algorithm eclat --top-
 
 ## Verification & Multi-Tier Test Suite
  
-Run the comprehensive test suite (163 automated tests: 75 unit/regression + 88 5-tier E2E):
+Run the comprehensive test suite (216 automated tests: 76 unit/regression/compatibility + 88 5-tier E2E + 52 integration):
 ```bash
 pytest -v
 ```

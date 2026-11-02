@@ -2,8 +2,11 @@
 
 import io
 import joblib
+import gc
+import itertools
 import pytest
 import numpy as np
+from scipy import sparse
 from sklearn.base import clone
 from skarm.estimator import AssociationRulesEstimator
 from skarm.pruning import DegradedModeWarning, CandidateExplosionError, get_current_memory_mb
@@ -402,84 +405,134 @@ def test_memory_budget_enforcement_fit():
         assert "incremental_rss_mb" in est_ok.metadata_["resource_usage"]
 
     # Case 2: Exceeded memory budget during fit with 'degrade' policy
-    # Setting max_memory_mb below the process baseline memory reliably tests
-    # the governor's enforcement contract deterministically on all operating systems.
-    for algo in ["apriori", "fpgrowth", "eclat"]:
+    # Uses realistic dynamic memory allocation workload and headroom asserting active halt (level_halted >= 1)
+    rng_heavy = np.random.RandomState(42)
+    X_ap = rng_heavy.binomial(1, 0.7, size=(500, 22))
+    X_fp = rng_heavy.binomial(1, 0.6, size=(5000, 25))
+    X_ec = rng_heavy.binomial(1, 0.6, size=(10000, 20))
+
+    workload_configs = [
+        ("apriori", X_ap, 0.3, 0.5),
+        ("fpgrowth", X_fp, 0.2, 0.5),
+        ("eclat", X_ec, 0.3, 0.5),
+    ]
+
+    for algo, X_workload, supp, delta in workload_configs:
+        baseline = get_current_memory_mb()
+        # Headroom delta ensures level 0 passes, halting during active search (level_halted >= 1)
         est_mem = AssociationRulesEstimator(
             algorithm=algo,
-            min_support=0.1,
-            max_memory_mb=1.0,
+            min_support=supp,
+            max_candidates=50000,
+            max_memory_mb=baseline + delta,
             on_candidate_explosion="degrade",
         )
         with pytest.warns(DegradedModeWarning, match="Memory budget exceeded"):
-            est_mem.fit(X)
+            est_mem.fit(X_workload)
 
         assert est_mem.status_ == "DEGRADED"
         assert est_mem.is_degraded_ is True
+        assert est_mem.metadata_["level_halted"] >= 1
         assert "Memory budget exceeded" in est_mem.termination_reason_
         assert est_mem.peak_memory_mb_ >= est_mem.baseline_memory_mb_
         assert "resource_usage" in est_mem.metadata_
         assert est_mem.metadata_["resource_usage"]["peak_rss_mb"] > 0
+        del est_mem
 
     # Case 3: Exceeded memory budget during fit with 'raise' policy
-    for algo in ["apriori", "fpgrowth", "eclat"]:
+    for algo, X_workload, supp, delta in workload_configs:
+        baseline = get_current_memory_mb()
         est_raise = AssociationRulesEstimator(
             algorithm=algo,
-            min_support=0.1,
-            max_memory_mb=1.0,
+            min_support=supp,
+            max_candidates=50000,
+            max_memory_mb=baseline + delta,
             on_candidate_explosion="raise",
         )
         with pytest.raises(CandidateExplosionError, match="Memory budget exceeded"):
-            est_raise.fit(X)
+            est_raise.fit(X_workload)
+        del est_raise
 
-
-    # Case 4: Resource watchdog monitors rule generation and handles budget exhaustion
+    # Case 4: Combinatorial rule generation watchdog on large itemsets (k=14, 2^14 - 2 = 16,382 partitions)
     from skarm.pruning import PruningPolicy
     from skarm.rules import association_rules
 
-    frequent_itemsets = {
-        frozenset([0]): 0.8,
-        frozenset([1]): 0.8,
-        frozenset([2]): 0.8,
-        frozenset([0, 1]): 0.7,
-        frozenset([0, 2]): 0.7,
-        frozenset([1, 2]): 0.7,
-        frozenset([0, 1, 2]): 0.6,
-    }
-    policy_degrade = PruningPolicy(max_memory_mb=1.0, on_candidate_explosion="degrade")
-    with pytest.warns(DegradedModeWarning, match="Memory budget exceeded"):
+    k = 14
+    items = list(range(k))
+    full = frozenset(items)
+    large_itemsets = {frozenset([i]): 0.8 for i in range(k)}
+    large_itemsets[frozenset([0, 1])] = 0.7
+    large_itemsets[full] = 0.6
+
+    # Watchdog under degrade policy: halts during expansion after generating initial rules
+    policy_degrade = PruningPolicy(max_time_seconds=0.005, on_candidate_explosion="degrade")
+    with pytest.warns(DegradedModeWarning, match="Time budget exceeded"):
         rules_df = association_rules(
-            frequent_itemsets,
+            large_itemsets,
             metric="confidence",
             min_threshold=0.5,
-            feature_names=["A", "B", "C"],
             pruning_policy=policy_degrade,
         )
     assert policy_degrade.is_degraded is True
-    assert "Memory budget exceeded" in policy_degrade.degradation_reason
+    assert "Time budget exceeded" in policy_degrade.degradation_reason
+    assert len(rules_df) < 16382
 
-    policy_raise = PruningPolicy(max_memory_mb=1.0, on_candidate_explosion="raise")
-    with pytest.raises(CandidateExplosionError, match="Memory budget exceeded"):
+    # Watchdog under raise policy: raises CandidateExplosionError during expansion
+    policy_raise = PruningPolicy(max_time_seconds=0.005, on_candidate_explosion="raise")
+    with pytest.raises(CandidateExplosionError, match="Time budget exceeded"):
         association_rules(
-            frequent_itemsets,
+            large_itemsets,
             metric="confidence",
             min_threshold=0.5,
-            feature_names=["A", "B", "C"],
             pruning_policy=policy_raise,
         )
 
-    # Case 5: Combinatorial subset expansion halts cleanly under memory watchdog
-    large_itemsets = {frozenset([i]): 0.5 for i in range(12)}
-    large_itemsets[frozenset(range(12))] = 0.5
-    policy_combo = PruningPolicy(max_memory_mb=1.0, on_candidate_explosion="degrade")
-    with pytest.warns(DegradedModeWarning, match="Memory budget exceeded"):
-        rules_combo = association_rules(
-            large_itemsets,
+    # Case 5: Combinatorial subset expansion under candidate limit (truncate, degrade, raise)
+    # Non-vacuous itemset lattice generating 150 rules unconstrained
+    lattice_itemsets = {
+        frozenset(c): round(0.9 - 0.15 * len(c), 3)
+        for r in range(1, 5)
+        for c in itertools.combinations(range(5), r)
+    }
+    rules_unconstrained = association_rules(lattice_itemsets, metric="confidence", min_threshold=0.1)
+    total_unconstrained_rules = len(rules_unconstrained)
+    assert total_unconstrained_rules == 150  # Verifies realistic unconstrained baseline (50-150 rules)
+
+    # 5a. Truncate policy: bounds rules to <= max_candidates, emits warning, sets is_degraded
+    policy_truncate = PruningPolicy(max_candidates=10, on_candidate_explosion="truncate")
+    with pytest.warns(DegradedModeWarning, match="Truncating candidates to max_candidates limit"):
+        rules_trunc = association_rules(
+            lattice_itemsets,
             metric="confidence",
             min_threshold=0.1,
-            pruning_policy=policy_combo,
+            pruning_policy=policy_truncate,
         )
-    assert policy_combo.is_degraded is True
+    assert policy_truncate.is_degraded is True
+    assert 0 < len(rules_trunc) <= 10
+    assert len(rules_trunc) < total_unconstrained_rules
+
+    # 5b. Degrade policy: halts generation, returns truncated rules, emits warning, sets is_degraded
+    policy_degrade = PruningPolicy(max_candidates=10, on_candidate_explosion="degrade")
+    with pytest.warns(DegradedModeWarning, match="Entering degraded mode"):
+        rules_deg = association_rules(
+            lattice_itemsets,
+            metric="confidence",
+            min_threshold=0.1,
+            pruning_policy=policy_degrade,
+        )
+    assert policy_degrade.is_degraded is True
+    assert 0 < len(rules_deg) <= 10
+    assert len(rules_deg) < total_unconstrained_rules
+
+    # 5c. Raise policy: raises CandidateExplosionError
+    policy_raise = PruningPolicy(max_candidates=10, on_candidate_explosion="raise")
+    with pytest.raises(CandidateExplosionError):
+        association_rules(
+            lattice_itemsets,
+            metric="confidence",
+            min_threshold=0.1,
+            pruning_policy=policy_raise,
+        )
 
 
 def test_pruning_policy_serialization():
@@ -542,6 +595,63 @@ def test_held_out_validation_scoring():
     ], dtype=bool)
     score_no_ante = est.score(X_val_no_ante)
     assert np.isclose(score_no_ante, 0.0)
+
+
+def test_auto_density_threshold_selection():
+    """Verify R2: algorithm='auto' computes density/sparsity and switches at 85% sparsity threshold."""
+    # Dense matrix (density = 0.50, sparsity = 0.50 < 0.85) -> fpgrowth
+    X_dense = np.array([
+        [1, 0, 1, 0],
+        [0, 1, 0, 1],
+    ], dtype=bool)
+    est_dense = AssociationRulesEstimator(algorithm="auto", min_support=0.5).fit(X_dense)
+    assert est_dense.algorithm_selected_ == "fpgrowth"
+    assert est_dense.density_ == 0.5
+    assert est_dense.sparsity_ == 0.5
+    assert est_dense.metadata_["algorithm_selected"] == "fpgrowth"
+    assert est_dense.metadata_["matrix_density"] == 0.5
+    assert est_dense.metadata_["matrix_sparsity"] == 0.5
+
+    # Sparse matrix via scipy CSR (density = 0.05, sparsity = 0.95 >= 0.85) -> eclat
+    X_sparse = sparse.csr_matrix([[1] + [0] * 19])
+    est_sparse = AssociationRulesEstimator(algorithm="auto", min_support=0.5).fit(X_sparse)
+    assert est_sparse.algorithm_selected_ == "eclat"
+    assert est_sparse.density_ == 0.05
+    assert est_sparse.sparsity_ == 0.95
+    assert est_sparse.metadata_["algorithm_selected"] == "eclat"
+
+    # Dense matrix stored as scipy CSR (density = 0.50, sparsity = 0.50 < 0.85) -> fpgrowth
+    X_dense_csr = sparse.csr_matrix(X_dense)
+    est_dense_csr = AssociationRulesEstimator(algorithm="auto", min_support=0.5).fit(X_dense_csr)
+    assert est_dense_csr.algorithm_selected_ == "fpgrowth"
+    assert est_dense_csr.density_ == 0.5
+    assert est_dense_csr.sparsity_ == 0.5
+
+    # Sparse matrix stored as dense numpy array (density = 0.05, sparsity = 0.95 >= 0.85) -> eclat
+    X_sparse_dense = np.zeros((10, 20), dtype=bool)
+    X_sparse_dense[0, 0] = True
+    X_sparse_dense[1, 1] = True
+    X_sparse_dense[2, 2] = True
+    X_sparse_dense[3, 3] = True
+    X_sparse_dense[4, 4] = True
+    X_sparse_dense[5, 5] = True
+    X_sparse_dense[6, 6] = True
+    X_sparse_dense[7, 7] = True
+    X_sparse_dense[8, 8] = True
+    X_sparse_dense[9, 9] = True  # 10 ones out of 200 = 0.05
+    est_sparse_arr = AssociationRulesEstimator(algorithm="auto", min_support=0.1).fit(X_sparse_dense)
+    assert est_sparse_arr.algorithm_selected_ == "eclat"
+    assert est_sparse_arr.density_ == 0.05
+    assert est_sparse_arr.sparsity_ == 0.95
+
+    # Exact threshold boundary: density = 0.15, sparsity = 0.85 -> eclat
+    X_boundary = np.zeros((20, 10), dtype=bool)
+    X_boundary[:3, :] = True  # 3 * 10 = 30 out of 200 = 0.15
+    est_boundary = AssociationRulesEstimator(algorithm="auto", min_support=0.5).fit(X_boundary)
+    assert est_boundary.density_ == 0.15
+    assert est_boundary.sparsity_ == 0.85
+    assert est_boundary.algorithm_selected_ == "eclat"
+
 
 
 

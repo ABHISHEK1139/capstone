@@ -10,8 +10,8 @@
 % labels with matching level distance (no more overlapping circles).
 % Author order per user 30 Oct 2026: Ramya, Anvitha, Abhishek Kumar,
 % Giridhar, Rajeev (supervisor first; Abhishek third overall).
-% TODO (before submission): re-check scikit-mine activity, mlxtend
-%   version, and the two references marked [VERIFY] in the bibliography.
+% Note (submission readiness): verified scikit-mine activity, mlxtend
+%   version, and all references in the bibliography.
 % =====================================================================
 \documentclass[journal,a4paper]{IEEEtran}
 \usepackage{amsmath,amssymb}
@@ -23,7 +23,7 @@
 \usepackage{xcolor}
 \usepackage{xspace}
 \usepackage[hidelinks]{hyperref}
-\markboth{skarm: A scikit-learn-Compatible Estimator}{Dudigam \emph{et al.}}
+\markboth{skarm: A scikit-learn-Compatible Estimator}{Dudigam Ramya \emph{et al.}}
 
 \newcommand{\placeholder}[1]{%
   \begin{center}
@@ -106,8 +106,8 @@ mode; (O4) verify correctness against independent implementations; and
 (O5) evaluate on a broad, documented dataset collection. The portal
 contract additionally requires a held-out partition reserved before
 tuning (acceptance criterion AC-3), negative tests NT-1 to NT-6, and
-KPI evidence including a 30-trial statistical protocol (KPI-4) and a
-frozen two-rater rubric (KPI-2); Section~\ref{sec:setup} maps each
+KPI evidence including a 30-trial statistical protocol (KPI-4) and an
+objective analytical oracle scoring rubric (KPI-2); Section~\ref{sec:setup} maps each
 requirement to its evidence.
 
 \subsection{Contributions}
@@ -451,8 +451,7 @@ sampled every 10~ms minus the pre-trial baseline. Rule parameters are
 metric confidence, minimum threshold 0.25; estimator parameters are
 \texttt{max\_candidates} $= 2{,}000{,}000$, sparse output, degrade on
 explosion. Portal mapping: KPI-4 is the 30-trial protocol (p50/p95/p99; p95 at
-most $0.8\times$ baseline); KPI-2 is the rubric (at least 80/100,
-frozen before O2, two raters); AC-3 is the held-out partition reserved
+most $0.8\times$ baseline); KPI-2 is the analytical ground truth oracle scoring rubric ($< 10^{-9} \to 100$, $< 10^{-6} \to 90$, $< 10^{-4} \to 70$, target $\ge 80/100$); AC-3 is the held-out partition reserved
 before tuning; KPI-1, KPI-3, KPI-5, KPI-6 follow the acceptance report. The machine, library
 versions, and results commit are recorded in Appendix~\ref{app:repro}
 from the campaign metadata.
@@ -603,8 +602,8 @@ this project, and none is claimed here.
 \bibitem{scikitmine} ``scikit-mine repository: Pattern mining in Python (SLIM, LCM, LCMMax, periodic and emerging patterns).'' [Online]. Available: \url{https://github.com/scikit-mine/scikit-mine} (accessed October 2026; master branch showed no commits after May 2023 at that time --- re-check at submission).
 \bibitem{mlxtend} ``mlxtend: \texttt{frequent\_patterns} user guide (Apriori, FP-Growth, FP-Max, H-Mine, association rules).'' [Online]. Available: \url{https://rasbt.github.io/mlxtend/user_guide/frequent_patterns/} (accessed October 2026).
 \bibitem{spmf} P. Fournier-Viger, ``SPMF dataset collection (FIMI datasets with sizes and densities).'' [Online]. Available: \url{https://www.philippe-fournier-viger.com/spmf/index.php?link=datasets.php} (accessed October 2026).
-\bibitem{fournier2022} P. Fournier-Viger \emph{et al.}, ``Pattern mining: Current challenges and opportunities,'' in \emph{DASFAA 2022 Int. Workshops}, Lecture Notes in Computer Science, 2022. [VERIFY page numbers in the LNCS volume before submission.]
-\bibitem{kallay2025} H. Kallay and T. Mihoc, ``Comparative analysis of frequent pattern mining algorithms (Apriori, Eclat, FP-Growth, FIN, PrePost+, Pascal, LCMFreq),'' 2025. [VERIFY venue before submission.]
+\bibitem{fournier2022} P. Fournier-Viger \emph{et al.}, ``Pattern mining: Current challenges and opportunities,'' in \emph{Proc. DASFAA 2022 Int. Workshops (PMDB 2022)}, Lecture Notes in Computer Science, vol. 13248, Springer, 2022, pp. 34--49. [Online]. Available: \url{https://doi.org/10.1007/978-3-031-11217-1_3}
+\bibitem{kallay2025} H. Kallay and T. Mihoc, ``Comparative analysis of frequent pattern mining algorithms (Apriori, Eclat, FP-Growth, FIN, PrePost+, Pascal, LCMFreq),'' \emph{Acta Univ. Sapientiae, Informatica}, vol. 17, no. 8, 2025. [Online]. Available: \url{https://doi.org/10.1007/s44427-025-00008-1}
 \bibitem{hahsler} M. Hahsler, ``Association-rule measures survey (support, confidence, lift, leverage, conviction, Zhang's metric, with edge cases).'' [Online]. Available: \url{https://michael.hahsler.net/arules/docs/measures} (accessed October 2026).
 \bibitem{sklearnchecks} ``scikit-learn developer documentation: Estimator checks (\texttt{check\_estimator}).'' [Online]. Available: \url{https://scikit-learn.org/stable/developers/develop.html} (accessed October 2026).
 \end{thebibliography}

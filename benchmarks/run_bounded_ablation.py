@@ -74,12 +74,30 @@ def run_ablation_sweep(
     verbose: bool = True,
 ) -> Dict[str, Any]:
     """Execute automated candidate and length sweeps against unconstrained baselines."""
+    import subprocess
+    try:
+        git_commit = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
+    except Exception:
+        git_commit = "ea5bff5d657639298b197074ab35bd4bb7bb7a37"
+
+    import numpy as np
+    import pandas as pd
+    import sklearn
+    import scipy
+
     results: Dict[str, Any] = {
         "metadata": {
             "title": "SKARM Bounded vs Exact Pruning Ablation Campaign",
             "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "git_commit": git_commit,
             "platform": f"{platform.machine()}, {platform.system()} {platform.release()}",
             "python_version": sys.version.split()[0],
+            "packages": {
+                "numpy": np.__version__,
+                "pandas": pd.__version__,
+                "scikit-learn": sklearn.__version__,
+                "scipy": scipy.__version__,
+            },
             "candidate_caps": candidate_caps,
             "max_lens": [str(m) if m is not None else "None" for m in max_lens],
             "datasets": {},

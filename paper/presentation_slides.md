@@ -14,7 +14,7 @@
   - Gontla Venkata Anvitha
   - Kamma Giridhar
   - Paladagula Venkata Rajeev
-- **Project Supervisor / Faculty Guide**: Ms. Dudigam Ramya, Department of Computer Science and Engineering, KL University
+- **Project Supervisor / Faculty Guide**: Dr. Dudigam Ramya, Department of Computer Science and Engineering, KL University
 - **Repository**: `https://github.com/ABHISHEK1139/capstone`
 > **Speaker Notes**: Introduce the project, team members, supervisor, and the capstone specialization alignment (AI for Computational Intelligence and Data Engineering for AI).
 
@@ -26,7 +26,7 @@
 - **The Industrial Challenge**: Existing third-party libraries (e.g., mlxtend, apyori) suffer from:
   1. Combinatorial candidate explosion on dense datasets ($\mathcal{O}(2^M)$ candidates).
   2. Unstandardized APIs incompatible with scikit-learn Pipelines and `clone()`.
-  3. Lack of memory guardrails, leading to unhandled OS Out-Of-Memory (OOM) fatal crashes.
+  3. Lack of proactive memory governance, risking unhandled process termination on explosive transaction workloads.
 > **Speaker Notes**: Emphasize that our project does not merely copy an algorithm; it solves the architectural and memory stability challenge preventing scikit-learn from merging association rules for over a decade.
 
 ---
@@ -86,7 +86,7 @@
 ### Slide 7: Scalability & Stress Benchmarks (Chess & Retail)
 - **Dense Stress Test (Chess Benchmark, $N=3,196$, Density $49.33\%$)**:
   - At $s_{\min} = 0.85$: Apriori ($4.47\text{ s}$) vs FP-Growth ($2.68\text{ s}$) vs Eclat ($2.88\text{ s}$) (2,669 itemsets, 80,121 rules).
-  - At $s_{\min} = 0.75$ with `max_candidates=1000`: Capped Apriori executed safely in $1.042\text{ s}$ with zero memory blowout.
+  - At $s_{\min} = 0.75$ with `max_candidates=1000`: Capped Apriori executed safely in $1.042\text{ s}$ under proactive memory governor protection and safe degradation.
 - **High-Throughput Large-Scale Mining (Retail Dataset, $N=88,162$, $M=16,470$)**:
   - **Eclat Throughput**: **31,736 transactions/second** ($2.78\text{ s}$ total).
   - **FP-Growth Throughput**: 11,549 transactions/second.
@@ -121,7 +121,7 @@ All 6 failure modes mandated by the project charter were explicitly audited:
 ---
 
 ### Slide 10: Deliverables & KPI Scorecard Summary
-- **Test Suite**: 155/155 unit & regression tests passed + 88/88 5-tier independent E2E tests passed (100% pass rate).
+- **Test Suite**: 216/216 automated tests passed (76 unit/regression/compatibility + 88 5-tier independent E2E + 52 integration tests; 100% pass rate).
 - **Independent Acceptance Harness**: All 4 conditions (AC-1 to AC-4) satisfied with 100.0/100 rubric score.
 - **Empirical Evaluation**: 25 benchmark datasets, 1,650 trial executions, 100% exact itemset agreement across all 157 engine pairs.
 - **Institutional Deliverables**: Complete documents D1 through D7 submitted.

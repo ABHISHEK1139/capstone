@@ -98,7 +98,11 @@ def fpgrowth(
     max_len : int or None, default=None
         Maximum length of itemsets.
     max_candidates : int, default=100000
-        Maximum itemsets limit.
+        Upper bound on cumulative discovered frequent itemsets |F| extracted
+        from conditional pattern trees. In FP-Growth, frequent prefixes are projected
+        recursively from conditional FP-trees without generating unverified candidate
+        combinations. If |F| >= max_candidates, the configured candidate explosion
+        policy ('raise', 'truncate', or 'degrade') is triggered.
     sample_weight : np.ndarray of shape (n_samples,) or None
         Optional transaction sample weights.
     pruning_policy : PruningPolicy or None
