@@ -21,9 +21,10 @@ The Independent End-to-End (E2E) Test Suite for SKARM is fully implemented, veri
 | **Tier 5** | Adversarial Coverage Hardening | `tests/e2e/test_tier5_adversarial.py` | 10 | 16 | 16 | **PASS** | 4.82 s |
 | **TOTAL** | **Multi-Tier E2E Suite** | **`tests/e2e/`** | **69** | **88** | **88** | **100% PASS** | **8.43 s** |
 
-In addition, the repository unit tests and acceptance test harness maintain a 100% pass rate:
-- **Repository Unit & Regression Tests (`tests/test_*.py`)**: 75 passed out of 75.
-- **Combined Automated Test Suite (`tests/` + `tests/e2e/`)**: 163 passed out of 163 (100% pass rate across Python 3.10, 3.11, 3.12).
+In addition, the repository unit, challenge, compatibility, and acceptance test harnesses maintain a 100% pass rate:
+- **Unit, Integration, Challenge & Compatibility Tests (`tests/test_*.py`)**: 169 passed out of 169.
+- **Multi-Tier E2E Verification Suite (`tests/e2e/`)**: 88 passed out of 88 (across Tiers 1–5).
+- **Combined Automated Test Suite (`tests/` + `tests/e2e/`)**: 257 passed out of 257 (100% pass rate across Python 3.10, 3.11, 3.12; updated from historical 163-test snapshot).
 - **Independent Acceptance Harness (`tests/run_acceptance.py`)**: All AC gates (AC-1..AC-4) and negative tests (NT-1..NT-6) passed with rubric score 100.0/100.
 
 ---

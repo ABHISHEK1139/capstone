@@ -12,7 +12,7 @@
 
 ## 1. Executive Status (as of November 2, 2026)
 
-All technical requirements, empirical benchmark campaigns, compatibility audits, and manuscript publication targets are complete, reproducible, and mathematically certified:
+Technical verification complete; publication decisions pending (target venue selection and author/supervisor sign-off):
 
 | Component | Status | Key Metric / Verification Evidence |
 |---|---|---|
@@ -20,8 +20,8 @@ All technical requirements, empirical benchmark campaigns, compatibility audits,
 | **Independent Acceptance Harness** | **PASS** | AC-1 to AC-4 and NT-1 to NT-6 verified; 100.0/100 rubric score; max numerical error $\le 2.22 \times 10^{-16}$ |
 | **Primary Benchmark Campaign (25 Datasets)** | **COMPLETE** | 25 benchmark datasets, 42 evaluation cells, 1,650 trial executions, 157 engine pairs evaluated for strict itemset & support identity ($\Delta_{\mathrm{supp}} = 0.0$, 0 mismatches); `benchmarks/campaign_results.json` |
 | **Modern Baseline Campaign (Chess, Adult, BMS-POS)** | **COMPLETE** | 27 cells across SKARM (Apriori, FP-Growth, Eclat), mlxtend (v0.25.0), and SPMF Java 21 (FIN, PrePost+, LCMFreq, FP-Growth); 25 completed runs show $\Delta_{\mathrm{supp}} = 0.0$; 2 BMS-POS mlxtend runs skipped due to 814.8 MB dense-matrix limit; `benchmarks/baseline_results.json` |
-| **Scikit-Learn Compatibility Audit** | **CERTIFIED** | 13 passed core checks, 40 expected domain-specific boundary incompatibilities (continuous float rejection, supervised 1D $y$), 1 environment-skipped check, 0 unexpected failures under `check_estimator` |
-| **Pruning & Memory Governor Ablation** | **COMPLETE** | Bounded degradation verified under severe candidate explosion; up to 15.56x speedups under auditable truncation; `benchmarks/ablation_results.json` |
+| **Scikit-Learn Compatibility Audit** | **CERTIFIED** | 14 passed core checks, 39 expected domain-specific boundary incompatibilities (37 unique expectation keys, 2 dual-executed checks), 1 environment-skipped check, 0 unexpected failures under `check_estimator`. Distinct from institutional KPI-6 (7/7, 100% API compliance) |
+| **Pruning & Memory Governor Ablation** | **COMPLETE** | Bounded degradation verified under severe candidate explosion; up to 17.20x speedups under auditable truncation (Chess, 0.3485s vs 5.9941s exact baseline); `benchmarks/ablation_results.json` |
 | **LaTeX Research Manuscripts** | **COMPILED** | Dual camera-ready manuscripts (`paper/paper.pdf` and `paper/paper-ieee.pdf`) compiled via pdfTeX with 0 fatal errors, 0 undefined citations, and 0 overfull hboxes |
 | **Institutional Deliverables** | **SUBMITTED** | Complete deliverables D1 through D7 submitted in `docs/` |
 
@@ -31,7 +31,7 @@ All technical requirements, empirical benchmark campaigns, compatibility audits,
 
 ### 2.1 Commit Provenance
 - **Primary Campaign Measurement Commit**: `ea5bff5d657639298b197074ab35bd4bb7bb7a37` (2026-11-01T18:59:27Z; 25 datasets, 1,650 records).
-- **Current Verified HEAD Commit**: `564a7063e74224252eaa7ae9e2eb8152c5819e5a` (and working tree updates).
+- **Current Verified HEAD Commit**: `420cffbb` (full commit: `420cffbb956a28c74a667f6b1ddda74798ade0bf`).
 - **Baseline Re-Verification Commit**: `564a7063e74224252eaa7ae9e2eb8152c5819e5a` (2026-11-02T14:35:02Z; verification method: `canonical_itemsets_cross_comparison`).
 - **Code Fix Commits for Acceptance Defects**: `ff03b451`, `dd22782f`, `904b19b3`.
 
@@ -50,9 +50,9 @@ All technical requirements, empirical benchmark campaigns, compatibility audits,
 1. **Algorithmic Mining Engines (`skarm/`)**:
    - `skarm/apriori.py`: Canonical level-wise Apriori with support counting and anti-monotonic pruning.
    - `skarm/fpgrowth.py`: Prefix-tree FP-Growth with conditional FP-tree projection, header table links, and $O(1)$ tail-pointer optimizations.
-   - `skarm/eclat.py`: Vertical TID-list intersection Eclat with bitset acceleration.
+   - `skarm/eclat.py`: Vertical TID-list intersection Eclat with vertical TID-set intersections.
 2. **Resource Governance & Memory Telemetry (`skarm/pruning.py`, `skarm/telemetry.py`)**:
-   - Dynamic candidate ceiling (`max_candidates`), maximum pattern length (`max_len`), and memory governor (`max_memory_mb`).
+   - Dynamic candidate ceiling (`max_candidates`), maximum pattern length (`max_len`), and absolute process RSS memory governor budget ceiling (`max_memory_mb`). Note: `max_memory_mb` enforces an absolute process RSS budget limit, distinct from the real-time 10 ms background RSS sampler which measures resident set size delta above baseline.
    - Auditable degradation (`is_degraded` flag, `DegradedModeWarning`) when search boundaries are reached.
    - Real-time peak RSS sampling via `psutil`.
 3. **Scikit-Learn Estimator (`skarm/estimator.py`)**:
@@ -67,15 +67,16 @@ All technical requirements, empirical benchmark campaigns, compatibility audits,
 ## 4. Certified Scikit-Learn Compatibility
 
 An automated audit against `sklearn.utils.estimator_checks.check_estimator` was executed and documented in `docs/SKLEARN_COMPATIBILITY_REPORT.md` and verified in `tests/test_check_estimator_compatibility.py`:
-- **Total Checks Yielded**: 54 checks (53 run + 1 environment-skipped).
-- **Core Structural API (Passed)**: **13 checks** (cloning, estimator tags, repr, get/set_params invariance, constructor purity, unfitted checks, mixin inheritance).
-- **Expected Domain Boundary Incompatibilities**: **40 checks**, strictly justified by the mathematical formulation of association-rule mining:
+- **Total Checks Yielded**: 54 checks (53 executed + 1 environment-skipped).
+- **Core Structural API (Passed)**: **14 checks** (cloning, estimator tags, repr, get/set_params invariance, constructor purity, unfitted checks, mixin inheritance).
+- **Expected Domain Boundary Incompatibilities**: **39 check executions** (37 unique expectation keys, with 2 dual-executed checks: `check_estimators_pickle` and `check_transformer_general` under standard and `readonly_memmap=True`), strictly justified by the mathematical formulation of association-rule mining:
   - *Continuous / Non-Binary Float Inputs* (26 checks): Pattern mining requires discrete binary incidence matrices $X \in \{0, 1\}^{N \times M}$. Continuous Gaussian floats synthesized by generic test generators are rejected by design with `ValueError`.
   - *Supervised 1D $y$ Target Contracts* (4 checks): Pattern mining is unsupervised pattern discovery; `predict(X)` produces transactional basket recommendations (`List[List[str]]`) rather than a 1D supervised target vector $y$.
   - *Synthetic Mock Containers* (2 checks): Rejects `_NotAnArray` mock objects that cannot represent transaction streams.
   - *Custom Exception Formatting* (8 checks): Guardrails raise dedicated `BoundaryConditionError` rather than generic `check_array` messages.
 - **Environment-Skipped**: **1 check** (`check_array_api_input`, skipped due to `SCIPY_ARRAY_API` unset).
 - **Unexpected Failures**: **0**.
+- **Institutional KPI-6 Distinction**: This generic 14/39/1 audit is strictly separate from institutional KPI-6, which evaluates institutional API acceptance criteria across seven mandatory contracts (`BaseEstimator` inheritance, `get_params`, `set_params`, `fit`, `predict`, `transform`, and `rules_`), achieving 7/7 (100%) compliance.
 
 ---
 
@@ -116,7 +117,7 @@ pytest tests/test_adversarial_m5_challenge.py -v
 
 # 6. Run the certified scikit-learn check_estimator compatibility audit
 pytest tests/test_check_estimator_compatibility.py -v
-# Expected: 1 passed (13 passed, 40 expected xfail, 1 skipped, 0 unexpected)
+# Expected: 1 passed (14 passed, 39 expected xfail executions [37 unique keys], 1 skipped, 0 unexpected)
 
 # 7. Verify challenger M5 baselines and cross-engine determinism
 python scripts/verify_challenger_m5_baselines.py

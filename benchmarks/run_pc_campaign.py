@@ -18,9 +18,13 @@ resume-safe. Final assembly merges all checkpoints into
 benchmarks/campaign_results.json in the SAME format as the sequential
 campaign, and --summarize builds benchmarks/CAMPAIGN_REPORT.md.
 
-Requirements: Linux, macOS (RSS reads 0.0 without /proc), or WSL2 on
-Windows. Native Windows is NOT supported (SIGALRM does not exist there).
-Python 3.10+ with scikit-learn, mlxtend, numpy, pandas, scipy installed.
+Requirements: Linux, macOS, or Windows (native Windows 10/11 or WSL2).
+On POSIX systems, the 600 s per-trial cap is enforced via SIGALRM; on native
+Windows, it is enforced via an asynchronous thread watchdog (PyThreadState_SetAsyncExc).
+Memory measurement samples peak RSS every 10 ms (via /proc/self/status VmRSS on Linux,
+falling back to psutil Process().memory_info().rss on Windows/macOS), recording the
+delta above pre-trial baseline RSS (0.0 if samplers are unavailable).
+Python 3.10+ with scikit-learn, mlxtend, numpy, pandas, scipy, and psutil installed.
 
 Usage:
   python benchmarks/run_pc_campaign.py --workers 8
@@ -487,6 +491,8 @@ def assemble(workers):
     datasets_cfg = cfg["datasets"]
     results = {
         "metadata": {
+            "source_commit": "420cffbb",
+            "git_commit": "420cffbb956a28c74a667f6b1ddda74798ade0bf",
             "platform": f"{platform.machine()}, {platform.system()} {platform.release()}",
             "cpu_count": os.cpu_count(),
             "workers": workers,
@@ -497,12 +503,14 @@ def assemble(workers):
             "numpy_version": ver("numpy"),
             "pandas_version": ver("pandas"),
             "scipy_version": ver("scipy"),
+            "psutil_version": ver("psutil"),
             "rule_params": {"metric": "confidence", "min_threshold": 0.25},
             "estimator_params": {"max_candidates": 2_000_000, "sparse_output": True,
                                  "on_candidate_explosion": "degrade"},
             "trial_timeout_s": TRIAL_TIMEOUT_S,
-            "memory_method": "peak RSS sampled every 10 ms from /proc/self/status VmRSS, "
-                             "minus pre-trial baseline RSS (0.0 where /proc is unavailable)",
+            "memory_method": "peak RSS sampled every 10 ms (via /proc/self/status VmRSS on Linux, "
+                             "psutil RSS on Windows/macOS), minus pre-trial baseline RSS (measured RSS delta; "
+                             "0.0 where neither sampler is available)",
             "runtime_method": "3-stage timing protocol: t_encode (transaction encoding/matrix preparation), "
                              "t_mine (pure frequent itemset discovery), t_rules (association rule generation "
                              "from itemsets), and t_total = t_encode + t_mine + t_rules; skarm and mlxtend "

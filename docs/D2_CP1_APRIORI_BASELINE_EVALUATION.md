@@ -13,7 +13,7 @@ $$\forall S \subseteq I, \quad \text{support}(I) \le \text{support}(S)$$
 Consequently, any candidate itemset $C_k$ of size $k$ can only be frequent if all of its $(k-1)$-subsets are members of $L_{k-1}$.
 
 ### Implementation Details
-The reference baseline is implemented in [`skarm.apriori.apriori`](file:///c:/Users/ak612/OneDrive/Desktop/capstone/skarm/apriori.py):
+The reference baseline is implemented in [`skarm.apriori.apriori`](../skarm/apriori.py):
 1. **$L_1$ Generation**: Scans transaction indicators to identify single items meeting `min_support`.
 2. **Candidate Join ($C_k$)**: Merges frequent $(k-1)$-itemsets $l_1, l_2$ that share an identical $(k-2)$-prefix.
 3. **Candidate Pruning**: Verifies that all $(k-1)$ subsets of each candidate exist in $L_{k-1}$, immediately discarding non-viable combinations before database evaluation.

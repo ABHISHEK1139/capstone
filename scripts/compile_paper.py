@@ -93,10 +93,18 @@ def compile_file(tex_file: Path, repo_root: Path, passes: int = 2) -> bool:
     mult_labels = re.findall(
         r"LaTeX Warning: Label `(.*?)' multiply defined", log_content
     )
-    overfull_hboxes = re.findall(
-        r"Overfull \\hbox \(([0-9.]+pt) too wide\) in paragraph at lines (\d+)--(\d+)",
+    # Match all Overfull \hbox occurrences (paragraphs, alignments, page splits)
+    overfull_boxes_raw = re.findall(
+        r"Overfull \\hbox \(([0-9.]+)pt too wide\)",
         log_content,
     )
+    overfull_boxes = [float(w) for w in overfull_boxes_raw]
+    max_overfull_pt = max(overfull_boxes, default=0.0)
+
+    # Layout criteria: reject severe overfull boxes that spill into margins (> 3.0 pt)
+    MAX_OVERFULL_THRESHOLD_PT = float(os.environ.get("MAX_OVERFULL_PT", "3.0"))
+    overfull_severe = [w for w in overfull_boxes if w > MAX_OVERFULL_THRESHOLD_PT]
+    overfull_ok = (len(overfull_severe) == 0)
 
     print("\n================ COMPILATION AUDIT REPORT ================")
     print(f"Document:                  {tex_file.name}")
@@ -112,11 +120,13 @@ def compile_file(tex_file: Path, repo_root: Path, passes: int = 2) -> bool:
     for lbl in mult_labels:
         print(f"  [WARNING] Multiply-defined label: {lbl}")
 
-    print(f"Overfull \\hbox Warnings:   {len(overfull_hboxes)}")
-    for width, l1, l2 in overfull_hboxes[:10]:
-        print(f"  [HBOX] {width} too wide at lines {l1}--{l2}")
-    if len(overfull_hboxes) > 10:
-        print(f"  ... and {len(overfull_hboxes) - 10} more.")
+    print(f"Overfull \\hbox Warnings:   {len(overfull_boxes)} (Max: {max_overfull_pt:.2f} pt)")
+    if overfull_severe:
+        print(f"  [ALERT] {len(overfull_severe)} overfull boxes exceed layout threshold ({MAX_OVERFULL_THRESHOLD_PT:.1f} pt):")
+        for w in overfull_severe[:10]:
+            print(f"    - {w:.2f} pt too wide")
+        if len(overfull_severe) > 10:
+            print(f"    ... and {len(overfull_severe) - 10} more.")
 
     pdf_ok = pdf_file.is_file() and pdf_file.stat().st_size > 0
     if pdf_ok:
@@ -131,13 +141,14 @@ def compile_file(tex_file: Path, repo_root: Path, passes: int = 2) -> bool:
         len(fatal_errors) == 0
         and len(undef_citations) == 0
         and len(mult_labels) == 0
+        and overfull_ok
         and pdf_ok
     )
 
     if passed:
         print(f"[SUCCESS] {tex_file.name} compiled and verified cleanly with 0 defects.")
     else:
-        print(f"[FAILURE] {tex_file.name} verification failed. See above details.")
+        print(f"[FAILURE] {tex_file.name} verification failed (errors, citations, or overfull layout defects).")
 
     return passed
 

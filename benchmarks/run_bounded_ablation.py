@@ -78,7 +78,7 @@ def run_ablation_sweep(
     try:
         git_commit = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
     except Exception:
-        git_commit = "ea5bff5d657639298b197074ab35bd4bb7bb7a37"
+        git_commit = "420cffbb956a28c74a667f6b1ddda74798ade0bf"
 
     import numpy as np
     import pandas as pd

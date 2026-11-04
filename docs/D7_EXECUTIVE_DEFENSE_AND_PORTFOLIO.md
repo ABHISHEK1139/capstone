@@ -17,7 +17,7 @@ Over the two-semester lifecycle (CP1 and CP2), our team engineered `skarm`, an o
 1. **CP1 Reference Baseline (O1, O2)**: A mathematically certified conventional Apriori baseline validated against an analytical hand-computed oracle ($100\%$ precision, error $< 2.22 \times 10^{-16}$).
 2. **CP2 Differentiating Contributions (O3)**: High-performance FP-Growth (prefix-tree pattern growth) and Eclat (vertical TID-list intersection) engines, achieving up to $100\%$ candidate generation reduction and order-of-magnitude scalability gains.
 3. **Safety & Pruning Engine (O4)**: Real-time candidate ceiling guards (`max_candidates`), maximum length limits (`max_len`), and proactive degradation protocols that safeguard system memory under adversarial, high-density transaction conditions.
-4. **Independent Acceptance & Robustness Campaign (O5)**: Exhaustive verification across 6 mandatory negative test suites (NT-1 to NT-6), satisfying all Acceptance Conditions (AC-1 to AC-4) and achieving a **100% test pass rate across 216 automated tests (76 unit/regression/compatibility + 88 5-tier E2E + 52 integration tests)**.
+4. **Independent Acceptance & Robustness Campaign (O5)**: Exhaustive verification across 6 mandatory negative test suites (NT-1 to NT-6), satisfying all Acceptance Conditions (AC-1 to AC-4) and achieving a **100% test pass rate across 257 automated tests (169 unit, integration, challenge, and compatibility tests + 88 5-tier E2E tests)**.
 
 ---
 

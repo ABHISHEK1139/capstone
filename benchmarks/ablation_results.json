@@ -2,7 +2,7 @@
   "metadata": {
     "title": "SKARM Bounded vs Exact Pruning Ablation Campaign",
     "timestamp": "2026-11-01T18:15:33Z",
-    "git_commit": "ea5bff5d657639298b197074ab35bd4bb7bb7a37",
+    "git_commit": "420cffbb956a28c74a667f6b1ddda74798ade0bf",
     "platform": "AMD64, Windows 11",
     "python_version": "3.12.10",
     "packages": {

@@ -11,7 +11,7 @@
 The independent acceptance testing campaign executed under conditions **AC-1** (Representative Operation), **AC-2** (Boundary and Failure Operation), **AC-3** (Held-Out Evaluation Mechanics on 70/30 Synthetic Partition), and **AC-4** (Frozen Resource Envelope).
 
 ### Test Suite Execution Summary
-- **Multi-Tier Pytest Suite**: **216 automated tests passed (76 unit/regression/compatibility + 88 5-tier E2E + 52 integration tests; 100% pass rate)**
+- **Multi-Tier Pytest Suite**: **257 automated tests passed (169 unit, integration, challenge, and compatibility tests + 88 5-tier E2E tests; 100% pass rate)**
 - **Independent Acceptance Harness**: **PASSED (Exit code 0; AC-1, AC-2, AC-3, AC-4, NT-1..NT-6)**
 - **Benchmark Suite**: **KPI-1 through KPI-6 All Met / Exceeded across 25 benchmark datasets**
 
@@ -101,7 +101,7 @@ Every negative condition mandated by the project charter was explicitly construc
 
 ## 4. Real-World Benchmark Dataset Empirical Results
 
-To corroborate the synthetic acceptance harness under authentic production conditions, `skarm` was benchmarked on three canonical repositories:
+To corroborate the synthetic acceptance harness on real-world benchmark datasets, `skarm` was evaluated on three canonical repositories under a research-grade evaluation protocol:
 1. **Groceries Market Basket** ($N = 9,835$, $M = 169$ unique grocery categories, 4.41 avg items/tx, $97.39\%$ sparsity).
 2. **Chess Benchmark** ($N = 3,196$, $M = 75$ configurations, $49.33\%$ density combinatorial stress benchmark).
 3. **Retail Benchmark** ($N = 88,162$ transactions, $M = 16,470$ items, $99.94\%$ sparsity).
@@ -136,4 +136,4 @@ All discovered rule metrics (support, confidence, lift, leverage, conviction, an
 
 ## 5. Final Gate Conclusion
 
-**ALL CRITERIA SATISFIED**. The software has completed end-to-end verification across both synthetic acceptance partitions and large-scale real-world datasets ($N = 88,162$), satisfying all KPIs and institutional requirements for final deployment and academic defense.
+**ALL CRITERIA SATISFIED**. The software has completed end-to-end verification across both synthetic acceptance partitions and large-scale real-world datasets ($N = 88,162$), satisfying all KPIs and institutional requirements for research-grade evaluation and academic defense readiness.

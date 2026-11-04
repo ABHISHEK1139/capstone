@@ -58,17 +58,37 @@ def test_check_estimator_compatibility():
     All checks pass cleanly or fail only on mathematically certified domain boundaries
     (continuous data rejection, unsupervised rule extraction vs supervised prediction,
     mock array containers).
+
+    Note on check execution counts:
+    EXPECTED_FAILED_CHECKS defines 37 unique named expectation keys.
+    In execution, scikit-learn yields 39 expected failure (xfail) executions because two
+    checks are executed twice with different parametrizations sharing the same check name:
+      1. check_estimators_pickle: standard and readonly_memmap=True
+      2. check_transformer_general: standard and readonly_memmap=True
+    Combined with 14 passed checks and 1 environment-skipped check (check_array_api_input
+    when SCIPY_ARRAY_API is unset), this yields 54 total check executions with 0 unexpected
+    failures.
     """
     est = AssociationRulesEstimator(max_candidates=500)
-    # check_estimator with expected_failed_checks will raise on any UNEXPECTED failure
-    results = check_estimator(
+    # check_estimator with expected_failed_checks will record xfail on matched checks
+    results = list(check_estimator(
         est,
         expected_failed_checks=EXPECTED_FAILED_CHECKS,
         on_fail=None,
-    )
+    ))
 
-    failed = [r for r in results if r["status"] == "failed"]
-    assert len(failed) == 0, f"Unexpected failures in check_estimator: {failed}"
+    unexpected_failed = [r for r in results if r["status"] == "failed"]
+    expected_failed = [r for r in results if r["status"] == "xfail"]
+    passed = [r for r in results if r["status"] == "passed"]
+    skipped = [r for r in results if r["status"] == "skipped"]
+
+    # Machine-verified count assertions
+    assert len(unexpected_failed) == 0, f"Unexpected failures in check_estimator: {unexpected_failed}"
+    assert len(passed) == 14, f"Expected 14 passed checks, got {len(passed)}: {[r['check_name'] for r in passed]}"
+    assert len(expected_failed) == 39, f"Expected 39 expected domain boundary xfail executions, got {len(expected_failed)}"
+    assert len(skipped) == 1, f"Expected 1 skipped check, got {len(skipped)}: {[r['check_name'] for r in skipped]}"
+    assert len(EXPECTED_FAILED_CHECKS) == 37, f"Expected 37 unique failure expectations, got {len(EXPECTED_FAILED_CHECKS)}"
+    assert len(results) == 54, f"Expected 54 total check executions, got {len(results)}"
 
     # Also verify standard execution mode (raises immediately on unexpected failures)
     check_estimator(est, expected_failed_checks=EXPECTED_FAILED_CHECKS)

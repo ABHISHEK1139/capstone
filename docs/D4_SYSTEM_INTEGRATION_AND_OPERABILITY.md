@@ -11,13 +11,13 @@
 The `skarm` library provides an end-to-end, research-grade association rule mining framework structured around standard scientific computing conventions (with explicit exclusion of unattended production certification per manuscript Section 7). It connects preprocessing, pattern discovery, metric calculation, safety governance, and interactive exploration into a cohesive architecture.
 
 ### Integrated Subsystems
-1. **[`skarm.preprocessing.TransactionEncoder`](file:///c:/Users/ak612/OneDrive/Desktop/capstone/skarm/preprocessing.py)**: Scikit-learn transformer mapping raw transaction iterables to dense boolean arrays or Scipy CSR matrices.
-2. **Mining Engines ([`skarm.apriori`](file:///c:/Users/ak612/OneDrive/Desktop/capstone/skarm/apriori.py), [`skarm.fpgrowth`](file:///c:/Users/ak612/OneDrive/Desktop/capstone/skarm/fpgrowth.py), [`skarm.eclat`](file:///c:/Users/ak612/OneDrive/Desktop/capstone/skarm/eclat.py))**: Three swappable mining engines bound by unified parameter contracts.
-3. **Safety Engine ([`skarm.pruning.PruningPolicy`](file:///c:/Users/ak612/OneDrive/Desktop/capstone/skarm/pruning.py))**: Intercepts runaway candidate growth and manages degraded mode transitions.
-4. **Telemetry & Audit ([`skarm.telemetry.TelemetryLogger`](file:///c:/Users/ak612/OneDrive/Desktop/capstone/skarm/telemetry.py))**: Continuous profiling of wall-clock time and peak memory consumption.
-5. **Estimator ([`skarm.estimator.AssociationRulesEstimator`](file:///c:/Users/ak612/OneDrive/Desktop/capstone/skarm/estimator.py))**: `BaseEstimator` scikit-learn compatible object providing `fit`, `predict`, `transform`, and `clone`.
-6. **Exploration & Reporting ([`skarm.explorer.RuleExplorer`](file:///c:/Users/ak612/OneDrive/Desktop/capstone/skarm/explorer.py))**: Analytical summary statistics, threshold filtering, and markdown rendering.
-7. **CLI Utility ([`skarm.cli`](file:///c:/Users/ak612/OneDrive/Desktop/capstone/skarm/cli.py))**: Direct terminal execution for automated batch processing and interactive demonstrations.
+1. **[`skarm.preprocessing.TransactionEncoder`](../skarm/preprocessing.py)**: Scikit-learn transformer mapping raw transaction iterables to dense boolean arrays or Scipy CSR matrices.
+2. **Mining Engines ([`skarm.apriori`](../skarm/apriori.py), [`skarm.fpgrowth`](../skarm/fpgrowth.py), [`skarm.eclat`](../skarm/eclat.py))**: Three swappable mining engines bound by unified parameter contracts.
+3. **Safety Engine ([`skarm.pruning.PruningPolicy`](../skarm/pruning.py))**: Intercepts runaway candidate growth and manages degraded mode transitions.
+4. **Telemetry & Audit ([`skarm.telemetry.TelemetryLogger`](../skarm/telemetry.py))**: Continuous profiling of wall-clock time and peak memory consumption.
+5. **Estimator ([`skarm.estimator.AssociationRulesEstimator`](../skarm/estimator.py))**: `BaseEstimator` scikit-learn compatible object providing `fit`, `predict`, `transform`, and `clone`.
+6. **Exploration & Reporting ([`skarm.explorer.RuleExplorer`](../skarm/explorer.py))**: Analytical summary statistics, threshold filtering, and markdown rendering.
+7. **CLI Utility ([`skarm.cli`](../skarm/cli.py))**: Direct terminal execution for automated batch processing and interactive demonstrations.
 
 ---
 
@@ -69,6 +69,6 @@ sequenceDiagram
 ```
 
 ### Safety Guarantees
-- **Proactive Memory Governor**: The process enforces candidate and memory limits, terminating deeper exploration before uncontrolled combinatorial allocation.
+- **Cooperative Memory Governor**: A background 10 ms polling sampler and periodic budget checkpoints enforce candidate limits and best-effort RSS thresholds, safely halting exploration before unmonitored growth. This application-level cooperative governor polls process RSS and does not replace operating-system-level hard limits (such as Linux cgroups, Docker memory limits, or Windows Job Objects) against rapid, intra-step memory spikes.
 - **Auditability**: `estimator.is_degraded_` is publicly inspectable and `estimator.pruning_policy_.degradation_reason` contains the diagnostic reason.
 - **Graceful Partial Results**: All verified rules discovered up to level $k-1$ remain fully valid and accessible.

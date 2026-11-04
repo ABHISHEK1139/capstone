@@ -8,7 +8,8 @@ benchmark datasets:
   - Sparse: bms_pos @ min_support=0.05
 
 Measures wall-clock mining time, peak memory usage, and verifies mathematical equivalence
-of discovered frequent itemset counts across all frameworks.
+of discovered frequent itemsets by comparing canonical itemset identity and support values
+(not just counts) across all frameworks.
 
 Outputs structured machine-readable results to benchmarks/baseline_results.json.
 """

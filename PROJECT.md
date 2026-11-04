@@ -59,6 +59,7 @@ SKARM is a scikit-learn-style association rule mining framework providing unifie
 | M4 | Final Milestone & Forensic Audit | Phase 1: Pass 100% of E2E verification test suite (Tiers 1-4); Phase 2: Adversarial coverage hardening (Tier 5); Forensic integrity audit (zero violations) | M1, M2, M3, E2E | DONE |
 | E2E | E2E Testing Track | Independent opaque-box test infrastructure and multi-tier test cases (Tiers 1-4) derived from user requirements; publishes TEST_READY.md | none | DONE |
 | M5 | Final Validation & Publication Reconciliation | R1 (runner correctness & subset re-verification), R2 (test count & doc synchronization), R3 (scikit-learn compatibility & check_estimator audit), R4 (manuscript claims, citations, PDF compilation) | M4 | DONE |
+| M6 | Fresh Review Remediation & Camera-Ready Finalization | Ablation & campaign re-verification on commit 420cffbb, psutil core dependency, cooperative governor clarification, dataset provenance reconciliation, 257-test synchronization, and publication decisions | M5 | IN_PROGRESS |
 
 ## Interface Contracts
 ### `skarm.base` / `skarm.estimator` ↔ Scikit-learn Pipeline

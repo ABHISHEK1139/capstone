@@ -43,7 +43,7 @@ tests/
 
 ## 2. Multi-Tier E2E Test Architecture
 
-The E2E test suite adheres to a 4-tier progressive verification model:
+The E2E test suite adheres to a 5-tier progressive verification model (including Tier 5 adversarial coverage hardening):
 
 ### Tier 1: Feature Coverage (`test_tier1_features.py` — 32 Tests)
 Verifies basic contracts and isolated features against analytical ground truth (>= 5 tests per feature):
@@ -135,7 +135,7 @@ For every test case, expected outputs are grounded in explicit mathematical defi
 ## 5. Execution Instructions
 
 ### Running the E2E Verification Suite via Standalone Runner
-The self-contained runner executes all 4 tiers, collects fine-grained telemetry, and outputs a formatted terminal scorecard and JSON report:
+The self-contained runner executes all 5 tiers, collects fine-grained telemetry, and outputs a formatted terminal scorecard and JSON report:
 ```bash
 python tests/e2e/run_e2e.py
 ```
@@ -150,6 +150,7 @@ python -m pytest tests/e2e/test_tier1_features.py -v
 python -m pytest tests/e2e/test_tier2_boundaries.py -v
 python -m pytest tests/e2e/test_tier3_pairwise.py -v
 python -m pytest tests/e2e/test_tier4_scenarios.py -v
+python -m pytest tests/e2e/test_tier5_adversarial.py -v
 ```
 
 ### Running the Acceptance Test Harness
