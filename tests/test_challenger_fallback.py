@@ -186,6 +186,8 @@ def test_live_mock_run_baselines():
     ensuring that CI without mlxtend succeeds cleanly.
     """
     orig_mlx = rb.run_mlxtend_algorithm
+    orig_spmf = rb.run_spmf_algorithm
+    has_real_spmf = os.path.exists(rb.DEFAULT_SPMF_JAR)
 
     def mock_mlx(algorithm, X_sparse, min_support, n_transactions, n_items, feature_names=None, trials=3):
         try:
@@ -212,7 +214,23 @@ def test_live_mock_run_baselines():
             res.pop("canonical_itemsets", None)
         return res
 
+    def mock_spmf(spmf_jar, algorithm, input_file, min_support, id_to_item=None, n_transactions=0, trials=3):
+        return {
+            "algorithm": algorithm,
+            "framework": "spmf",
+            "language": "Java",
+            "status": "SKIP",
+            "note": "spmf.jar not present in test environment",
+            "time_seconds": None,
+            "n_itemsets": None,
+        }
+
     rb.run_mlxtend_algorithm = mock_mlx
+    tmp_jar = None
+    if not has_real_spmf:
+        rb.run_spmf_algorithm = mock_spmf
+        with tempfile.NamedTemporaryFile("w", delete=False, suffix=".jar") as f_jar:
+            tmp_jar = f_jar.name
 
     with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json") as tmp:
         tmp_out = tmp.name
@@ -220,6 +238,7 @@ def test_live_mock_run_baselines():
     try:
         results = run_comparative_baselines(
             datasets=["chess"],
+            spmf_jar=rb.DEFAULT_SPMF_JAR if has_real_spmf else tmp_jar,
             trials=1,
             output_path=tmp_out,
             verbose=False,
@@ -261,5 +280,8 @@ def test_live_mock_run_baselines():
 
     finally:
         rb.run_mlxtend_algorithm = orig_mlx
+        rb.run_spmf_algorithm = orig_spmf
         if os.path.exists(tmp_out):
             os.remove(tmp_out)
+        if tmp_jar and os.path.exists(tmp_jar):
+            os.remove(tmp_jar)

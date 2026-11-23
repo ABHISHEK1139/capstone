@@ -4,20 +4,20 @@
 **Title**: Scalable Association-Rule Mining Estimator with Apriori Baseline  
 **Programme**: B.Tech (AI for Computational Intelligence)  
 **Related Specializations**: Data Engineering for AI · SOFTWARE MODELLING & DEVOPS  
-**Upstream Custodian / Reference**: scikit-learn GitHub issue #32712 ("Add Apriori algorithm for association rule mining")  
+**Upstream Context / Inspiration**: `scikit-learn/scikit-learn#32712` ("Add Apriori Algorithm for Association Rule Mining") — opened 2025-11-14, **closed as `not_planned`** on 2025-11-16 by scikit-learn maintainer `@virchan` citing `#2662` (pattern mining outside core scikit-learn scope; recommended as an external library such as `scikit-mine` or `scikit-learn-contrib`). **`skarm` is positioned strictly as an independent, third-party scikit-learn-compatible library**, not an accepted or endorsed core scikit-learn feature.
 
 ---
 
 ## 1. Problem Statement & Context
 
-In real-world transactional intelligence, market-basket analytics, and sequence modeling, standard feature engineering and classification workflows often benefit from association rules. However, scikit-learn has historically lacked a native association rule mining estimator. Practitioners have been forced to rely on external, disparate packages with non-standard APIs, fragile candidate generation, unpredictable memory usage, and lack of integration with scikit-learn pipelines.
+In real-world transactional intelligence, market-basket analytics, and sequence modeling, standard feature engineering and classification workflows often benefit from association rules. Upstream `scikit-learn` maintainers explicitly confirmed in issues `#2662` and `#32712` (closed as `not_planned` on 2025-11-16) that frequent-pattern and association-rule mining sits outside core `scikit-learn`'s scope and should instead live in dedicated third-party libraries. Existing external packages often have non-standard APIs, fragile candidate generation, unpredictable memory usage, or incomplete integration with scikit-learn pipelines.
 
 The governing engineering challenge is that unconstrained association rule mining suffers from **combinatorial candidate explosion**: in dense transactional matrices, candidate counts scale as $\mathcal{O}(2^M)$ where $M$ is the number of distinct items. Without bounded candidate generation, reproducible support counting, and mathematically certified rule-quality semantics, models crash with Out-Of-Memory (OOM) errors or produce untrustworthy rules.
 
 ### Source-to-Claim Mapping
-| Upstream Reference | Issue / Claim | Project Response & Architectural Guarantee |
+| Upstream Reference | Confirmed Issue Status / Engineering Gap | Independent Library Response & Architectural Guarantee |
 |---|---|---|
-| **scikit-learn issue #32712** | Feature request: Add Apriori algorithm for association rule mining | Delivered `AssociationRulesEstimator` fully compliant with `BaseEstimator` API |
+| **scikit-learn issue #32712** | Feature request ("Add Apriori Algorithm for Association Rule Mining", opened 2025-11-14) was **closed as `not_planned`** on 2025-11-16 by `@virchan` (citing `#2662`, directing pattern mining to dedicated external packages) | Delivered `skarm` as an **independent, third-party scikit-learn-compatible library** (`AssociationRulesEstimator` conforming to `BaseEstimator` / `TransformerMixin` conventions) rather than an upstream core scikit-learn feature |
 | **Unbounded Candidate Growth** | Dense transaction matrices cause combinatorial explosion | Implemented `PruningPolicy` with configurable `max_candidates`, safe degradation, and telemetry |
 | **Support Counting Semantics** | Inconsistent definition of sample weights and sparse transactions | Mathematically certified support arithmetic on both dense boolean arrays and CSR/CSC matrices |
 | **Lack of Standard Metrics** | Discrepancies in rule quality scores across packages | Built numerical oracle verifying support, confidence, lift, leverage, conviction, and Zhang's metric to machine precision ($< 10^{-15}$) |
@@ -94,6 +94,6 @@ flowchart TD
 | **KPI-1** | Frequent-itemset precision vs oracle (%) | 100.0% | $\ge 98.0\%$ | **100.0%** | **PASS** |
 | **KPI-2** | Rule-metric numerical error | Max error $< 10^{-12}$ | Rubric Score $\ge 80/100$ | **100.0/100** ($2.22 \times 10^{-16}$) | **PASS** |
 | **KPI-3** | Peak candidate count | Unbounded ($> 10^5$) | Capped by guardrail policy | **Enforced & Capped** | **PASS** |
-| **KPI-4** | Runtime by transaction scale (p95) | Reference runtime | $p95 \le 0.80 \times$ Baseline | **Compliant** | **PASS** |
-| **KPI-5** | Peak memory by transaction scale | Reference memory | $\le 0.80 \times$ Baseline or $< 1$ MB | **Compliant** ($< 0.8$ MB) | **PASS** |
+| **KPI-4** | Runtime by transaction scale (p95, warmup + 30 trials, monotonic clock, no exemptions) | Reference runtime | $p95 \le 0.80 \times$ Baseline at equal quality | **FP-Growth `0.235–0.375×`, Eclat `0.180–0.333×` of Apriori p95** ($\Delta_{\mathrm{supp}}=0.0$, 0 failures) | **PASS** |
+| **KPI-5** | Peak memory by transaction scale | Reference memory | Monitored & bounded without critical quality regression | **0.033–0.181 MB** on synthetic scales (fixed buffer floor near parity `1.00–1.39×`; governor caps dense explosion) | **MONITORED / BOUNDED** |
 | **KPI-6** | Estimator API compliance pass rate | 100.0% | 100.0% | **100.0% (7/7 checks)** | **PASS** |

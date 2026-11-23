@@ -21,11 +21,11 @@ The Independent End-to-End (E2E) Test Suite for SKARM is fully implemented, veri
 | **Tier 5** | Adversarial Coverage Hardening | `tests/e2e/test_tier5_adversarial.py` | 10 | 16 | 16 | **PASS** | 4.82 s |
 | **TOTAL** | **Multi-Tier E2E Suite** | **`tests/e2e/`** | **69** | **88** | **88** | **100% PASS** | **8.43 s** |
 
-In addition, the repository unit, challenge, compatibility, and acceptance test harnesses maintain a 100% pass rate:
-- **Unit, Integration, Challenge & Compatibility Tests (`tests/test_*.py`)**: 169 passed out of 169.
+In addition, the repository unit, challenge, compatibility, acceptance-contract, and acceptance test harnesses maintain a 100% pass rate:
+- **Unit, Integration, Challenge, Compatibility & Contract Tests (`tests/test_*.py`)**: 176 passed out of 176.
 - **Multi-Tier E2E Verification Suite (`tests/e2e/`)**: 88 passed out of 88 (across Tiers 1–5).
-- **Combined Automated Test Suite (`tests/` + `tests/e2e/`)**: 257 passed out of 257 (100% pass rate across Python 3.10, 3.11, 3.12; updated from historical 163-test snapshot).
-- **Independent Acceptance Harness (`tests/run_acceptance.py`)**: All AC gates (AC-1..AC-4) and negative tests (NT-1..NT-6) passed with rubric score 100.0/100.
+- **Combined Automated Test Suite (`tests/` + `tests/e2e/`)**: 264 passed out of 264 (100% pass rate; updated from historical 163-test and 257-test snapshots).
+- **Independent Acceptance Harness (`tests/run_acceptance.py`)**: All AC gates (AC-1..AC-4) and negative tests (NT-1..NT-6) passed with rubric score 100.0/100 and strict 30-trial warmup KPI-4 compliance (`p95 <= 0.80 * Apriori` for both FP-Growth and Eclat with zero small-runtime exemptions).
 
 ---
 

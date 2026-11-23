@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>skarm — Association-Rule Mining Workbench</title>
+  <meta name="description" content="Interactive verification workbench and rule explorer for skarm, an independent scikit-learn-compatible association-rule mining library with Apriori, FP-Growth, and Eclat engines." />
+  <meta property="og:title" content="skarm — Association-Rule Mining Workbench" />
+  <meta property="og:description" content="Interactive verification workbench and rule explorer for skarm, an independent scikit-learn-compatible association-rule mining library with Apriori, FP-Growth, and Eclat engines." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="bg-white text-slate-900 min-h-screen flex flex-col">
+  <!-- Top Calibration Bar (3-Zone Single-Line Architecture) -->
+  <header class="sticky top-0 z-30 h-14 bg-white border-b border-slate-200">
+    <div class="max-w-[1440px] mx-auto h-full px-4 sm:px-6 flex items-center justify-between gap-4">
+      <!-- Zone 1: Wordmark -->
+      <div class="flex items-center gap-2.5 shrink-0">
+        <svg class="w-6 h-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="6" cy="12" r="2.5" />
+          <circle cx="18" cy="6.5" r="2.5" />
+          <circle cx="18" cy="17.5" r="2.5" />
+          <line x1="8.3" y1="10.9" x2="15.7" y2="7.6" />
+          <line x1="8.3" y1="13.1" x2="15.7" y2="16.4" />
+        </svg>
+        <span class="font-bold tracking-tight text-slate-900 text-base">skarm</span>
+        <span class="hidden sm:inline font-mono text-xs text-slate-400">v0.1.0 · KLCAP-2026-00340</span>
+      </div>
+
+      <!-- Zone 2: Primary Navigation -->
+      <nav aria-label="Workbench Views" role="tablist" class="flex items-center gap-1 sm:gap-2 overflow-x-auto">
+        <button
+          id="tab-explorer"
+          type="button"
+          role="tab"
+          aria-selected="true"
+          aria-controls="panel-explorer"
+          data-tab="explorer"
+          class="tab-btn whitespace-nowrap px-3 py-1.5 text-sm font-medium border-b-2 border-blue-600 text-slate-900 transition-colors cursor-pointer"
+        >Rule Explorer</button>
+        <button
+          id="tab-benchmarks"
+          type="button"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-benchmarks"
+          data-tab="benchmarks"
+          class="tab-btn whitespace-nowrap px-3 py-1.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
+        >Benchmarks</button>
+        <button
+          id="tab-acceptance"
+          type="button"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-acceptance"
+          data-tab="acceptance"
+          class="tab-btn whitespace-nowrap px-3 py-1.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
+        >Acceptance</button>
+        <button
+          id="tab-ecosystem"
+          type="button"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-ecosystem"
+          data-tab="ecosystem"
+          class="tab-btn whitespace-nowrap px-3 py-1.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
+        >Ecosystem</button>
+        <button
+          id="tab-paper"
+          type="button"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-paper"
+          data-tab="paper"
+          class="tab-btn whitespace-nowrap px-3 py-1.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
+        >IEEE Paper</button>
+      </nav>
+
+      <!-- Zone 3: Single Primary Action -->
+      <div class="shrink-0">
+        <button
+          id="header-run-acceptance"
+          type="button"
+          class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-sm transition-colors cursor-pointer whitespace-nowrap"
+        >Run Acceptance</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-5 space-y-5">
+    <!-- Calibrated Telemetry Summary Strip -->
+    <section aria-label="Verification Summary" class="grid grid-cols-2 lg:grid-cols-4 border border-slate-200 divide-y lg:divide-y-0 divide-x divide-slate-200 bg-slate-50/70">
+      <div class="p-3.5 sm:p-4">
+        <div class="text-[11px] font-mono uppercase tracking-wider text-slate-500">Automated Test Suite</div>
+        <div class="mt-1 flex items-baseline gap-1.5">
+          <span id="kpi-tests" class="text-2xl font-mono font-semibold text-slate-900 tabular-nums">264 / 264</span>
+          <span class="text-xs font-mono uppercase text-emerald-700">PASS</span>
+        </div>
+        <div id="kpi-e2e-sub" class="mt-1 text-xs font-mono text-slate-500 tabular-nums">88 / 88 E2E · 5 Tiers</div>
+      </div>
+
+      <div class="p-3.5 sm:p-4">
+        <div class="text-[11px] font-mono uppercase tracking-wider text-slate-500">Strict KPI-4 Engine p95</div>
+        <div class="mt-1 flex items-baseline gap-1.5">
+          <span id="kpi-fp-ratio" class="text-2xl font-mono font-semibold text-slate-900 tabular-nums">--</span>
+          <span class="text-xs font-mono uppercase text-slate-500">vs Apriori</span>
+        </div>
+        <div id="kpi-eclat-sub" class="mt-1 text-xs font-mono text-emerald-700 tabular-nums">30 trials · 0 exemptions</div>
+      </div>
+
+      <div class="p-3.5 sm:p-4">
+        <div class="text-[11px] font-mono uppercase tracking-wider text-slate-500">Bit-Exact Equivalence</div>
+        <div class="mt-1 flex items-baseline gap-1.5">
+          <span id="kpi-delta" class="text-2xl font-mono font-semibold text-slate-900 tabular-nums">0.00e+00</span>
+          <span class="text-xs font-mono uppercase text-slate-500">max Δsupp</span>
+        </div>
+        <div id="kpi-err-sub" class="mt-1 text-xs font-mono text-slate-500 tabular-nums">Rule error 2.22e-16 · 100% Oracle</div>
+      </div>
+
+      <div class="p-3.5 sm:p-4">
+        <div class="text-[11px] font-mono uppercase tracking-wider text-slate-500">Estimator API Compliance</div>
+        <div class="mt-1 flex items-baseline gap-1.5">
+          <span id="kpi-api" class="text-2xl font-mono font-semibold text-slate-900 tabular-nums">7 / 7</span>
+          <span class="text-xs font-mono uppercase text-slate-500">KPI-6</span>
+        </div>
+        <div class="mt-1 text-xs font-mono text-slate-500">Independent library · #32712 closed</div>
+      </div>
+    </section>
+
+    <!-- PANEL 1: INTERACTIVE RULE EXPLORER -->
+    <section id="panel-explorer" role="tabpanel" aria-labelledby="tab-explorer" class="grid grid-cols-1 lg:grid-cols-[336px_1fr] gap-5 items-start">
+      <!-- Left Parameter Console -->
+      <form id="mine-form" class="border border-slate-200 bg-slate-50/50 divide-y divide-slate-200" novalidate>
+        <div class="p-4">
+          <h1 class="text-sm font-semibold text-slate-900 tracking-tight">Mining Parameters</h1>
+          <p class="mt-1 text-xs text-slate-500 leading-relaxed">Execute live <span class="font-mono text-slate-700">AssociationRulesEstimator</span> fits against bundled or custom transaction corpora.</p>
+        </div>
+
+        <div class="p-4 space-y-3.5">
+          <div>
+            <label for="dataset-select" class="block text-xs font-medium text-slate-700 mb-1">Dataset Corpus</label>
+            <select id="dataset-select" name="dataset" class="w-full h-9 px-2.5 text-sm bg-white border border-slate-300 rounded-sm text-slate-900 focus:outline-none focus:border-blue-600">
+              <option value="groceries">Groceries Market Basket (9,835 txns)</option>
+              <option value="demo">Synthetic Demonstration (10 txns)</option>
+              <option value="market_basket">Market Basket Optimisation (7,501 txns)</option>
+              <option value="tic_tac_toe">UCI Tic-Tac-Toe Endgame (958 txns)</option>
+              <option value="mushroom">UCI Mushroom (8,124 txns)</option>
+              <option value="custom">Custom Transactions</option>
+            </select>
+          </div>
+
+          <div id="custom-txns-wrapper" class="hidden">
+            <label for="custom-txns" class="block text-xs font-medium text-slate-700 mb-1">Transactions (one comma-separated basket per line)</label>
+            <textarea
+              id="custom-txns"
+              name="transactions_text"
+              rows="5"
+              class="w-full p-2.5 text-xs font-mono bg-white border border-slate-300 rounded-sm text-slate-900 focus:outline-none focus:border-blue-600"
+            >milk, bread, butter
+bread, butter, jam
+milk, bread, eggs
+beer, diapers, chips
+milk, bread, butter, eggs
+beer, diapers</textarea>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="algorithm-select" class="block text-xs font-medium text-slate-700 mb-1">Engine</label>
+              <select id="algorithm-select" name="algorithm" class="w-full h-9 px-2.5 text-sm bg-white border border-slate-300 rounded-sm text-slate-900 focus:outline-none focus:border-blue-600">
+                <option value="auto">auto (Adaptive)</option>
+                <option value="fpgrowth">fpgrowth (FP-Array)</option>
+                <option value="eclat">eclat (Bitset)</option>
+                <option value="apriori">apriori (O2 Baseline)</option>
+              </select>
+            </div>
+            <div>
+              <label for="metric-select" class="block text-xs font-medium text-slate-700 mb-1">Rule Metric</label>
+              <select id="metric-select" name="metric" class="w-full h-9 px-2.5 text-sm bg-white border border-slate-300 rounded-sm text-slate-900 focus:outline-none focus:border-blue-600">
+                <option value="confidence">confidence</option>
+                <option value="lift">lift</option>
+                <option value="support">support</option>
+                <option value="leverage">leverage</option>
+                <option value="conviction">conviction</option>
+                <option value="zhangs_metric">zhangs_metric</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="min-support" class="block text-xs font-medium text-slate-700 mb-1">Min Support</label>
+              <input id="min-support" name="min_support" type="number" step="0.005" min="0.001" max="1" value="0.02" class="w-full h-9 px-2.5 text-sm font-mono tabular-nums bg-white border border-slate-300 rounded-sm text-slate-900 focus:outline-none focus:border-blue-600" />
+            </div>
+            <div>
+              <label for="min-threshold" class="block text-xs font-medium text-slate-700 mb-1">Min Threshold</label>
+              <input id="min-threshold" name="min_threshold" type="number" step="0.05" value="0.25" class="w-full h-9 px-2.5 text-sm font-mono tabular-nums bg-white border border-slate-300 rounded-sm text-slate-900 focus:outline-none focus:border-blue-600" />
+            </div>
+          </div>
+
+          <div>
+            <label for="max-candidates" class="block text-xs font-medium text-slate-700 mb-1">Max Candidates Budget</label>
+            <input id="max-candidates" name="max_candidates" type="number" step="1000" min="1" max="1000000" value="100000" class="w-full h-9 px-2.5 text-sm font-mono tabular-nums bg-white border border-slate-300 rounded-sm text-slate-900 focus:outline-none focus:border-blue-600" />
+          </div>
+
+          <div>
+            <label for="basket-input" class="block text-xs font-medium text-slate-700 mb-1">Basket Query (optional, comma-separated)</label>
+            <input id="basket-input" name="basket_text" type="text" placeholder="e.g. yogurt, rolls/buns" class="w-full h-9 px-2.5 text-sm bg-white border border-slate-300 rounded-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600" />
+            <p class="mt-1 text-[11px] text-slate-500">Matches fitted rules whose antecedent is a subset of your basket.</p>
+          </div>
+        </div>
+
+        <div class="p-4 space-y-2.5 bg-white">
+          <div id="mine-error" role="alert" aria-live="polite" class="hidden text-xs text-rose-700 bg-rose-50 border border-rose-200 px-3 py-2 rounded-sm"></div>
+          <button
+            id="mine-submit"
+            type="submit"
+            class="w-full h-9 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-sm transition-colors cursor-pointer"
+          >Mine Association Rules</button>
+        </div>
+      </form>
+
+      <!-- Right Live Results Stage -->
+      <div class="space-y-4 min-w-0">
+        <!-- Execution Readout Bar -->
+        <div class="border border-slate-200 bg-white px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+          <div class="min-w-0">
+            <div id="result-dataset" class="text-sm font-semibold text-slate-900 truncate">Loading Groceries corpus...</div>
+            <div id="result-meta" class="mt-0.5 text-xs font-mono text-slate-500 tabular-nums">Waiting for skarm engine...</div>
+          </div>
+          <div id="result-status" class="text-xs font-mono uppercase tracking-wider text-slate-600 tabular-nums">IDLE</div>
+        </div>
+
+        <!-- Basket Recommendations (Shown when basket query yields matches) -->
+        <div id="recommendations-panel" class="hidden border border-slate-200 bg-slate-50/40">
+          <div class="px-4 py-2.5 border-b border-slate-200 flex items-center justify-between">
+            <h2 class="text-xs font-mono uppercase tracking-wider text-slate-700">Basket Recommendations</h2>
+            <span id="recommendations-count" class="text-xs font-mono text-slate-500 tabular-nums">0 matches</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-slate-200 text-[11px] font-mono uppercase tracking-wider text-slate-500 bg-white">
+                  <th class="py-2 px-4 font-medium">Matched Antecedent</th>
+                  <th class="py-2 px-4 font-medium">Recommended Consequent</th>
+                  <th class="py-2 px-4 font-medium text-right">Confidence</th>
+                  <th class="py-2 px-4 font-medium text-right">Lift</th>
+                  <th class="py-2 px-4 font-medium text-right">Support</th>
+                </tr>
+              </thead>
+              <tbody id="recommendations-tbody" class="divide-y divide-slate-200 text-sm bg-white"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Association Rules Table -->
+        <div class="border border-slate-200 bg-white">
+          <div class="px-4 py-2.5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 bg-slate-50/60">
+            <h2 class="text-xs font-mono uppercase tracking-wider text-slate-700">Discovered Association Rules</h2>
+            <span id="rules-showing" class="text-xs font-mono text-slate-500 tabular-nums">0 rules</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-slate-200 text-[11px] font-mono uppercase tracking-wider text-slate-500">
+                  <th class="py-2.5 px-4 font-medium">Rule (Antecedent → Consequent)</th>
+                  <th class="py-2.5 px-3 font-medium text-right">Support</th>
+                  <th class="py-2.5 px-3 font-medium text-right">Confidence</th>
+                  <th class="py-2.5 px-3 font-medium text-right">Lift</th>
+                  <th class="py-2.5 px-3 font-medium text-right">Conviction</th>
+                  <th class="py-2.5 px-4 font-medium text-right">Zhang's</th>
+                </tr>
+              </thead>
+              <tbody id="rules-tbody" class="divide-y divide-slate-100 text-sm"></tbody>
+            </table>
+          </div>
+          <div id="rules-empty" class="hidden px-4 py-8 text-center text-sm text-slate-500">
+            No association rules matched the current support and metric thresholds. Lower Min Support or Min Threshold to broaden discovery.
+          </div>
+        </div>
+
+        <!-- Top Frequent Itemsets -->
+        <div class="border border-slate-200 bg-white">
+          <div class="px-4 py-2.5 border-b border-slate-200 flex items-center justify-between bg-slate-50/60">
+            <h2 class="text-xs font-mono uppercase tracking-wider text-slate-700">Top Frequent Itemsets</h2>
+            <span id="itemsets-showing" class="text-xs font-mono text-slate-500 tabular-nums">0 itemsets</span>
+          </div>
+          <div id="itemsets-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 divide-y sm:divide-y-0 border-t-0 text-xs"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 2: BENCHMARKS & STRICT KPI-4 -->
+    <section id="panel-benchmarks" role="tabpanel" aria-labelledby="tab-benchmarks" class="hidden space-y-5">
+      <div class="border border-slate-200 bg-white p-5">
+        <div class="flex flex-wrap items-baseline justify-between gap-2 pb-4 border-b border-slate-200">
+          <div>
+            <h2 class="text-base font-semibold text-slate-900">Strict KPI-4 Engine Runtime Comparison (p95, ms)</h2>
+            <p class="mt-0.5 text-xs text-slate-500">Protocol: 5 warmup + 30 measured trials via <span class="font-mono">time.perf_counter()</span> · Zero small-runtime exemptions · Target: FP-Growth &amp; Eclat p95 ≤ 0.80× Apriori.</p>
+          </div>
+          <div class="flex items-center gap-4 text-xs font-mono text-slate-600">
+            <span><span class="inline-block w-2.5 h-2.5 bg-slate-400 mr-1.5 align-middle"></span>Apriori (O2)</span>
+            <span><span class="inline-block w-2.5 h-2.5 bg-blue-600 mr-1.5 align-middle"></span>FP-Growth</span>
+            <span><span class="inline-block w-2.5 h-2.5 bg-cyan-600 mr-1.5 align-middle"></span>Eclat</span>
+          </div>
+        </div>
+        <div id="benchmark-chart-container" class="mt-4 overflow-x-auto"></div>
+      </div>
+
+      <div class="border border-slate-200 bg-white">
+        <div class="px-4 py-3 border-b border-slate-200 bg-slate-50/60 flex flex-wrap items-center justify-between gap-2">
+          <h2 class="text-xs font-mono uppercase tracking-wider text-slate-700">Measured Scale Telemetry (benchmarks/benchmark_results.json)</h2>
+          <span id="benchmark-verdict" class="text-xs font-mono uppercase text-emerald-700">OVERALL PASS</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-slate-200 text-[11px] font-mono uppercase tracking-wider text-slate-500">
+                <th class="py-2.5 px-4 font-medium">Scale</th>
+                <th class="py-2.5 px-3 font-medium">Engine</th>
+                <th class="py-2.5 px-3 font-medium text-right">Engine p50 (ms)</th>
+                <th class="py-2.5 px-3 font-medium text-right">Engine p95 (ms)</th>
+                <th class="py-2.5 px-3 font-medium text-right">Ratio vs Apriori</th>
+                <th class="py-2.5 px-3 font-medium text-right">Estimator p95 (ms)</th>
+                <th class="py-2.5 px-3 font-medium text-right">Peak Mem (MB)</th>
+                <th class="py-2.5 px-4 font-medium text-right">Δsupp / Status</th>
+              </tr>
+            </thead>
+            <tbody id="benchmarks-tbody" class="divide-y divide-slate-100 text-xs font-mono tabular-nums"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="border border-slate-200 bg-slate-50/60 p-4 text-xs text-slate-600 leading-relaxed">
+        <span class="font-mono font-semibold text-slate-800 uppercase mr-2">KPI-5 Memory Note:</span>
+        On small 200–3,000-row synthetic matrices where absolute peak heap stays under 0.19 MB, FP-Array (<span class="font-mono text-slate-800">float32</span> co-occurrence matrix) allocates slightly more peak heap than O2 Apriori (<span class="font-mono text-slate-800">1.01×–1.39×</span>), while Eclat bitset masks remain near parity (<span class="font-mono text-slate-800">1.00×–1.01×</span>). The architectural memory compression advantage of FP-Growth and Eclat manifests on deep or high-cardinality workloads where Apriori candidate generation explodes exponentially.
+      </div>
+    </section>
+
+    <!-- PANEL 3: LIVE ACCEPTANCE GATE & E2E TIERS -->
+    <section id="panel-acceptance" role="tabpanel" aria-labelledby="tab-acceptance" class="hidden space-y-5">
+      <div class="border border-slate-200 bg-white p-5 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-semibold text-slate-900">Strict Acceptance Gate Runner</h2>
+          <p class="mt-0.5 text-xs text-slate-500">Executes <span class="font-mono text-slate-700">tests/run_acceptance.py</span> live in Python: AC-1 Oracle exactness, AC-2 numerical precision, AC-3 estimator API compliance, strict 30-trial AC-4 KPI-4, and NT-1–NT-6 negative tests.</p>
+        </div>
+        <button
+          id="panel-run-acceptance"
+          type="button"
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-sm transition-colors cursor-pointer"
+        >Run Strict Acceptance Gate</button>
+      </div>
+
+      <div id="acceptance-error" role="alert" aria-live="polite" class="hidden border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-700"></div>
+
+      <div id="acceptance-results" class="border border-slate-200 bg-white">
+        <div class="px-4 py-3 border-b border-slate-200 bg-slate-50/60 flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-xs font-mono uppercase tracking-wider text-slate-700">Acceptance Criteria Results</h3>
+          <span id="acceptance-verdict" class="text-xs font-mono uppercase text-slate-500">Click "Run Strict Acceptance Gate" to execute live</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-slate-200 text-[11px] font-mono uppercase tracking-wider text-slate-500">
+                <th class="py-2.5 px-4 font-medium min-w-[240px]">Criterion</th>
+                <th class="py-2.5 px-4 font-medium w-24">Verdict</th>
+                <th class="py-2.5 px-4 font-medium">Measured Evidence</th>
+              </tr>
+            </thead>
+            <tbody id="acceptance-tbody" class="divide-y divide-slate-100 text-xs font-mono">
+              <tr>
+                <td colspan="3" class="py-6 px-4 text-slate-500 font-sans">No live acceptance run executed in this browser session yet. Trigger the gate above to run all 10 criteria live.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- E2E 5-Tier Verification Summary -->
+      <div class="border border-slate-200 bg-white">
+        <div class="px-4 py-3 border-b border-slate-200 bg-slate-50/60 flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-xs font-mono uppercase tracking-wider text-slate-700">End-to-End Test Matrix (tests/e2e/e2e_results.json)</h3>
+          <span id="e2e-summary-label" class="text-xs font-mono text-emerald-700 tabular-nums">88 / 88 PASSED</span>
+        </div>
+        <div id="e2e-tiers-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 divide-y lg:divide-y-0 lg:divide-x divide-slate-200"></div>
+      </div>
+    </section>
+
+    <!-- PANEL 4: ECOSYSTEM & POSITIONING -->
+    <section id="panel-ecosystem" role="tabpanel" aria-labelledby="tab-ecosystem" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div class="border border-slate-200 bg-white p-5 space-y-4">
+        <div class="pb-3 border-b border-slate-200">
+          <h2 class="text-base font-semibold text-slate-900">Upstream Positioning &amp; Compatibility</h2>
+          <p class="mt-0.5 text-xs text-slate-500">Accurate architectural scope and scikit-learn ecosystem status.</p>
+        </div>
+        <dl class="space-y-3 text-sm">
+          <div class="grid grid-cols-[150px_1fr] gap-2">
+            <dt class="font-mono text-xs uppercase text-slate-500 pt-0.5">Library Scope</dt>
+            <dd class="text-slate-900">Independent, third-party scikit-learn-compatible association-rule mining package (<span class="font-mono text-xs">skarm</span>).</dd>
+          </div>
+          <div class="grid grid-cols-[150px_1fr] gap-2">
+            <dt class="font-mono text-xs uppercase text-slate-500 pt-0.5">Upstream Issue</dt>
+            <dd class="text-slate-900 font-mono text-xs">scikit-learn/scikit-learn#32712 · closed: not_planned (2025-11-16 by @virchan, citing #2662)</dd>
+          </div>
+          <div class="grid grid-cols-[150px_1fr] gap-2">
+            <dt class="font-mono text-xs uppercase text-slate-500 pt-0.5">API Contract</dt>
+            <dd class="text-slate-700 text-xs leading-relaxed">Implements <span class="font-mono">BaseEstimator</span>, <span class="font-mono">TransformerMixin</span>, <span class="font-mono">clone()</span>, <span class="font-mono">Pipeline</span>, <span class="font-mono">GridSearchCV</span>, <span class="font-mono">pickle</span>, and sparse CSR matrices cleanly without requiring upstream core inclusion.</dd>
+          </div>
+          <div class="grid grid-cols-[150px_1fr] gap-2">
+            <dt class="font-mono text-xs uppercase text-slate-500 pt-0.5">Mining Engines</dt>
+            <dd class="text-slate-700 text-xs leading-relaxed"><span class="font-mono">apriori</span> (O2 baseline), <span class="font-mono">fpgrowth</span> (Grahne &amp; Zhu FP-Array + triangle pruning + bit-packed deduplication), and <span class="font-mono">eclat</span> (vertical bitset TID masks), all verified bit-exact (<span class="font-mono">Δ_supp = 0.0</span>).</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="border border-slate-200 bg-white p-5 space-y-4">
+        <div class="pb-3 border-b border-slate-200">
+          <h2 class="text-base font-semibold text-slate-900">Python Estimator Quickstart</h2>
+          <p class="mt-0.5 text-xs text-slate-500">Drop-in compatibility with scikit-learn pipelines and sparse transaction matrices.</p>
+        </div>
+        <pre class="p-4 bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 overflow-x-auto leading-relaxed"><code>from sklearn.pipeline import Pipeline
+from skarm import TransactionEncoder, AssociationRulesEstimator
+
+pipe = Pipeline([
+    ("encode", TransactionEncoder(sparse=True)),
+    ("mine", AssociationRulesEstimator(
+        algorithm="auto",       # "apriori", "fpgrowth", or "eclat"
+        min_support=0.02,
+        metric="lift",
+        min_threshold=1.2,
+        max_candidates=100_000,
+    )),
+])
+
+pipe.fit(transactions)
+rules = pipe.named_steps["mine"].get_rules()
+top = pipe.named_steps["mine"].explore().filter_rules(min_lift=1.5, sort_by="confidence")</code></pre>
+      </div>
+    </section>
+
+    <!-- PANEL 5: IEEE RESEARCH PAPER (GRAPHICAL EDITION) -->
+    <section id="panel-paper" role="tabpanel" aria-labelledby="tab-paper" class="hidden space-y-4">
+      <div class="border border-slate-200 bg-white p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-semibold text-slate-900">IEEE Transactions Research Paper (Graphical Edition)</h2>
+          <p class="mt-0.5 text-xs text-slate-500">Two-column IEEE format with all 13 publication figures, 25-dataset campaign results, external SPMF/mlxtend baselines, and strict 30-trial KPI-4 verification. Source: <span class="font-mono text-slate-700">paper/paper-ieee.tex</span>.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <a
+            href="/paper/paper-ieee-graphical.pdf"
+            download="skarm-ieee-research-paper.pdf"
+            class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded-sm transition-colors whitespace-nowrap"
+          >Download IEEE PDF</a>
+          <button
+            id="print-paper-btn"
+            type="button"
+            class="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-xs font-medium rounded-sm transition-colors cursor-pointer whitespace-nowrap"
+          >Print Preview</button>
+        </div>
+      </div>
+
+      <div class="border border-slate-200 bg-slate-100 overflow-hidden">
+        <iframe
+          id="ieee-paper-frame"
+          src="/ieee-paper.html"
+          title="skarm IEEE Transactions Research Paper"
+          class="w-full h-[820px] bg-white block border-0"
+        ></iframe>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200 bg-slate-50/50 py-3 px-4 sm:px-6 text-xs text-slate-500">
+    <div class="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-2 font-mono">
+      <span>skarm · Independent scikit-learn-compatible association-rule mining library</span>
+      <span>264 pytest · 88 E2E · Strict 30-trial KPI-4 verified</span>
+    </div>
+  </footer>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

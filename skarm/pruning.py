@@ -19,15 +19,24 @@ class DegradedModeWarning(UserWarning):
     pass
 
 
+import os
 import threading
+import time as _time
+
+_CACHED_PID: Optional[int] = None
+_CACHED_PROCESS: Optional[Any] = None
 
 
 def get_current_memory_mb() -> float:
     """Return the current process RSS memory in megabytes."""
+    global _CACHED_PID, _CACHED_PROCESS
     try:
         import psutil
-        import os
-        return psutil.Process(os.getpid()).memory_info().rss / (1024.0 * 1024.0)
+        pid = os.getpid()
+        if _CACHED_PROCESS is None or _CACHED_PID != pid:
+            _CACHED_PROCESS = psutil.Process(pid)
+            _CACHED_PID = pid
+        return _CACHED_PROCESS.memory_info().rss / (1024.0 * 1024.0)
     except Exception:
         import tracemalloc
         if tracemalloc.is_tracing():
@@ -242,11 +251,21 @@ class PruningPolicy:
         peak_memory_mb: Optional[float] = None,
     ) -> bool:
         """Check multi-dimensional resource budget (candidates, time, memory)."""
-        import time as _time
-
         if candidate_count > 0:
             if not self.check_candidate_count(candidate_count, level=level):
                 return False
+
+        # Fast path when no runtime or memory limits are active
+        if (
+            self.max_time_seconds is None
+            and self.max_memory_mb is None
+            and peak_memory_mb is None
+        ):
+            if self.sampler is not None:
+                sampled_peak = self.sampler.peak_mb
+                if sampled_peak > self.peak_memory_mb:
+                    self.peak_memory_mb = sampled_peak
+            return True
 
         if elapsed_time is None and self.max_time_seconds is not None:
             elapsed_time = _time.perf_counter() - self.start_time
@@ -267,12 +286,12 @@ class PruningPolicy:
                 self.degradation_reason = msg
                 return False
 
-        # Memory Governor: poll sampler or current RSS
+        # Memory Governor: poll sampler or current RSS when a memory budget is active
         if self.sampler is not None:
             sampled_peak = self.sampler.peak_mb
             if sampled_peak > self.peak_memory_mb:
                 self.peak_memory_mb = sampled_peak
-        else:
+        elif self.max_memory_mb is not None:
             curr_mem = get_current_memory_mb()
             if curr_mem > self.peak_memory_mb:
                 self.peak_memory_mb = curr_mem

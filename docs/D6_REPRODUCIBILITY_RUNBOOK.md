@@ -36,26 +36,28 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Step 2: Run Full Automated Test Suite (257 Tests)
+### Step 2: Run Full Automated Test Suite (264 Tests)
 ```bash
 pytest -v
 ```
-*(Executes 169 unit, integration, challenge, and compatibility tests in `tests/test_*.py` and 88 5-tier E2E tests in `tests/e2e/`)*
+*(Executes 176 unit, integration, challenge, compatibility, and acceptance-contract tests in `tests/test_*.py` and 88 5-tier E2E tests in `tests/e2e/`)*
 
 ### Step 2b: Run Independent 5-Tier E2E Test Suite (88 Tests)
 ```bash
 python tests/e2e/run_e2e.py
 ```
 
-### Step 3: Run Independent Acceptance Harness (AC-1 to AC-4, NT-1 to NT-6)
+### Step 3: Run Independent Acceptance Harness (AC-1 to AC-4, NT-1 to NT-6, Strict 30-Trial KPI-4)
 ```bash
 python tests/run_acceptance.py
 ```
+*(Enforces 5 warmup + 30 measured trials using `time.perf_counter()` with zero small-runtime exemptions; exits 0 only if both FP-Growth and Eclat satisfy `p95 <= 0.80 * Apriori` at exact equivalence)*
 
-### Step 4: Run Scalability & KPI Benchmark Suite
+### Step 4: Run Scalability & KPI Benchmark Suite (Strict 30-Trial Protocol)
 ```bash
 python benchmarks/run_benchmarks.py
 ```
+*(Executes 5 warmup + 30 measured trials per engine across $N \in \{200, 1000, 3000\}$ with zero small-runtime exemptions and writes `benchmarks/benchmark_results.json`)*
 
 ### Step 5: Run Interactive CLI Demonstration
 ```bash

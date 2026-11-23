@@ -1,0 +1,17 @@
+{
+  "name": "skarm-workbench",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.mjs",
+    "start": "node server.mjs",
+    "build": "./node_modules/.bin/tailwindcss -i ./src/styles.css -o ./public/styles.css --minify && node --check server.mjs && node --check lib/validation.mjs && node --check public/app.js",
+    "lint": "node --check server.mjs && node --check lib/validation.mjs && node --check public/app.js",
+    "test": "node --test lib/validation.test.mjs"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.5",
+    "tailwindcss": "^4.3.5"
+  }
+}

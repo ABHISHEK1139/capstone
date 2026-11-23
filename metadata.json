@@ -1,0 +1,5 @@
+{
+  "name": "skarm — Association-Rule Mining Workbench",
+  "description": "Interactive verification workbench and rule explorer for skarm, an independent scikit-learn-compatible association-rule mining library with Apriori, FP-Growth, and Eclat engines.",
+  "requestFramePermissions": []
+}

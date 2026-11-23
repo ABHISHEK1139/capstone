@@ -156,7 +156,8 @@ class AssociationRulesEstimator(TransformerMixin, BaseEstimator):
             baseline_memory_mb=self.baseline_memory_mb_,
         )
         self.telemetry_ = TelemetryLogger()
-        self.pruning_policy_.start_sampler(polling_interval=0.01)
+        if self.max_memory_mb is not None:
+            self.pruning_policy_.start_sampler(polling_interval=0.01)
 
         try:
             # Handle Pandas DataFrame: preserve column names (Bug B4)

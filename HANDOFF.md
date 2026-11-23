@@ -16,8 +16,9 @@ Technical verification complete; publication decisions pending (target venue sel
 
 | Component | Status | Key Metric / Verification Evidence |
 |---|---|---|
-| **Automated Test Suite** | **PASS (100%)** | **257 passed out of 257 collected** (169 unit/integration/adversarial + 88 5-tier E2E; zero failures) across Python 3.10, 3.11, 3.12 |
-| **Independent Acceptance Harness** | **PASS** | AC-1 to AC-4 and NT-1 to NT-6 verified; 100.0/100 rubric score; max numerical error $\le 2.22 \times 10^{-16}$ |
+| **Automated Test Suite** | **PASS (100%)** | **264 passed out of 264 collected** (176 unit/integration/adversarial/compatibility/contract + 88 5-tier E2E; zero failures) |
+| **Independent Acceptance Harness** | **PASS** | AC-1 to AC-4 and NT-1 to NT-6 verified; 100.0/100 rubric score; max numerical error $\le 2.22 \times 10^{-16}$; strict 30-trial warmup KPI-4 passed with zero small-runtime exemptions (FP-Growth `0.315×`, Eclat `0.180×` of Apriori p95, $\Delta_{\mathrm{supp}} = 0.0$) |
+| **Synthetic Scale Benchmark (`run_benchmarks.py`)** | **PASS** | 5 warmup + 30 measured trials across $N \in \{200, 1000, 3000\}$, zero small-runtime exemptions; both FP-Growth (`0.262–0.327×` engine / `0.235–0.375×` estimator) and Eclat (`0.215–0.317×` engine / `0.213–0.333×` estimator) strictly $\le 0.80\times$ Apriori p95 with $\Delta_{\mathrm{supp}} = 0.0$ |
 | **Primary Benchmark Campaign (25 Datasets)** | **COMPLETE** | 25 benchmark datasets, 42 evaluation cells, 1,650 trial executions, 157 engine pairs evaluated for strict itemset & support identity ($\Delta_{\mathrm{supp}} = 0.0$, 0 mismatches); `benchmarks/campaign_results.json` |
 | **Modern Baseline Campaign (Chess, Adult, BMS-POS)** | **COMPLETE** | 27 cells across SKARM (Apriori, FP-Growth, Eclat), mlxtend (v0.25.0), and SPMF Java 21 (FIN, PrePost+, LCMFreq, FP-Growth); 25 completed runs show $\Delta_{\mathrm{supp}} = 0.0$; 2 BMS-POS mlxtend runs skipped due to 814.8 MB dense-matrix limit; `benchmarks/baseline_results.json` |
 | **Scikit-Learn Compatibility Audit** | **CERTIFIED** | 14 passed core checks, 39 expected domain-specific boundary incompatibilities (37 unique expectation keys, 2 dual-executed checks), 1 environment-skipped check, 0 unexpected failures under `check_estimator`. Distinct from institutional KPI-6 (7/7, 100% API compliance) |
@@ -48,11 +49,11 @@ Technical verification complete; publication decisions pending (target venue sel
 ## 3. Completed System Components
 
 1. **Algorithmic Mining Engines (`skarm/`)**:
-   - `skarm/apriori.py`: Canonical level-wise Apriori with support counting and anti-monotonic pruning.
-   - `skarm/fpgrowth.py`: Prefix-tree FP-Growth with conditional FP-tree projection, header table links, and $O(1)$ tail-pointer optimizations.
-   - `skarm/eclat.py`: Vertical TID-list intersection Eclat with vertical TID-set intersections.
+   - `skarm/apriori.py`: Canonical level-wise Apriori with support counting and anti-monotonic pruning (untouched O2 reference baseline).
+   - `skarm/fpgrowth.py`: Prefix-tree FP-Growth with Grahne & Zhu FP-Array pairwise co-occurrence pruning, lossless bitmask triangle & conditional FP-Array depth-3 verification, bit-packed transaction compression, conditional FP-tree projection, and $O(1)$ tail-pointer header links.
+   - `skarm/eclat.py`: Vertical Eclat using `np.packbits` C-level arbitrary-precision bitset TID masks intersected via bitwise `&` and `.bit_count()` (with exact Python `set` fallback for weighted or ultra-large sparse inputs).
 2. **Resource Governance & Memory Telemetry (`skarm/pruning.py`, `skarm/telemetry.py`)**:
-   - Dynamic candidate ceiling (`max_candidates`), maximum pattern length (`max_len`), and absolute process RSS memory governor budget ceiling (`max_memory_mb`). Note: `max_memory_mb` enforces an absolute process RSS budget limit, distinct from the real-time 10 ms background RSS sampler which measures resident set size delta above baseline.
+   - Dynamic candidate ceiling (`max_candidates`), maximum pattern length (`max_len`), and absolute process RSS memory governor budget ceiling (`max_memory_mb`). Note: `max_memory_mb` enforces an absolute process RSS budget limit via an on-demand 10 ms background RSS sampler (started only when `max_memory_mb` is configured, avoiding unnecessary polling overhead on unbounded fits).
    - Auditable degradation (`is_degraded` flag, `DegradedModeWarning`) when search boundaries are reached.
    - Real-time peak RSS sampling via `psutil`.
 3. **Scikit-Learn Estimator (`skarm/estimator.py`)**:
@@ -86,7 +87,8 @@ An automated audit against `sklearn.utils.estimator_checks.check_estimator` was 
 2. **Dense Memory Footprint in External Baselines**: Dense one-hot encoding over sparse high-dimensional data incurs excessive memory in naive implementations. For example, `mlxtend` required 814.8 MB for BMS-POS and was safely skipped by the 500 MB governor, while `skarm`'s native sparse CSR support mined BMS-POS in 8.10 s with minimal memory overhead.
 3. **Support-Range Boundaries**: Results hold strictly at primary and matched-ladder thresholds documented in `benchmarks/thresholds.json`. Thresholds below the minimum support boundary on dense datasets trigger candidate explosion and were excluded after failed probes.
 4. **Hardware and Environment Transferability**: Empirical execution timings are benchmarked on single-machine environments (AMD64 Windows 11 workstation, Python 3.12.10; and Linux test environments); timings are not directly comparable to compiled C/Java miners without accounting for process spawning and JVM overhead.
-5. **Non-Production Scope**: As established in project charters, SKARM is designed as an auditable scientific and educational research framework; no unattended high-stakes mission-critical deployment is claimed.
+5. **Upstream Issue #32712 & Independent Positioning**: Upstream `scikit-learn/scikit-learn#32712` ("Add Apriori Algorithm for Association Rule Mining", opened 2025-11-14) was **closed as `not_planned`** on 2025-11-16 by maintainer `@virchan` referencing `#2662` (frequent-pattern mining falls outside core `scikit-learn` scope). Accordingly, `skarm` is positioned strictly as an **independent, third-party scikit-learn-compatible library**, not an accepted or endorsed scikit-learn core feature.
+6. **Non-Production Scope**: As established in project charters, SKARM is designed as an auditable scientific and educational research framework; no unattended high-stakes mission-critical deployment is claimed.
 
 ---
 
@@ -99,17 +101,21 @@ To independently reproduce all tests, benchmarks, and manuscripts from a fresh c
 .venv\Scripts\activate   # On Windows
 # source .venv/bin/activate  # On Linux/macOS
 
-# 2. Run the complete 257-test Pytest suite
+# 2. Run the complete 264-test Pytest suite
 pytest -v
-# Expected: 257 passed with 0 failures
+# Expected: 264 passed with 0 failures
 
 # 3. Run the 5-Tier E2E test runner
 python tests/e2e/run_e2e.py
 # Expected: 88 passed with 0 failures
 
-# 4. Run the independent acceptance harness (AC-1..AC-4, NT-1..NT-6)
+# 4. Run the independent acceptance harness (AC-1..AC-4, NT-1..NT-6, strict 30-trial KPI-4)
 python tests/run_acceptance.py
-# Expected: FINAL GATE VERDICT: PASSED (ALL TARGETS & GUARDRAILS SATISFIED)
+# Expected: FINAL GATE VERDICT: PASSED (ALL STRICT CHARTER TARGETS & GUARDRAILS SATISFIED)
+
+# 4b. Run the strict 30-trial scale benchmark suite (zero small-runtime exemptions)
+python benchmarks/run_benchmarks.py
+# Expected: overall_pass=True (exit code 0)
 
 # 5. Run the adversarial M5 challenge suite
 pytest tests/test_adversarial_m5_challenge.py -v

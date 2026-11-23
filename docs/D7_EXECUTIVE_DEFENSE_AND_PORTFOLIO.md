@@ -11,13 +11,13 @@
 
 ## 1. Executive Summary
 
-This culminating engineering capstone project addresses **scikit-learn GitHub issue #32712** ("Add Apriori algorithm for association rule mining"). In industrial data mining and developer tooling, association rule mining is plagued by **candidate combinatorial explosion**, unstandardized APIs, lack of safe memory bounding, and inconsistent support arithmetic across sparse and weighted transactions.
+This culminating engineering capstone project was motivated by **scikit-learn GitHub issue #32712** ("Add Apriori Algorithm for Association Rule Mining", opened 2025-11-14). Upstream `scikit-learn` maintainers **closed #32712 as `not_planned`** on 2025-11-16 (citing `#2662`), confirming that frequent-pattern mining lies outside core `scikit-learn` scope and belongs in a dedicated external library. Accordingly, `skarm` is positioned strictly as an **independent, third-party scikit-learn-compatible library**—not an accepted or endorsed core scikit-learn feature. In industrial data mining and developer tooling, association rule mining is plagued by **candidate combinatorial explosion**, unstandardized APIs, lack of safe memory bounding, and inconsistent support arithmetic across sparse and weighted transactions.
 
-Over the two-semester lifecycle (CP1 and CP2), our team engineered `skarm`, an open-source, scikit-learn-compatible library that establishes:
-1. **CP1 Reference Baseline (O1, O2)**: A mathematically certified conventional Apriori baseline validated against an analytical hand-computed oracle ($100\%$ precision, error $< 2.22 \times 10^{-16}$).
-2. **CP2 Differentiating Contributions (O3)**: High-performance FP-Growth (prefix-tree pattern growth) and Eclat (vertical TID-list intersection) engines, achieving up to $100\%$ candidate generation reduction and order-of-magnitude scalability gains.
-3. **Safety & Pruning Engine (O4)**: Real-time candidate ceiling guards (`max_candidates`), maximum length limits (`max_len`), and proactive degradation protocols that safeguard system memory under adversarial, high-density transaction conditions.
-4. **Independent Acceptance & Robustness Campaign (O5)**: Exhaustive verification across 6 mandatory negative test suites (NT-1 to NT-6), satisfying all Acceptance Conditions (AC-1 to AC-4) and achieving a **100% test pass rate across 257 automated tests (169 unit, integration, challenge, and compatibility tests + 88 5-tier E2E tests)**.
+Over the two-semester lifecycle (CP1 and CP2), our team engineered `skarm`, an independent open-source, scikit-learn-compatible library that establishes:
+1. **CP1 Reference Baseline (O1, O2)**: A mathematically certified conventional Apriori baseline validated against an analytical hand-computed oracle ($100\%$ precision/recall, error $\le 2.22 \times 10^{-16}$).
+2. **CP2 Differentiating Contributions (O3)**: High-performance FP-Growth (FP-Array co-occurrence pruning, bitmask triangle/depth-3 verification, bit-packed compression, and prefix-tree mining) and Eclat (vertical C-level bitset TID intersections) engines, achieving strict $p95 \le 0.80\times$ Apriori runtime across all acceptance and scale workloads (`0.180–0.375×`, zero small-runtime exemptions) with bit-exact support identity ($\Delta_{\mathrm{supp}} = 0.0$).
+3. **Safety & Pruning Engine (O4)**: Real-time candidate ceiling guards (`max_candidates`), maximum length limits (`max_len`), on-demand process RSS limits (`max_memory_mb`), and proactive degradation protocols that safeguard system memory under adversarial, high-density transaction conditions.
+4. **Independent Acceptance & Robustness Campaign (O5)**: Exhaustive verification across 6 mandatory negative test suites (NT-1 to NT-6), satisfying all Acceptance Conditions (AC-1 to AC-4, including strict 30-trial warmup KPI-4) and achieving a **100% test pass rate across 264 automated tests (176 unit, integration, challenge, compatibility, and contract tests + 88 5-tier E2E tests)**.
 
 ---
 
@@ -40,10 +40,11 @@ Over the two-semester lifecycle (CP1 and CP2), our team engineered `skarm`, an o
 ```
 
 ### Quantified KPI Achievements
-- **Frequent-Itemset Precision vs Oracle**: **100.0%** (Target: $\ge 98.0\%$).
+- **Frequent-Itemset Precision & Recall vs Oracle**: **100.0% / 100.0%** (Target: $\ge 98.0\%$, bit-exact $\Delta_{\mathrm{supp}} = 0.0$).
 - **Rule-Metric Numerical Error**: **100.0/100 Rubric Score** (Maximum observed numerical error: $2.22 \times 10^{-16}$).
-- **Candidate Bounding**: Up to **100% reduction in explicit candidate generations** via FP-Tree and vertical intersection.
-- **Estimator API Compliance**: **100.0%** (Full `get_params`, `set_params`, `clone`, `joblib` pickling compatibility).
+- **Candidate Bounding**: **56.2%–100.0% reduction** in explicit candidate generations across synthetic scales; hard-capped under dense stress (NT-1, NT-6).
+- **Strict 30-Trial Runtime Speedup (KPI-4, Zero Exemptions)**: AC-4 ($1000 \times 12$) FP-Growth `0.315×` (`3.17×` faster) and Eclat `0.180×` (`5.56×` faster) of Apriori p95; synthetic scales ($N=200, 1000, 3000$) FP-Growth `0.235–0.375×` and Eclat `0.213–0.333×` of Apriori p95, 0 failures.
+- **Estimator API Compliance**: **100.0% (7/7)** (Full `get_params`, `set_params`, `clone`, `joblib` pickling compatibility as an independent third-party estimator).
 - **Negative Test Campaign**: **6/6 passed** (NT-1 to NT-6 covering candidate explosion, token deduplication, sample weights, boundary thresholds, determinism, and stress workloads).
 
 ---
@@ -72,4 +73,4 @@ As mandated by the Capstone Framework, each domain area was spearheaded by dedic
 
 ## 4. Academic & Industry Impact
 
-By delivering a fully verified, scikit-learn-compatible association rule estimator, this capstone bridges a decade-long gap in Python's scientific ecosystem. It empowers developers and researchers across retail, healthcare, cybersecurity, and bioinformatics to seamlessly integrate association rule mining and market basket analytics directly into standard scikit-learn pipelines with mathematical confidence and certified stability.
+By delivering a verified, independent third-party scikit-learn-compatible association rule estimator—aligned with the scikit-learn maintainers' closure of `#2662` and `#32712` directing pattern mining to dedicated external packages—this capstone provides researchers and practitioners with an auditable, pipeline-ready library for retail, healthcare, cybersecurity, and bioinformatics workflows.

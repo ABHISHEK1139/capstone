@@ -1,0 +1,53 @@
+cff-version: 1.2.0
+message: "If you use skarm or its empirical benchmark suite in your research, please cite it using these metadata."
+type: software
+title: "skarm: A scikit-learn-Compatible Estimator for Association-Rule Mining with Auditable Pruning"
+version: 0.1.0
+date-released: 2026-11-23
+license: MIT
+repository-code: "https://github.com/ABHISHEK1139/capstone"
+keywords:
+  - association-rule mining
+  - frequent-itemset mining
+  - apriori
+  - fp-growth
+  - eclat
+  - scikit-learn
+  - auditable pruning
+authors:
+  - family-names: Ramya
+    given-names: Dudigam
+    affiliation: "Department of Computer Science and Engineering, Koneru Lakshmaiah Education Foundation (KL University), Guntur, Andhra Pradesh, India"
+    email: "ramya.d@kluniversity.in"
+  - family-names: Anvitha
+    given-names: Gontla Venkata
+    affiliation: "Department of Computer Science and Engineering, Koneru Lakshmaiah Education Foundation (KL University), Guntur, Andhra Pradesh, India"
+    email: "anvitha.g@kluniversity.in"
+  - family-names: Kumar
+    given-names: Abhishek
+    affiliation: "Department of Computer Science and Engineering, Koneru Lakshmaiah Education Foundation (KL University), Guntur, Andhra Pradesh, India"
+    email: "2300033822@kluniversity.in"
+  - family-names: Giridhar
+    given-names: Kamma
+    affiliation: "Department of Computer Science and Engineering, Koneru Lakshmaiah Education Foundation (KL University), Guntur, Andhra Pradesh, India"
+    email: "giridhar.k@kluniversity.in"
+  - family-names: Rajeev
+    given-names: Paladagula Venkata
+    affiliation: "Department of Computer Science and Engineering, Koneru Lakshmaiah Education Foundation (KL University), Guntur, Andhra Pradesh, India"
+    email: "rajeev.p@kluniversity.in"
+preferred-citation:
+  type: article
+  title: "skarm: A scikit-learn-Compatible Estimator for Association-Rule Mining with Auditable Pruning"
+  year: 2026
+  notes: "KL University Capstone Research Artifact (KLCAP-2026-00340); Independent third-party scikit-learn-compatible library addressing scikit-learn/scikit-learn#32712."
+  authors:
+    - family-names: Ramya
+      given-names: Dudigam
+    - family-names: Anvitha
+      given-names: Gontla Venkata
+    - family-names: Kumar
+      given-names: Abhishek
+    - family-names: Giridhar
+      given-names: Kamma
+    - family-names: Rajeev
+      given-names: Paladagula Venkata
