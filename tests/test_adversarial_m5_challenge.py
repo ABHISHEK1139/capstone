@@ -466,7 +466,7 @@ class TestEstimatorPipelineAndMixinConventions:
             on_candidate_explosion="raise",
             sparse_output=False,
             max_time_seconds=12.0,
-            max_memory_mb=512.0,
+            max_memory_mb=2048.0,
             scoring="mean_lift",
         )
 
@@ -481,7 +481,7 @@ class TestEstimatorPipelineAndMixinConventions:
         assert params["on_candidate_explosion"] == "raise"
         assert params["sparse_output"] is False
         assert params["max_time_seconds"] == 12.0
-        assert params["max_memory_mb"] == 512.0
+        assert params["max_memory_mb"] == 2048.0
         assert params["scoring"] == "mean_lift"
 
         # 2. clone() on unfitted estimator
