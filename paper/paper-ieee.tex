@@ -190,7 +190,7 @@ ecosystem home the sklearn maintainers pointed to; it offers SLIM,
 LCM, and LCMMax (closed, maximal, and MDL-compressed patterns) plus
 periodic and emerging-pattern miners, but not plain Apriori, FP-Growth,
 and Eclat with rule metrics, and its master branch showed no commits
-after May 2023 at the time of writing (to be re-checked at submission).
+after May 2023; re-checked 24 November 2026, still no commits after 31 May 2023.
 \textbf{SPMF} \cite{spmf} supplies the FIMI dataset collection and
 reference miners (including LCM-family algorithms); modern miners such
 as FIN, PrePost+, and LCMFreq \cite{kallay2025} provide strong recent
@@ -771,7 +771,7 @@ At each dataset's primary threshold in the 25-dataset campaign, where all three 
 
 \paragraph{RQ3: Bounded-Search Safety and Recall Trade-Offs.} Figure~\ref{fig:ablation} and Section~\ref{sec:ablation} demonstrate the efficacy of the candidate governor. On dense workloads where exact level-wise candidate generation exhibits severe combinatorial expansion, capping \texttt{max\_candidates} accelerates execution by up to $17.20\times$ (Chess, 0.3485~s vs.\ 5.9941~s exact baseline) while recovering partial pattern subsets ($0.60\%$ to $17.95\%$ itemset recall). On tree-based (FP-Growth) and vertical (Eclat) engines, candidate caps enforce explicit budget boundaries without unmonitored crashes. Most importantly, \skarm transitions audibly into \texttt{DEGRADED} mode and records truncation events (with observed candidate counts before halting and unexplored candidates marked as unknown), eliminating silent omissions.
 
-\paragraph{RQ4: Scikit-Learn Estimator and Pipeline Interoperability.} As documented in Section~\ref{sec:methods} and Section~\ref{sec:limitations}, \skarm adheres to scikit-learn's estimator protocol: constructor parameters are immutable until explicitly modified via \texttt{set\_params()}, estimators are cloneable via \texttt{sklearn.base.clone()}, and fit state is encapsulated with trailing underscores. In \texttt{Pipeline} workflows, \skarm operates seamlessly both as a terminal estimator and as an intermediate transformer projecting transactional data into binary rule-firing indicator features.
+\paragraph{RQ4: Scikit-Learn Estimator and Pipeline Interoperability.} As documented in Section~\ref{sec:methods}, Section~\ref{sec:estimator-checks}, and Section~\ref{sec:limitations}, \skarm adheres to scikit-learn's estimator protocol: constructor parameters are immutable until explicitly modified via \texttt{set\_params()}, estimators are cloneable via \texttt{sklearn.base.clone()}, and fit state is encapsulated with trailing underscores. In \texttt{Pipeline} workflows, \skarm operates seamlessly both as a terminal estimator and as an intermediate transformer projecting transactional data into binary rule-firing indicator features.
 
 \paragraph{RQ5: Reproducibility, Auditing, and Telemetry.} The campaign's 98.0\% completion rate ($1{,}617$ OK trials out of $1{,}650$, Figure~\ref{fig:outcomes}) demonstrates high robustness. All 6 timeouts and 8 skips are audited with explicit rationale in Table~\ref{tab:skips}. Fine-grained 10~ms RSS telemetry captures memory dynamics without system crashes, providing a reproducible empirical foundation across all 25 benchmark datasets.
 
@@ -793,6 +793,29 @@ These empirical measurements highlight a critical architectural trade-off: candi
 \caption{Pruning policy ablation on Chess ($N=3{,}196$, minsup $=0.85$, $2{,}669$ exact frequent itemsets). Bounded mode halts combinatorial candidate explosion early, delivering up to $17.20\times$ speedups at low caps while audibly signalling degradation via \texttt{is\_\allowbreak{}degraded\_}.}
 \label{fig:ablation}
 \end{figure}
+
+\subsection{Estimator compatibility}
+\label{sec:estimator-checks}
+We ran scikit-learn's \texttt{check\_estimator} on the skarm estimator
+(\texttt{tests/test\_check\_estimator\_\allowbreak{}compatibility.py}); across 54 check
+executions, 14 passed, 39 were expected domain-boundary failures (37 unique
+checks, two executed twice under different configurations), 1 was skipped for
+environment reasons, and 0 failed unexpectedly~\cite{sklearnchecks}. The 37
+unique expectations fall in three groups, not 37 independent defects: 26
+cascade from one rule --- \texttt{check\_estimator} feeds continuous Gaussian
+floats, which skarm rejects as non-binary input, because association mining is
+defined on binary transactions (this group includes the checks assuming a
+supervised \texttt{predict} / $y$ target, which does not apply to an
+unsupervised itemset miner); 9 concern error-message wording
+(\texttt{BoundaryConditionError} is a \texttt{ValueError} subclass, so the
+type is right but the phrasing differs); and 2 concern synthetic mock
+containers that cannot represent a transaction stream. We deliberately do not
+silently binarize continuous input: silent binarization would hide data
+errors and conflict with skarm's auditability claim.
+``sklearn-compatible'' therefore means the API conventions of
+Section~\ref{sec:methods} plus this checked conformance, with the documented
+exceptions above --- not sklearn endorsement. The per-check record is in
+\texttt{docs/SKLEARN\_COMPATIBILITY\_REPORT.md}.
 
 \section{Limitations}
 \label{sec:limitations}
@@ -827,23 +850,12 @@ These empirical measurements highlight a critical architectural trade-off: candi
   memory-intensive sparse-to-dense conversion; two BMS-POS mlxtend runs (Apriori and FP-Growth) were skipped due to dense-memory limits ($814.8$~MB dense footprint exceeding the $500$~MB safety budget).
   Crucially, \skarm provides native Python and scikit-learn estimator integration, full \texttt{Pipeline} support,
   and auditable bounded-search resource governors that prevent uncontrolled memory exhaustion.
-  \item \textbf{Estimator API verification.} Compliance with scikit-learn's
-  estimator protocol was verified directly: \texttt{Association\allowbreak{}Rules\allowbreak{}Estimator}
-  implements \texttt{fit()}, \texttt{transform()}, \texttt{predict()} (for transactional basket recommendation),
-  \texttt{get\_params()}, and \texttt{set\_params()}, is cloneable
-  via \texttt{sklearn.base.clone()}, supports Python \texttt{pickle} serialization,
-  and operates inside scikit-learn \texttt{Pipeline} and \texttt{GridSearchCV} workflows
-  under scikit-learn 1.9.1 (targeting the $\ge 1.3$ API specification). Under
-  \texttt{sklearn.\allowbreak{}utils.\allowbreak{}estimator\_checks.\allowbreak{}check\_estimator}, an automated audit
-  yields 14 passed checks, 39 expected domain-specific incompatibilities (37 unique expectation keys, with 2 dual-executed checks: \texttt{check\_estimators\_pickle} and \texttt{check\_transformer\_general} under standard and memory-mapped configurations), 1 environment-skipped check
-  (\texttt{check\_array\_api\_input}), and 0 unexpected failures, as documented in \texttt{docs/SKLEARN\_COMPATIBILITY\_REPORT.md}.
-  This generic 14/39/1 audit is strictly distinguished from institutional KPI-6, which evaluates institutional API compliance across seven mandatory contractual criteria (\texttt{BaseEstimator} inheritance, \texttt{get\_params}, \texttt{set\_params}, \texttt{fit}, \texttt{predict}, \texttt{transform}, and \texttt{rules\_}), achieving 7/7 (100\%) compliance.
-  Failures under standard checks arise because generic test generators synthesize continuous Gaussian float matrices rejected by \skarm's
-  binary transactional contract and expect 1D supervised target vectors $y$, whereas \skarm produces
-  unsupervised transactional recommendation outputs. As established in scikit-learn issues \#32712
-  and \#2662, association rule mining is unsupervised pattern discovery rather than supervised classification;
-  \skarm adheres to scikit-learn's object and parameter lifecycle conventions without
-  imposing synthetic supervised prediction semantics.
+  \item \textbf{Estimator checks.} \texttt{check\_estimator} was run on
+  the estimator: 14 passed, 39 expected domain-boundary failures (37 unique
+  checks), 1 environment-skipped, and 0 unexpected failures
+  (Section~\ref{sec:estimator-checks}). This generic audit is distinct from
+  institutional KPI-6, which evaluates seven contractual API criteria and
+  achieves 7/7 (100\%) compliance.
   \item \textbf{Dataset provenance limits.} Mirror licences are recorded
   as unknown where unstated, never guessed; two stored files differ
   from commonly cited counts (Section~\ref{sec:data}) and the measured
@@ -886,7 +898,7 @@ this project, and none is claimed here.
 \bibitem{zaki1997} M. J. Zaki, S. Parthasarathy, M. Ogihara, and W. Li, ``New algorithms for fast discovery of association rules,'' in \emph{Proc. 3rd Int. Conf. Knowl. Discov. Data Mining (KDD)}, 1997.
 \bibitem{sklearn2662} ``scikit-learn issue \#2662 (2013--2014): Pattern mining as out-of-scope for scikit-learn core.'' [Online]. Available: \url{https://github.com/scikit-learn/scikit-learn/issues/2662}
 \bibitem{sklearn32712} ``scikit-learn issue \#32712 (November 2025): Add Apriori Algorithm for Association Rule Mining; closed as `not planned' on scope grounds, with maintainers directing the work to scikit-mine or scikit-learn-contrib.'' [Online]. Available: \url{https://github.com/scikit-learn/scikit-learn/issues/32712}
-\bibitem{scikitmine} ``scikit-mine repository: Pattern mining in Python (SLIM, LCM, LCMMax, periodic and emerging patterns).'' [Online]. Available: \url{https://github.com/scikit-mine/scikit-mine} (accessed October 2026; master branch showed no commits after May 2023 at that time --- re-check at submission).
+\bibitem{scikitmine} ``scikit-mine repository: Pattern mining in Python (SLIM, LCM, LCMMax, periodic and emerging patterns).'' [Online]. Available: \url{https://github.com/scikit-mine/scikit-mine} (accessed October 2026; re-checked 24 November 2026: still no commits after 31 May 2023).
 \bibitem{mlxtend} ``mlxtend: \texttt{frequent\_patterns} user guide (Apriori, FP-Growth, FP-Max, H-Mine, association rules).'' [Online]. Available: \url{https://rasbt.github.io/mlxtend/user_guide/frequent_patterns/} (accessed October 2026).
 \bibitem{spmf} P. Fournier-Viger, ``SPMF dataset collection (FIMI datasets with sizes and densities).'' [Online]. Available: \url{https://www.philippe-fournier-viger.com/spmf/index.php?link=datasets.php} (accessed October 2026).
 \bibitem{fournier2022} P. Fournier-Viger \emph{et al.}, ``Pattern mining: Current challenges and opportunities,'' in \emph{Proc. DASFAA 2022 Int. Workshops (PMDB 2022)}, Lecture Notes in Computer Science, vol. 13248, Springer, 2022, pp. 34--49. [Online]. Available: \url{https://doi.org/10.1007/978-3-031-11217-1_3}

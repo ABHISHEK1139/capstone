@@ -12,7 +12,7 @@
 
 Scikit-learn provides an automated test harness, `sklearn.utils.estimator_checks.check_estimator`, designed to verify that custom estimators conform to core scikit-learn conventions (constructor purity, parameter immutability, `get_params`/`set_params` invariance, cloning, estimator tags, and state lifecycle).
 
-When invoked on `AssociationRulesEstimator()`, `check_estimator` yields **54 check executions** across 53 unique check functions (1 environment-skipped check `check_array_api_input`).
+When invoked on `AssociationRulesEstimator()`, `check_estimator` yields **54 check executions** across 52 unique check functions (1 environment-skipped check `check_array_api_input`).
 - **Passed Checks**: **14 passed** (100% of Core Structural & Estimator API checks: `check_estimator_cloneable`, `check_estimator_tags_renamed`, `check_valid_tag_types`, `check_estimator_repr`, `check_no_attributes_set_in_init`, `check_estimators_unfitted`, `check_do_not_raise_errors_in_init_or_set_params`, `check_mixin_order`, `check_estimator_sparse_tag`, `check_transformers_unfitted`, `check_transformer_n_iter`, `check_parameters_default_constructible`, `check_get_params_invariance`, `check_set_params`).
 - **Expected Boundary Failures**: **39 check executions** (37 unique expectation keys in `EXPECTED_FAILED_CHECKS`, with 2 dual-executed checks: `check_estimators_pickle` and `check_transformer_general` evaluated under both standard and `readonly_memmap=True` configurations).
 - **Environment-Skipped Checks**: **1 check** (`check_array_api_input`, skipped when `SCIPY_ARRAY_API` is unset).
@@ -30,36 +30,37 @@ It is essential to distinguish this generic external audit from the capstone pro
 | Check Category | Total Yielded | Passed | Expected Failures | Pass Rate (Adjusted) |
 |---|---|---|---|---|
 | **Core Structural & Estimator API** | 14 | 14 | 0 | 100.0% |
-| **Continuous / Non-Binary Data Rejection** | 27 | 0 | 27 | 100% Boundary Rejection |
-| **Supervised Prediction ($y$) Semantics** | 2 | 0 | 2 | 100% Domain Invariance |
+| **Continuous / Non-Binary Data Rejection** | 28 | 0 | 28 | 100% Boundary Rejection |
 | **Synthetic Mock Containers** | 2 | 0 | 2 | 100% Transaction Stream Guard |
-| **Custom Boundary Condition Formatting** | 8 | 0 | 8 | 100% Custom Exception Guard |
+| **Custom Boundary Condition Formatting** | 9 | 0 | 9 | 100% Custom Exception Guard |
 | **Environment Skipped** | 1 | — | — | (SCIPY_ARRAY_API unset) |
 | **Total** | **54** | **14** | **39** | **0 Unexpected Failures** |
+
+Counts follow the test file's own grouping (`tests/test_check_estimator_compatibility.py`): 26 unique Continuous keys (28 executions, two checks dual-executed), 2 Mock keys, 9 Custom keys — 37 unique keys, 39 executions. The 2 supervised-$y$ checks (`check_fit_score_takes_y`, `check_fit2d_predict1d`) are part of the 26 Continuous keys and are discussed in §3.2, not additional executions.
 
 ---
 
 ## 3. Detailed Domain Boundary Analysis
 
 ### 3.1 Category 1: Continuous / Non-Binary Data Rejection (26 Checks)
-- **Checks Affected**: `check_fit_score_takes_y`, `check_estimators_overwrite_params`, `check_dont_overwrite_parameters`, `check_estimators_fit_returns_self`, `check_readonly_memmap_input`, `check_n_features_in_after_fitting`, `check_estimators_dtypes`, `check_sample_weights_pandas_series`, `check_sample_weights_list`, `check_sample_weights_shape`, `check_sample_weights_not_overwritten`, `check_sample_weight_equivalence_on_dense_data`, `check_dtype_object`, `check_pipeline_consistency`, `check_estimators_nan_inf`, `check_estimators_pickle`, `check_f_contiguous_array_estimator`, `check_transformer_general`, `check_methods_sample_order_invariance`, `check_methods_subset_invariance`, `check_dict_unchanged`, `check_fit_idempotent`, `check_fit_check_is_fitted`, `check_n_features_in`, `check_positive_only_tag_during_fit`.
+- **Checks Affected**: `check_fit_score_takes_y`, `check_estimators_overwrite_params`, `check_dont_overwrite_parameters`, `check_estimators_fit_returns_self`, `check_readonly_memmap_input`, `check_n_features_in_after_fitting`, `check_estimators_dtypes`, `check_sample_weights_pandas_series`, `check_sample_weights_list`, `check_sample_weights_shape`, `check_sample_weights_not_overwritten`, `check_sample_weight_equivalence_on_dense_data`, `check_dtype_object`, `check_pipeline_consistency`, `check_estimators_nan_inf`, `check_estimators_pickle`, `check_f_contiguous_array_estimator`, `check_transformer_general`, `check_methods_sample_order_invariance`, `check_methods_subset_invariance`, `check_dict_unchanged`, `check_fit_idempotent`, `check_fit_check_is_fitted`, `check_n_features_in`, `check_fit2d_predict1d`, `check_positive_only_tag_during_fit`.
 - **Root Cause**: `check_estimator` synthesizes continuous Gaussian float matrices (e.g., $X_{ij} \sim \mathcal{N}(0, 1)$ with negative and non-integer values). 
 - **Mathematical Invariant**: Association-rule mining is strictly defined over discrete transaction databases $D = \{T_1, \dots, T_N\}$ or binary transactional incidence matrices $X \in \{0, 1\}^{N \times M}$. Passing continuous floats or negative values to a frequent-itemset miner is mathematically undefined.
 - **SKARM Enforcement**: SKARM validates inputs and raises `ValueError("Input matrix values must be strictly binary (0, 1, or boolean). Continuous, negative, or non-binary values are not allowed.")`. This strict rejection satisfies negative tests NT-2 and NT-4.
 
-### 3.2 Category 2: Supervised Target ($y$) and 1D Prediction Contract (4 Checks)
-- **Checks Affected**: `check_fit_score_takes_y`, `check_fit2d_predict1d`, and related prediction checks.
+### 3.2 Note: Supervised Target ($y$) Semantics Within Category 1 (2 Checks)
+- **Checks Affected**: `check_fit_score_takes_y` and `check_fit2d_predict1d` (both counted in §3.1's 26, not additional checks).
 - **Root Cause**: Standard scikit-learn checks assume supervised learning where `predict(X)` returns a 1D vector of shape `(n_samples,)` predicting class labels or target quantities $y$.
 - **Mathematical Invariant**: Association-rule mining is fundamentally unsupervised pattern discovery ($y$ is ignored). `predict(X)` in `skarm` implements market-basket recommendation: given query transactions, it returns list-based consequent recommendations $\hat{Y}_i \subseteq I$.
 - **Ecosystem Alignment**: This exact mismatch led scikit-learn maintainers to close feature requests #2662 and #32712 as "not planned", directing pattern mining to specialized external estimators.
 
-### 3.3 Category 3: Synthetic Mock Containers (2 Checks)
+### 3.3 Category 2: Synthetic Mock Containers (2 Checks)
 - **Checks Affected**: `check_sample_weights_not_an_array`, `check_transformer_data_not_an_array`.
 - **Root Cause**: Scikit-learn feeds an internal non-iterable mock object `_NotAnArray` to assert that estimators coerce inputs via `check_array`.
 - **Domain Justification**: `skarm` accepts transaction streams (iterables of iterables of item tokens) or scipy sparse CSR matrices. Synthetic mock non-arrays cannot represent market basket transactions and are cleanly rejected with `TypeError`.
 
-### 3.4 Category 4: Custom Boundary Exception Messages (8 Checks)
-- **Checks Affected**: `check_all_zero_sample_weights_error`, `check_complex_data`, `check_estimators_empty_data_messages`, `check_fit2d_1sample`, `check_fit2d_1feature`, `check_fit1d`, `check_estimator_sparse_array`, `check_estimator_sparse_matrix`.
+### 3.4 Category 3: Custom Boundary Exception Messages (9 Checks)
+- **Checks Affected**: `check_all_zero_sample_weights_error`, `check_complex_data`, `check_estimators_empty_data_messages`, `check_fit2d_1sample`, `check_fit2d_1feature`, `check_fit1d`, `check_estimator_sparse_array`, `check_estimator_sparse_matrix`, `check_sample_weight_equivalence_on_sparse_data`.
 - **Root Cause**: Scikit-learn checks assert specific regular expression strings originating from `sklearn.utils.check_array`.
 - **Domain Justification**: `skarm` implements dedicated domain guardrails, raising descriptive `BoundaryConditionError` and domain-specific `ValueError` exceptions (e.g., distinguishing single-item transaction universes or empty itemset spaces).
 
