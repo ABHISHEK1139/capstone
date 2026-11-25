@@ -101,6 +101,18 @@ def main():
     total_rules = len(rules_df)
     total_itemsets = len(est.frequent_itemsets_)
 
+    # Build itemset support lookup for rule formula explanation
+    itemset_supp = {}
+    if isinstance(est.frequent_itemsets_, dict):
+        for fs, sp in est.frequent_itemsets_.items():
+            itemset_supp[frozenset(str(feature_names_val) for feature_names_val in (
+                (getattr(est, "feature_names_in_", [])[i] if isinstance(i, int) else i) for i in fs
+            ))] = float(sp)
+    elif total_itemsets > 0:
+        for _, r in est.frequent_itemsets_.iterrows():
+            names = r["itemset_names"] if "itemset_names" in r else r["itemset"]
+            itemset_supp[frozenset(str(x) for x in names)] = float(r["support"])
+
     if total_rules > 0 and metric in rules_df.columns:
         rules_df = rules_df.sort_values(
             by=[metric, "confidence", "support"], ascending=False
@@ -110,10 +122,14 @@ def main():
     for _, row in rules_df.head(top_n).iterrows():
         ant = row["antecedent_names"] if "antecedent_names" in row else row["antecedent"]
         con = row["consequent_names"] if "consequent_names" in row else row["consequent"]
+        ant_set = frozenset(str(x) for x in ant)
+        con_set = frozenset(str(x) for x in con)
         top_rules.append(
             {
-                "antecedent": sorted(str(x) for x in ant),
-                "consequent": sorted(str(x) for x in con),
+                "antecedent": sorted(ant_set),
+                "consequent": sorted(con_set),
+                "antecedent_support": _safe_float(itemset_supp.get(ant_set)),
+                "consequent_support": _safe_float(itemset_supp.get(con_set)),
                 "support": _safe_float(row.get("support")),
                 "confidence": _safe_float(row.get("confidence")),
                 "lift": _safe_float(row.get("lift")),
@@ -189,14 +205,70 @@ def main():
         recommendations = matched[:8]
 
     sample_items = sorted(str(x) for x in feature_names)[:30]
+    density_pct = round(
+        (summary["avg_transaction_length"] / max(1, summary["n_unique_items"])) * 100.0,
+        2,
+    )
+    meta = getattr(est, "metadata_", {}) or {}
+
+    engine_comparison = None
+    if payload.get("compare_engines"):
+        engine_comparison = []
+        ref_itemsets = None
+        for eng in ("apriori", "fpgrowth", "eclat"):
+            eng_est = AssociationRulesEstimator(
+                min_support=min_support,
+                metric=metric,
+                min_threshold=min_threshold,
+                algorithm=eng,
+                max_candidates=max_candidates,
+                sparse_output=True,
+            )
+            t_s = time.perf_counter()
+            eng_est.fit(transactions)
+            eng_ms = (time.perf_counter() - t_s) * 1000.0
+            eng_rules = eng_est.get_rules()
+            if isinstance(eng_est.frequent_itemsets_, dict):
+                eng_map = {frozenset(k): float(v) for k, v in eng_est.frequent_itemsets_.items()}
+            else:
+                eng_map = {
+                    frozenset(r["itemset"]): float(r["support"])
+                    for _, r in eng_est.frequent_itemsets_.iterrows()
+                }
+            if ref_itemsets is None:
+                ref_itemsets = eng_map
+                delta_supp = 0.0
+                exact_match = True
+            else:
+                keys_match = set(ref_itemsets.keys()) == set(eng_map.keys())
+                delta_supp = (
+                    max((abs(ref_itemsets[k] - eng_map[k]) for k in ref_itemsets), default=0.0)
+                    if keys_match
+                    else 1.0
+                )
+                exact_match = bool(keys_match and delta_supp <= 1e-9)
+            engine_comparison.append(
+                {
+                    "algorithm": eng,
+                    "elapsed_ms": round(eng_ms, 3),
+                    "n_itemsets": len(eng_map),
+                    "n_rules": len(eng_rules),
+                    "status": getattr(eng_est, "status_", "EXACT"),
+                    "exact_parity": exact_match,
+                    "max_delta_supp": _safe_float(delta_supp),
+                }
+            )
 
     response = {
         "dataset": dataset,
         "dataset_label": dataset_label,
-        "summary": summary,
+        "summary": {**summary, "density_pct": density_pct},
         "algorithm_requested": algorithm,
         "algorithm_used": getattr(est, "algorithm_used_", algorithm),
         "status": getattr(est, "status_", "EXACT"),
+        "is_degraded": bool(getattr(est, "is_degraded_", False)),
+        "termination_reason": getattr(est, "termination_reason_", None),
+        "peak_candidates": meta.get("peak_candidates"),
         "elapsed_ms": round(elapsed_ms, 3),
         "n_itemsets": total_itemsets,
         "n_rules": total_rules,
@@ -204,6 +276,7 @@ def main():
         "top_itemsets": top_itemsets,
         "recommendations": recommendations,
         "sample_items": sample_items,
+        "engine_comparison": engine_comparison,
     }
     sys.stdout.write(json.dumps(response))
 

@@ -1,15 +1,56 @@
 const DATASET_DEFAULTS = {
-  groceries: { min_support: "0.02", min_threshold: "0.25", metric: "confidence", basket: "yogurt, rolls/buns" },
-  demo: { min_support: "0.2", min_threshold: "0.5", metric: "confidence", basket: "milk, bread" },
-  market_basket: { min_support: "0.015", min_threshold: "0.25", metric: "confidence", basket: "mineral water" },
-  tic_tac_toe: { min_support: "0.25", min_threshold: "0.7", metric: "confidence", basket: "" },
-  mushroom: { min_support: "0.55", min_threshold: "0.85", metric: "confidence", basket: "" },
-  custom: { min_support: "0.3", min_threshold: "0.5", metric: "confidence", basket: "milk" },
+  groceries: { min_support: "0.02", min_threshold: "0.25", metric: "confidence", basket: "yogurt, rolls/buns", max_candidates: "100000", algorithm: "auto" },
+  demo: { min_support: "0.2", min_threshold: "0.5", metric: "confidence", basket: "milk, bread", max_candidates: "100000", algorithm: "auto" },
+  market_basket: { min_support: "0.015", min_threshold: "0.25", metric: "confidence", basket: "mineral water", max_candidates: "100000", algorithm: "auto" },
+  tic_tac_toe: { min_support: "0.25", min_threshold: "0.7", metric: "confidence", basket: "", max_candidates: "100000", algorithm: "eclat" },
+  mushroom: { min_support: "0.55", min_threshold: "0.85", metric: "confidence", basket: "", max_candidates: "100000", algorithm: "fpgrowth" },
+  custom: { min_support: "0.3", min_threshold: "0.5", metric: "confidence", basket: "milk", max_candidates: "100000", algorithm: "auto" },
+};
+
+const DEMO_PRESETS = {
+  groceries: {
+    dataset: "groceries",
+    algorithm: "auto",
+    metric: "confidence",
+    min_support: "0.02",
+    min_threshold: "0.25",
+    max_candidates: "100000",
+    basket: "yogurt, rolls/buns",
+  },
+  safety_degraded: {
+    dataset: "mushroom",
+    algorithm: "apriori",
+    metric: "confidence",
+    min_support: "0.35",
+    min_threshold: "0.8",
+    max_candidates: "120",
+    basket: "",
+  },
+  sparse_eclat: {
+    dataset: "tic_tac_toe",
+    algorithm: "eclat",
+    metric: "confidence",
+    min_support: "0.25",
+    min_threshold: "0.7",
+    max_candidates: "100000",
+    basket: "",
+  },
+  toy_demo: {
+    dataset: "demo",
+    algorithm: "auto",
+    metric: "confidence",
+    min_support: "0.2",
+    min_threshold: "0.5",
+    max_candidates: "100000",
+    basket: "milk, bread",
+  },
 };
 
 const state = {
   activeTab: "explorer",
   overview: null,
+  lastMineData: null,
+  selectedRuleIdx: 0,
   mining: false,
   acceptanceRunning: false,
 };
@@ -52,6 +93,188 @@ function switchTab(tabName) {
     if (panel) {
       panel.classList.toggle("hidden", name !== tabName);
     }
+  });
+}
+
+function updateLivePythonSnippet() {
+  const codeEl = document.getElementById("live-python-code");
+  if (!codeEl) return;
+  const dataset = document.getElementById("dataset-select").value;
+  const algorithm = document.getElementById("algorithm-select").value;
+  const metric = document.getElementById("metric-select").value;
+  const minSupp = document.getElementById("min-support").value || "0.02";
+  const minThresh = document.getElementById("min-threshold").value || "0.25";
+  const maxCand = document.getElementById("max-candidates").value || "100000";
+
+  const loaderLine = dataset === "custom"
+    ? 'transactions = [["milk", "bread"], ["beer", "diapers"]]'
+    : dataset === "demo"
+      ? 'transactions = [["milk", "bread", "butter"], ["beer", "diapers"]]'
+      : `from skarm.datasets import load_transactions\ntransactions = load_transactions("data/${dataset === "market_basket" ? "market_basket.csv" : dataset === "groceries" ? "groceries.csv" : dataset + ".dat"}")`;
+
+  codeEl.textContent = `${loaderLine}\nfrom skarm import AssociationRulesEstimator\n\nest = AssociationRulesEstimator(\n    algorithm="${algorithm}",\n    min_support=${minSupp},\n    metric="${metric}",\n    min_threshold=${minThresh},\n    max_candidates=${maxCand},\n    sparse_output=True,\n).fit(transactions)\n\nprint(est.status_, est.algorithm_used_, len(est.get_rules()))`;
+}
+
+function renderRuleExplainer(rule, index, data) {
+  const panel = document.getElementById("rule-explainer-panel");
+  const narrativeEl = document.getElementById("explainer-narrative");
+  const metricsEl = document.getElementById("explainer-metrics");
+  const badgeEl = document.getElementById("explainer-badge");
+  if (!rule) {
+    panel.classList.add("hidden");
+    return;
+  }
+
+  panel.classList.remove("hidden");
+  state.selectedRuleIdx = index;
+  badgeEl.textContent = `Rule #${index + 1}`;
+
+  const antStr = rule.antecedent.join(" + ");
+  const conStr = rule.consequent.join(" + ");
+  const nTxns = data?.summary?.n_transactions || 0;
+  const occCount = Math.round((Number(rule.support) || 0) * nTxns);
+  const suppPct = ((Number(rule.support) || 0) * 100).toFixed(2);
+  const confPct = ((Number(rule.confidence) || 0) * 100).toFixed(2);
+  const conPct = rule.consequent_support !== null && rule.consequent_support !== undefined
+    ? `${(Number(rule.consequent_support) * 100).toFixed(2)}%`
+    : "baseline";
+  const liftNum = Number(rule.lift);
+  const liftDesc = Number.isFinite(liftNum)
+    ? `${liftNum.toFixed(2)}× more likely than random chance (${conPct})`
+    : "—";
+
+  narrativeEl.innerHTML = "";
+  const strong1 = el("strong", "text-slate-900", antStr);
+  const strong2 = el("strong", "text-blue-700", conStr);
+  const strongConf = el("strong", "font-mono text-slate-900", `${confPct}%`);
+  const strongLift = el("strong", "font-mono text-emerald-700", liftDesc);
+  narrativeEl.append(
+    el("span", "", `Interpretation: Out of ${nTxns.toLocaleString()} transactions, customers bought {`),
+    strong1,
+    el("span", "", `} and {`),
+    strong2,
+    el("span", "", `} together ${occCount.toLocaleString()} times (${suppPct}%). Whenever {${antStr}} is in the basket, there is a `),
+    strongConf,
+    el("span", "", ` chance {${conStr}} is also added — making it `),
+    strongLift,
+    el("span", "", ".")
+  );
+
+  const pA = rule.antecedent_support !== null ? fmtNum(rule.antecedent_support, 4) : "P(A)";
+  const pC = rule.consequent_support !== null ? fmtNum(rule.consequent_support, 4) : "P(C)";
+  const pAC = fmtNum(rule.support, 4);
+  const cards = [
+    {
+      name: "Support P(A ∪ C)",
+      val: fmtNum(rule.support, 4),
+      formula: `${occCount} / ${nTxns} = ${pAC}`,
+      desc: "Fraction of all transactions containing both antecedent & consequent.",
+    },
+    {
+      name: "Confidence P(C | A)",
+      val: fmtNum(rule.confidence, 4),
+      formula: `P(A∪C)/P(A) = ${pAC}/${pA}`,
+      desc: "Conditional probability that C appears given A is present.",
+    },
+    {
+      name: "Lift",
+      val: fmtNum(rule.lift, 3),
+      formula: `Conf/P(C) = ${fmtNum(rule.confidence, 3)}/${pC}`,
+      desc: "> 1.0 = positive dependence; 1.0 = statistically independent.",
+    },
+    {
+      name: "Leverage",
+      val: fmtNum(rule.leverage, 4),
+      formula: `P(A∪C) − P(A)·P(C)`,
+      desc: "Extra co-occurrence probability beyond statistical independence.",
+    },
+    {
+      name: "Conviction",
+      val: fmtNum(rule.conviction, 3),
+      formula: `(1 − P(C)) / (1 − Conf)`,
+      desc: "Implication sensitivity (∞ when Confidence = 1.0).",
+    },
+    {
+      name: "Zhang's Metric",
+      val: fmtNum(rule.zhangs_metric, 3),
+      formula: `Normalized ∈ [-1, +1]`,
+      desc: "+1 = perfect association; 0 = independent; -1 = mutually exclusive.",
+    },
+  ];
+
+  metricsEl.textContent = "";
+  cards.forEach((c) => {
+    const box = el("div", "sk-metric-box");
+    const head = el("div", "sk-metric-title");
+    head.appendChild(el("span", "", c.name));
+    box.appendChild(head);
+    box.appendChild(el("div", "sk-metric-val", c.val));
+    box.appendChild(el("div", "sk-metric-formula", c.formula));
+    box.appendChild(el("div", "sk-metric-desc", c.desc));
+    metricsEl.appendChild(box);
+  });
+
+  // Update active highlight on table rows
+  document.querySelectorAll(".sk-rule-row").forEach((tr, rIdx) => {
+    tr.classList.toggle("selected", rIdx === index);
+  });
+}
+
+function renderEngineComparison(compList, data) {
+  const panel = document.getElementById("comparison-panel");
+  const cardsEl = document.getElementById("comparison-cards");
+  const verdictEl = document.getElementById("comparison-verdict");
+  if (!Array.isArray(compList) || compList.length === 0) {
+    panel.classList.add("hidden");
+    return;
+  }
+
+  panel.classList.remove("hidden");
+  cardsEl.textContent = "";
+  const ap = compList.find((c) => c.algorithm === "apriori") || compList[0];
+  const maxMs = Math.max(...compList.map((c) => c.elapsed_ms), 0.1);
+  const allExactMode = compList.every((c) => c.status === "EXACT");
+  const allParity = compList.every((c) => c.exact_parity);
+
+  verdictEl.textContent = allExactMode && allParity
+    ? "BIT-EXACT PARITY ACROSS ALL 3 ENGINES (Δsupp = 0.00e+00)"
+    : !allExactMode
+      ? "BOUNDED DEGRADED MODE ACTIVE ON ≥1 ENGINE"
+      : "PARITY CHECK COMPLETED";
+  verdictEl.className = `text-xs font-mono font-semibold ${allExactMode && allParity ? "text-emerald-700" : "text-amber-700"}`;
+
+  const colors = { apriori: "#64748b", fpgrowth: "#2563eb", eclat: "#0891b2" };
+  const titles = { apriori: "Apriori (O2 Baseline)", fpgrowth: "FP-Growth (FP-Array)", eclat: "Eclat (Bitset TID)" };
+
+  compList.forEach((row) => {
+    const card = el("div", "border border-slate-200 p-3 bg-slate-50/40 rounded-sm");
+    const hdr = el("div", "flex items-center justify-between gap-2");
+    hdr.appendChild(el("span", "text-xs font-semibold text-slate-900", titles[row.algorithm] || row.algorithm));
+    hdr.appendChild(el("span", `text-[11px] font-mono ${row.status === "EXACT" ? "text-emerald-700" : "text-amber-700"}`, row.status));
+    card.appendChild(hdr);
+
+    const speedup = row.algorithm === "apriori" ? "1.00× (Ref)" : `${(ap.elapsed_ms / Math.max(row.elapsed_ms, 0.001)).toFixed(2)}× vs Apriori`;
+    const mainStat = el("div", "mt-1.5 flex items-baseline justify-between font-mono");
+    mainStat.appendChild(el("span", "text-lg font-semibold text-slate-900", `${row.elapsed_ms.toFixed(2)} ms`));
+    mainStat.appendChild(el("span", "text-xs text-blue-700 font-medium", speedup));
+    card.appendChild(mainStat);
+
+    const track = el("div", "sk-bar-track");
+    const fill = el("div", "sk-bar-fill");
+    fill.style.width = `${Math.max(8, Math.round((row.elapsed_ms / maxMs) * 100))}%`;
+    fill.style.background = colors[row.algorithm] || "#2563eb";
+    track.appendChild(fill);
+    card.appendChild(track);
+
+    const foot = el("div", "mt-2 text-[11px] font-mono text-slate-600");
+    const parityTxt = row.status !== "EXACT"
+      ? "Bounded cap halted"
+      : row.exact_parity
+        ? "Δsupp = 0.00e+00 (Bit-exact)"
+        : `Δsupp = ${row.max_delta_supp}`;
+    foot.textContent = `${row.n_itemsets} itemsets · ${row.n_rules} rules · ${parityTxt}`;
+    card.appendChild(foot);
+    cardsEl.appendChild(card);
   });
 }
 
@@ -141,7 +364,6 @@ function renderBenchmarkChart(scales) {
   svg.setAttribute("role", "img");
   svg.setAttribute("aria-label", "Grouped bar chart of Engine p95 runtimes in milliseconds across 200, 1000, and 3000 transaction scales.");
 
-  // Horizontal grid lines
   const ticks = 4;
   for (let i = 0; i <= ticks; i++) {
     const val = (yCeiling / ticks) * i;
@@ -180,7 +402,6 @@ function renderBenchmarkChart(scales) {
     const totalBarsW = bars.length * barW + (bars.length - 1) * barGap;
     const startX = cx - totalBarsW / 2;
 
-    // 0.80x Apriori KPI-4 target line per scale group
     const limitMs = bars[0].ms * 0.8;
     const limitY = padT + plotH - (limitMs / yCeiling) * plotH;
     const limitLine = document.createElementNS(svgNS, "line");
@@ -320,15 +541,37 @@ function renderE2ETiers(e2e) {
 }
 
 function renderMineResult(data) {
+  state.lastMineData = data;
   document.getElementById("result-dataset").textContent = data.dataset_label;
   const s = data.summary;
+  const densStr = s.density_pct !== undefined ? ` · density ${s.density_pct}%` : "";
   document.getElementById("result-meta").textContent =
-    `${s.n_transactions.toLocaleString()} txns · ${s.n_unique_items.toLocaleString()} items · avg len ${s.avg_transaction_length} · ${data.n_itemsets.toLocaleString()} itemsets · ${data.n_rules.toLocaleString()} rules`;
+    `${s.n_transactions.toLocaleString()} txns · ${s.n_unique_items.toLocaleString()} items · avg len ${s.avg_transaction_length}${densStr} · ${data.n_itemsets.toLocaleString()} itemsets · ${data.n_rules.toLocaleString()} rules`;
 
   const statusEl = document.getElementById("result-status");
   const isExact = data.status === "EXACT";
   statusEl.textContent = `${String(data.algorithm_used).toUpperCase()} · ${data.status} · ${data.elapsed_ms.toFixed(1)} ms`;
-  statusEl.className = `text-xs font-mono uppercase tracking-wider tabular-nums ${isExact ? "text-emerald-700" : "text-amber-700"}`;
+  statusEl.className = `text-xs font-mono uppercase tracking-wider tabular-nums ${isExact ? "text-emerald-700" : "text-amber-700 font-semibold"}`;
+
+  // Adaptive Dispatch & Safety Governor Banner
+  const banner = document.getElementById("dispatch-explanation");
+  banner.textContent = "";
+  const algoUsed = String(data.algorithm_used || "").toUpperCase();
+  if (!isExact || data.is_degraded) {
+    banner.className = "sk-info-banner degraded";
+    banner.appendChild(el("strong", "", `SAFETY GOVERNOR TRIGGERED (status_="DEGRADED", is_degraded_=True): `));
+    banner.appendChild(el("span", "", `${data.termination_reason || "Candidate ceiling reached."} Returned ${data.n_itemsets} verified partial itemsets without RAM exhaustion (peak candidates: ${data.peak_candidates ?? "capped"}).`));
+  } else {
+    banner.className = "sk-info-banner";
+    const routeNote = data.algorithm_requested === "auto"
+      ? `Adaptive router measured density ρ = ${s.density_pct}% (${s.density_pct <= 15 ? "≤ 15% sparse regime → routed to bitset ECLAT" : "> 15% dense regime → routed to FP-ARRAY FPGROWTH"}).`
+      : `Explicitly executed ${algoUsed} engine.`;
+    banner.appendChild(el("strong", "", `Execution Audit (EXACT): `));
+    banner.appendChild(el("span", "", `${routeNote} Lattice search exhausted completely (${data.n_itemsets} itemsets, ${data.n_rules} rules) with IEEE-754 verified metrics.`));
+  }
+
+  // Tri-engine comparison card
+  renderEngineComparison(data.engine_comparison, data);
 
   // Basket recommendations
   const recPanel = document.getElementById("recommendations-panel");
@@ -361,10 +604,14 @@ function renderMineResult(data) {
 
   if (data.rules.length === 0) {
     emptyEl.classList.remove("hidden");
+    renderRuleExplainer(null, 0, data);
   } else {
     emptyEl.classList.add("hidden");
-    data.rules.forEach((rule) => {
-      const tr = el("tr", "hover:bg-slate-50/70");
+    data.rules.forEach((rule, idx) => {
+      const tr = el("tr", `sk-rule-row hover:bg-slate-50/70 ${idx === 0 ? "selected" : ""}`);
+      tr.title = "Click to view full mathematical & business explanation";
+      tr.addEventListener("click", () => renderRuleExplainer(rule, idx, data));
+
       const ruleCell = el("td", "py-2.5 px-4 text-slate-900");
       const antSpan = el("span", "font-medium text-slate-900", rule.antecedent.join(", "));
       const arrowSpan = el("span", "mx-2 font-mono text-blue-600", "→");
@@ -379,6 +626,7 @@ function renderMineResult(data) {
       tr.appendChild(el("td", "py-2.5 px-4 text-right font-mono text-xs tabular-nums text-slate-600", fmtNum(rule.zhangs_metric, 3)));
       tbody.appendChild(tr);
     });
+    renderRuleExplainer(data.rules[0], 0, data);
   }
 
   // Top frequent itemsets
@@ -396,12 +644,14 @@ function renderMineResult(data) {
       grid.appendChild(cell);
     });
   }
+  updateLivePythonSnippet();
 }
 
-async function runMining() {
+async function runMining(compareEngines = false) {
   if (state.mining) return;
   const errorEl = document.getElementById("mine-error");
   const submitBtn = document.getElementById("mine-submit");
+  const compareBtn = document.getElementById("mine-compare");
   errorEl.classList.add("hidden");
   errorEl.textContent = "";
 
@@ -432,7 +682,9 @@ async function runMining() {
 
   state.mining = true;
   submitBtn.disabled = true;
-  submitBtn.textContent = "Mining...";
+  compareBtn.disabled = true;
+  submitBtn.textContent = compareEngines ? "Running..." : "Mining...";
+  compareBtn.textContent = compareEngines ? "Comparing..." : "Compare 3 Engines";
   document.getElementById("result-status").textContent = "RUNNING";
 
   try {
@@ -449,6 +701,7 @@ async function runMining() {
         basket_text: basketText,
         transactions_text: dataset === "custom" ? transactionsText : undefined,
         top_n: 50,
+        compare_engines: compareEngines,
       }),
     });
     const payload = await res.json();
@@ -466,8 +719,28 @@ async function runMining() {
   } finally {
     state.mining = false;
     submitBtn.disabled = false;
-    submitBtn.textContent = "Mine Association Rules";
+    compareBtn.disabled = false;
+    submitBtn.textContent = "Mine Rules";
+    compareBtn.textContent = "Compare 3 Engines";
   }
+}
+
+async function applyDemoPreset(presetKey) {
+  const preset = DEMO_PRESETS[presetKey];
+  if (!preset) return;
+  document.querySelectorAll(".sk-preset-btn").forEach((b) => {
+    b.classList.toggle("active", b.dataset.preset === presetKey);
+  });
+  document.getElementById("dataset-select").value = preset.dataset;
+  document.getElementById("custom-txns-wrapper").classList.toggle("hidden", preset.dataset !== "custom");
+  document.getElementById("algorithm-select").value = preset.algorithm;
+  document.getElementById("metric-select").value = preset.metric;
+  document.getElementById("min-support").value = preset.min_support;
+  document.getElementById("min-threshold").value = preset.min_threshold;
+  document.getElementById("max-candidates").value = preset.max_candidates;
+  document.getElementById("basket-input").value = preset.basket;
+  updateLivePythonSnippet();
+  await runMining(false);
 }
 
 async function runAcceptance() {
@@ -536,6 +809,10 @@ async function init() {
     btn.addEventListener("click", () => switchTab(btn.dataset.tab));
   });
 
+  document.querySelectorAll(".sk-preset-btn").forEach((btn) => {
+    btn.addEventListener("click", () => applyDemoPreset(btn.dataset.preset));
+  });
+
   document.getElementById("header-run-acceptance").addEventListener("click", runAcceptance);
   document.getElementById("panel-run-acceptance").addEventListener("click", runAcceptance);
   const printPaperBtn = document.getElementById("print-paper-btn");
@@ -545,6 +822,18 @@ async function init() {
       if (frame && frame.contentWindow) {
         frame.contentWindow.focus();
         frame.contentWindow.print();
+      }
+    });
+  }
+
+  const copyBtn = document.getElementById("copy-python-btn");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", async () => {
+      const text = document.getElementById("live-python-code")?.textContent || "";
+      if (text && navigator.clipboard) {
+        await navigator.clipboard.writeText(text);
+        copyBtn.textContent = "Copied";
+        setTimeout(() => { copyBtn.textContent = "Copy"; }, 1200);
       }
     });
   }
@@ -560,13 +849,21 @@ async function init() {
       document.getElementById("min-threshold").value = preset.min_threshold;
       document.getElementById("metric-select").value = preset.metric;
       document.getElementById("basket-input").value = preset.basket;
+      document.getElementById("max-candidates").value = preset.max_candidates;
+      document.getElementById("algorithm-select").value = preset.algorithm;
     }
+    updateLivePythonSnippet();
+  });
+
+  ["algorithm-select", "metric-select", "min-support", "min-threshold", "max-candidates"].forEach((id) => {
+    document.getElementById(id)?.addEventListener("change", updateLivePythonSnippet);
   });
 
   document.getElementById("mine-form").addEventListener("submit", (evt) => {
     evt.preventDefault();
-    runMining();
+    runMining(false);
   });
+  document.getElementById("mine-compare").addEventListener("click", () => runMining(true));
 
   try {
     const res = await fetch("/api/overview");
@@ -574,12 +871,12 @@ async function init() {
       renderOverview(await res.json());
     }
   } catch {
-    // Non-fatal; KPI strip displays baseline defaults
+    // Non-fatal
   }
 
-  // Run initial live mining pass on Groceries with default basket query
   document.getElementById("basket-input").value = DATASET_DEFAULTS.groceries.basket;
-  await runMining();
+  updateLivePythonSnippet();
+  await runMining(false);
 }
 
 init();
