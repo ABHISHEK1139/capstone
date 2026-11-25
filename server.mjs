@@ -34,25 +34,27 @@ const MIME_TYPES = {
 let acceptanceInFlight = false;
 
 function resolvePythonBinary() {
+  const fallback = process.platform === "win32" ? "python" : "python3";
   const candidates = [
     process.env.SKARM_PYTHON,
-    "/tmp/skarm-venv/bin/python",
+    path.resolve(__dirname, ".venv", "Scripts", "python.exe"),
     path.resolve(__dirname, ".venv", "bin", "python"),
-    "python3",
+    "/tmp/skarm-venv/bin/python",
+    fallback,
   ].filter(Boolean);
 
   for (const candidate of candidates) {
-    if (candidate === "python3") {
+    if (candidate === "python3" || candidate === "python") {
       return candidate;
     }
     try {
-      fs.accessSync(candidate, fs.constants.X_OK);
+      fs.accessSync(candidate, fs.constants.F_OK);
       return candidate;
     } catch {
       // Try next candidate
     }
   }
-  return "python3";
+  return fallback;
 }
 
 function sendJson(res, statusCode, data) {
