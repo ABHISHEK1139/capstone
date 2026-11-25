@@ -53,19 +53,39 @@ capstone/
 │   ├── test_eclat.py                # Eclat vertical miner verification
 │   ├── test_rules.py                # Rule metrics & oracle accuracy tests
 │   ├── test_estimator.py            # Scikit-learn API compliance tests
+│   ├── test_check_estimator_compatibility.py  # Official sklearn check_estimator audit
+│   ├── test_acceptance_contract.py  # Strict KPI-4 acceptance contract test
+│   ├── test_challenger_fallback.py  # Runner fallback & provenance regression tests
 │   ├── test_negative_cases.py       # Mandatory negative tests (NT-1 through NT-6)
+│   ├── e2e/                         # 5-tier independent E2E suite (88 tests)
 │   └── run_acceptance.py            # Automated Acceptance Harness (AC-1..AC-4)
 ├── benchmarks/                      # Performance & resource profiling
 │   ├── run_benchmarks.py            # Scalability runner across N=200, 1000, 3000
+│   ├── run_pc_campaign.py           # 25-dataset campaign runner
+│   ├── run_baselines.py             # SPMF & mlxtend baseline comparison runner
+│   ├── run_bounded_ablation.py      # Candidate & memory governor ablation
 │   └── benchmark_results.json       # Versioned benchmark execution results
-├── docs/                            # Capstone Deliverables (D1 through D7)
+├── paper/                           # Research manuscripts, slides & figures
+│   ├── paper-ieee.tex / .pdf        # IEEEtran manuscript
+│   ├── paper-ieee-graphical.pdf     # Graphical abstract edition
+│   ├── paper.tex / .pdf             # Full-length research manuscript
+│   ├── presentation_slides.md       # Viva defense slides
+│   └── figures/                     # Architecture, engine & ablation plots
+├── public/                          # Interactive Web Explorer frontend
+├── server.mjs                       # Node.js server & Python web bridge
+├── scripts/                         # Build, LaTeX compile & verification scripts
+├── docs/                            # Capstone Deliverables (D1 through D7 & reports)
 │   ├── D1_PROBLEM_CHARTER_AND_SPECIFICATION.md
 │   ├── D2_CP1_APRIORI_BASELINE_EVALUATION.md
 │   ├── D3_CP2_CONTRIBUTION_AND_TRADEOFFS.md
 │   ├── D4_SYSTEM_INTEGRATION_AND_OPERABILITY.md
 │   ├── D5_ACCEPTANCE_TEST_REPORT_AND_KPIS.md
 │   ├── D6_REPRODUCIBILITY_RUNBOOK.md
-│   └── D7_EXECUTIVE_DEFENSE_AND_PORTFOLIO.md
+│   ├── D7_EXECUTIVE_DEFENSE_AND_PORTFOLIO.md
+│   └── SKLEARN_COMPATIBILITY_REPORT.md
+├── CITATION.cff                     # Machine-readable citation metadata
+├── DATASET_INVENTORY.md             # 25-dataset manifest, licenses & SHA-256 hashes
+├── HANDOFF.md                       # Executive handoff & reproduction summary
 ├── pyproject.toml                   # Build system and project metadata
 ├── requirements.txt                 # Pinned dependencies
 └── README.md                        # Master project documentation
@@ -125,6 +145,13 @@ python -m skarm.cli --dataset groceries --min-support 0.02 --min-confidence 0.25
 python -m skarm.cli --dataset retail --min-support 0.02 --algorithm eclat --top-n 10
 ```
 
+### 4. Interactive Web Explorer
+Launch the Node.js web interface backed by `scripts/web_bridge.py` for interactive dataset mining, rule inspection, and IEEE manuscript preview:
+```bash
+npm install
+npm start
+```
+
 ---
 
 ## Verification & Multi-Tier Test Suite
@@ -162,7 +189,7 @@ python benchmarks/run_benchmarks.py
 | **KPI-3** | Peak candidate count | 105 candidates | **0 – 46 candidates** (capped on dense stress) | $\ge 5\%$ reduction / capped | **PASS** |
 | **KPI-4** | Runtime by transaction scale (strict 30-trial p95, no exemptions) | Reference p95 | **AC-4**: FP `0.315×`, Eclat `0.180×`; **Scales 200–3000**: FP `0.262–0.327×` (engine) / `0.235–0.375×` (est), Eclat `0.215–0.317×` (engine) / `0.213–0.333×` (est); 0 failures | $p95 \le 0.80 \times$ Baseline | **PASS** |
 | **KPI-5** | Peak memory (`tracemalloc`) & bounded memory envelope | 0.033 – 0.129 MB (synthetic) | **0.033 – 0.181 MB** (synthetic scales: fixed buffer floor near parity `1.00–1.39×`; candidate/memory governor prevents OOM on dense explosion) | Bounded / monitored | **MONITORED / BOUNDED** |
-| **KPI-6** | Estimator API compliance pass rate | 100.0% | **100.0% (7/7)** | 100.0% | **PASS** |
+| **KPI-6** | Estimator API compliance pass rate | 100.0% | **100.0% (7/7 capstone API contracts)**; generic `check_estimator`: 14 passed, 39 domain xfails, 1 skipped, 0 unexpected ([report](docs/SKLEARN_COMPATIBILITY_REPORT.md)) | 100.0% | **PASS** |
 
 ---
 
@@ -174,3 +201,7 @@ python benchmarks/run_benchmarks.py
 - [D5: Independent Acceptance & NT-1..6 Audit](docs/D5_ACCEPTANCE_TEST_REPORT_AND_KPIS.md)
 - [D6: Reproducibility Runbook](docs/D6_REPRODUCIBILITY_RUNBOOK.md)
 - [D7: Viva Defense & Portfolio Dossier](docs/D7_EXECUTIVE_DEFENSE_AND_PORTFOLIO.md)
+- [Scikit-Learn Compatibility Report](docs/SKLEARN_COMPATIBILITY_REPORT.md)
+- [Dataset Inventory & Provenance](DATASET_INVENTORY.md)
+- [Executive Handoff](HANDOFF.md)
+- [Citation Metadata (CFF)](CITATION.cff)

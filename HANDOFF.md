@@ -1,6 +1,6 @@
 # HANDOFF — skarm Capstone Project & Research Submission (KLCAP-2026-00340)
 
-**Date**: 2026-11-02  
+**Date**: 2026-11-25  
 **Project**: `skarm` — Scalable Association-Rule Mining Estimator with Apriori Baseline  
 **Repository**: `ABHISHEK1139/capstone` (main branch)  
 **Authors**: Abhishek Kumar (Lead Implementer), Gontla Venkata Anvitha, Kamma Giridhar, Paladagula Venkata Rajeev  
@@ -10,7 +10,7 @@
 
 ---
 
-## 1. Executive Status (as of November 2, 2026)
+## 1. Executive Status (as of November 25, 2026)
 
 Technical verification complete; publication decisions pending (target venue selection and author/supervisor sign-off):
 
@@ -23,7 +23,7 @@ Technical verification complete; publication decisions pending (target venue sel
 | **Modern Baseline Campaign (Chess, Adult, BMS-POS)** | **COMPLETE** | 27 cells across SKARM (Apriori, FP-Growth, Eclat), mlxtend (v0.25.0), and SPMF Java 21 (FIN, PrePost+, LCMFreq, FP-Growth); 25 completed runs show $\Delta_{\mathrm{supp}} = 0.0$; 2 BMS-POS mlxtend runs skipped due to 814.8 MB dense-matrix limit; `benchmarks/baseline_results.json` |
 | **Scikit-Learn Compatibility Audit** | **CERTIFIED** | 14 passed core checks, 39 expected domain-specific boundary incompatibilities (37 unique expectation keys, 2 dual-executed checks), 1 environment-skipped check, 0 unexpected failures under `check_estimator`. Distinct from institutional KPI-6 (7/7, 100% API compliance) |
 | **Pruning & Memory Governor Ablation** | **COMPLETE** | Bounded degradation verified under severe candidate explosion; up to 17.20x speedups under auditable truncation (Chess, 0.3485s vs 5.9941s exact baseline); `benchmarks/ablation_results.json` |
-| **LaTeX Research Manuscripts** | **COMPILED** | Dual camera-ready manuscripts (`paper/paper.pdf` and `paper/paper-ieee.pdf`) compiled via pdfTeX with 0 fatal errors, 0 undefined citations, and 0 overfull hboxes |
+| **LaTeX Research Manuscripts** | **COMPILED** | Camera-ready manuscripts (`paper/paper.pdf`, `paper/paper-ieee.pdf`, and `paper/paper-ieee-graphical.pdf`) compiled via pdfTeX with 0 fatal errors, 0 undefined citations, and 0 overfull hboxes |
 | **Institutional Deliverables** | **SUBMITTED** | Complete deliverables D1 through D7 submitted in `docs/` |
 
 ---
@@ -32,8 +32,8 @@ Technical verification complete; publication decisions pending (target venue sel
 
 ### 2.1 Commit Provenance
 - **Primary Campaign Measurement Commit**: `ea5bff5d657639298b197074ab35bd4bb7bb7a37` (2026-11-01T18:59:27Z; 25 datasets, 1,650 records).
-- **Current Verified HEAD Commit**: `420cffbb` (full commit: `420cffbb956a28c74a667f6b1ddda74798ade0bf`).
-- **Baseline Re-Verification Commit**: `564a7063e74224252eaa7ae9e2eb8152c5819e5a` (2026-11-02T14:35:02Z; verification method: `canonical_itemsets_cross_comparison`).
+- **Latest Verified Upstream Commit**: `47f68508401c7dd3c5c6522ef900a65df9fe853c` (264-test suite, strict KPI-4 acceptance & `run_benchmarks.py` validation, updated `paper/paper-ieee.tex` compatibility subsection).
+- **Prior Verification Milestones**: `5dd4d987` (264-test suite & strict KPI-4), `a9cbe841` (version-tolerant `check_estimator`), `420cffbb` (ablation & provenance separation), `564a7063` (2026-11-02T14:35:02Z; `canonical_itemsets_cross_comparison`).
 - **Code Fix Commits for Acceptance Defects**: `ff03b451`, `dd22782f`, `904b19b3`.
 
 ### 2.2 Benchmark Artifacts
