@@ -187,8 +187,8 @@ python benchmarks/run_benchmarks.py
 | **KPI-1** | Frequent-itemset precision & recall vs oracle (%) | 100.0% / 100.0% | **100.0% / 100.0%** ($\Delta_{\mathrm{supp}} = 0.0$) | $\ge 98.0\%$ | **PASS** |
 | **KPI-2** | Rule-metric numerical error rubric | Rubric 80 | **100.0/100** ($2.22 \times 10^{-16}$) | Score $\ge 80/100$ | **PASS** |
 | **KPI-3** | Peak candidate count | 105 candidates | **0 – 46 candidates** (capped on dense stress) | $\ge 5\%$ reduction / capped | **PASS** |
-| **KPI-4** | Runtime by transaction scale (strict 30-trial p95, no exemptions) | Reference p95 | **AC-4**: FP `0.315×`, Eclat `0.180×`; **Scales 200–3000**: FP `0.262–0.327×` (engine) / `0.235–0.375×` (est), Eclat `0.215–0.317×` (engine) / `0.213–0.333×` (est); 0 failures | $p95 \le 0.80 \times$ Baseline | **PASS** |
-| **KPI-5** | Peak memory (`tracemalloc`) & bounded memory envelope | 0.033 – 0.129 MB (synthetic) | **0.033 – 0.181 MB** (synthetic scales: fixed buffer floor near parity `1.00–1.39×`; candidate/memory governor prevents OOM on dense explosion) | Bounded / monitored | **MONITORED / BOUNDED** |
+| **KPI-4** | Runtime by transaction scale (strict 30-trial p95, no exemptions) | Reference p95 | **AC-4**: FP `0.501×`, Eclat `0.153×`; **Scales 200–3000**: FP `0.157–0.267×` (engine) / `0.243–0.315×` (est), Eclat `0.086–0.374×` (engine) / `0.266–0.343×` (est); 0 failures | $p95 \le 0.80 \times$ Baseline | **PASS** |
+| **KPI-5** | Peak memory (`tracemalloc`) & bounded memory envelope | 0.027 – 0.129 MB (synthetic engine) | **0.028 – 0.180 MB** (synthetic scales: fixed buffer floor `1.00–1.39×`; candidate/memory governor prevents OOM on dense explosion) | Bounded / monitored | **MONITORED / BOUNDED** |
 | **KPI-6** | Estimator API compliance pass rate | 100.0% | **100.0% (7/7 capstone API contracts)**; generic `check_estimator`: 14 passed, 39 domain xfails, 1 skipped, 0 unexpected ([report](docs/SKLEARN_COMPATIBILITY_REPORT.md)) | 100.0% | **PASS** |
 
 ---

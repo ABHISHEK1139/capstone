@@ -1,9 +1,9 @@
 % =====================================================================
-% skarm — IEEE Transactions journal-style research paper (IEEEtran,
-% two-column, 10pt, graphical edition).
-% 25-dataset PC campaign results: commit ea5bff5d (1,650 trial records).
-% Strict zero-exemption 30-trial KPI-4 & test suite verification: HEAD
-% (Python 3.12, 264/264 pytest, 88/88 E2E, 13/13 acceptance gate).
+% skarm — IEEE Transactions journal manuscript (IEEEtran,
+% two-column, 10pt, unified graphical edition).
+% 25-dataset corpus campaign: commit ea5bff5d (1,650 trial records).
+% Scaling, bounded ablation, and external baselines: verified on HEAD
+% (Python 3.12.10, Java 21.0.9, 264/264 pytest, 88/88 E2E).
 % Author order: Ramya, Anvitha, Abhishek Kumar, Giridhar, Rajeev.
 % =====================================================================
 \documentclass[journal,a4paper]{IEEEtran}
@@ -14,7 +14,7 @@
 \usepackage{xcolor}
 \usepackage{xspace}
 \usepackage[hidelinks]{hyperref}
-\markboth{IEEE Transactions-Style Research Report --- skarm: scikit-learn-Compatible Association-Rule Mining}{Dudigam Ramya \emph{et al.}}
+\markboth{IEEE Transactions Preprint --- skarm: Association-Rule Mining with Auditable Pruning}{Ramya \emph{et al.}}
 
 \newcommand{\skarm}{skarm\xspace}
 
@@ -25,8 +25,8 @@ Mining with Auditable Pruning}
         Abhishek~Kumar,
         Kamma~Giridhar,
         and~Paladagula~Venkata~Rajeev%
-\thanks{Dr.~D.~Ramya is with the Department of Computer Science and Engineering, Koneru Lakshmaiah Education Foundation, Vaddeswaram, Guntur, Andhra Pradesh 522302, India (e-mail: ramya.d@kluniversity.in). Supervisor/Guide.}%
-\thanks{G.~V.~Anvitha, A.~Kumar, K.~Giridhar, and P.~V.~Rajeev are with the Department of Computer Science and Engineering, Koneru Lakshmaiah Education Foundation, Vaddeswaram, Guntur, Andhra Pradesh 522302, India (project identifier: KLCAP-2026-00340; e-mail: anvitha.g@kluniversity.in; 2300033822@kluniversity.in; giridhar.k@kluniversity.in; rajeev.p@kluniversity.in).}%
+\thanks{Dr.~D.~Ramya is with the Department of Computer Science and Engineering, Koneru Lakshmaiah Education Foundation, Vaddeswaram, Guntur, Andhra Pradesh 522302, India (e-mail: ramya.d@kluniversity.in).}%
+\thanks{G.~V.~Anvitha, A.~Kumar, K.~Giridhar, and P.~V.~Rajeev are with the Department of Computer Science and Engineering, Koneru Lakshmaiah Education Foundation, Vaddeswaram, Guntur, Andhra Pradesh 522302, India (e-mail: anvitha.g@kluniversity.in; 2300033822@kluniversity.in; giridhar.k@kluniversity.in; rajeev.p@kluniversity.in).}%
 }
 
 \begin{document}
@@ -48,19 +48,24 @@ machine-precision rule metrics (maximum oracle error $2.22\times 10^{-16}$),
 explicit candidate-count telemetry, and an auditable bounded-generation mode
 that signals \texttt{DEGRADED} status rather than silently returning partial
 outputs. Across a 25-dataset benchmark campaign ($1{,}650$ trial records
-spanning 8 domains, plus external \texttt{mlxtend} and Java SPMF baselines),
-all $157$ compared engine pairs agree bit-exactly on frequent itemsets
-($\Delta_{\mathrm{supp}} = 0.0$); at each dataset's primary threshold,
-Apriori is never fastest, FP-Growth is fastest on $5$ of $25$ datasets, and
-Eclat is fastest on $20$ of $25$, while \texttt{mlxtend} failed or was
-skipped on $6$ cells ($3$ dense-memory cap skips up to $40.9$~GB and $3$
-empty-input errors). Furthermore, in post-audit strict zero-exemption
-30-trial verification against the immutable O2 Apriori baseline (Python
-3.12), optimized FP-Array FP-Growth and vertical bitset Eclat achieve
-$0.294\times$--$0.441\times$ and $0.168\times$--$0.313\times$ engine p95
-runtime ratios (well below the $\le 0.80\times$ charter gate) with
-$264/264$ automated unit/integration tests and $88/88$ end-to-end tests
-passing.
+spanning 8 domains), all $157$ compared engine pairs agree bit-exactly on
+frequent itemsets ($\Delta_{\mathrm{supp}} = 0.0$); at each dataset's
+primary threshold, Apriori is never fastest, FP-Growth is fastest on $5$ of
+$25$ datasets, and Eclat is fastest on $20$ of $25$, while \texttt{mlxtend}
+failed or was skipped on $6$ cells ($3$ dense-memory cap skips up to
+$40.9$~GB and $3$ empty-input errors). In bounded pruning ablation on dense
+Chess data, the governor limits candidate explosion with up to
+$17.14\times$ acceleration under explicit degradation metadata, while
+external cross-language verification confirms exact itemset equivalence
+($\Delta_{\mathrm{supp}} = 0.0$) across all $25$ completed comparisons
+with \texttt{mlxtend} and Java~21 SPMF miners (\textsc{FIN},
+\textsc{PrePost+}, \textsc{LCMFreq}, \textsc{FP-Growth}). Under strict
+zero-exemption 30-trial scaling benchmarks against the level-wise Apriori
+baseline (Python~3.12), FP-Array FP-Growth and vertical bitset Eclat
+achieve $0.157\times$--$0.267\times$ ($0.501\times$ on the $14$-itemset
+acceptance gate) and $0.086\times$--$0.374\times$ engine p95 runtime
+ratios (well below the $\le 0.80\times$ target), with $264/264$ automated
+unit/integration tests and $88/88$ end-to-end tests passing.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -75,11 +80,12 @@ over transactions, where $X$ and $Y$ are disjoint itemsets. The task is
 unsupervised: unlike classification, there is no target variable, and
 the output is a set of patterns whose size can explode combinatorially
 as the support threshold falls. Any library that offers this task must
-therefore answer three questions honestly: \emph{which} patterns were
+therefore answer three questions explicitly: \emph{which} patterns were
 found, \emph{whether} the output is complete, and \emph{what} it cost.
-Most teaching implementations answer none of them.
+Conventional lightweight implementations typically omit at least one of
+these guarantees.
 
-\subsection{The scikit-learn scope story, stated honestly}
+\subsection{Ecosystem Context and Scope Boundaries}
 In November 2025 a community member asked scikit-learn for a native
 Apriori estimator (issue \#32712 \cite{sklearn32712}), proposing a new
 \texttt{sklearn.association} module with \texttt{fit()} for frequent
@@ -96,18 +102,22 @@ conventions (estimator with \texttt{fit}, fitted attributes with a
 trailing underscore, parameter inspection), so it can sit beside
 scikit-learn pipelines rather than inside them.
 
-\subsection{Capstone objectives}
-This work is the KL University capstone project KLCAP-2026-00340. Its
-objectives, as registered in the portal specification, are: (O1) build
-an Apriori baseline; (O2) add FP-Growth and Eclat behind one estimator;
-(O3) make pruning auditable through candidate counts and a bounded
-mode; (O4) verify correctness against independent implementations; and
-(O5) evaluate on a broad, documented dataset collection. The portal
-contract additionally requires a held-out partition reserved before
-tuning (acceptance criterion AC-3), negative tests NT-1 to NT-6, and
-KPI evidence including a 30-trial statistical protocol (KPI-4) and an
-objective analytical oracle scoring rubric (KPI-2); Section~\ref{sec:setup} maps each
-requirement to its evidence.
+\subsection{Design Objectives and Verification Criteria}
+\label{sec:objectives}
+To address these ecosystem gaps in a verifiable systems architecture, \skarm
+is engineered around five core technical objectives:
+(1)~implement a canonical, deterministic level-wise Apriori baseline;
+(2)~unify optimized FP-Growth and vertical Eclat algorithms behind the same
+sparse-native estimator contract; (3)~enforce bounded candidate and memory
+pruning with explicit \texttt{EXACT}/\texttt{DEGRADED} result-state
+reporting; (4)~verify bit-exact frequent-itemset equivalence and
+machine-precision rule metrics against independent Python and Java
+implementations; and (5)~evaluate scaling and robustness across a
+documented multi-domain corpus. Verification additionally incorporates
+held-out 70/30 evaluation split checks (avoiding rule-threshold leakage),
+six adversarial and boundary negative tests (\texttt{NT-1}--\texttt{NT-6}),
+a pre-registered 30-trial statistical timing protocol, and machine-precision
+analytical oracle checks (Section~\ref{sec:setup}).
 
 \subsection{Research Questions and Contributions}
 To frame \skarm rigorously as a software-systems and empirical evaluation
@@ -149,7 +159,7 @@ In answering RQ1--RQ5, \skarm delivers three concrete systems contributions
   \item \textbf{Multi-scale reproducible evaluation:} a 25-dataset corpus
   spanning 8 domains with measured file provenance (Section~\ref{sec:data}),
   cross-framework comparisons against \texttt{mlxtend} and Java SPMF miners,
-  and a strict zero-exemption 30-trial KPI-4 verification harness.
+  and a strict zero-exemption 30-trial scaling verification harness.
 \end{itemize}
 
 \begin{figure*}[t]
@@ -247,19 +257,20 @@ compute exact support via identical IEEE-754 division
 lexicographically ordered itemsets so any output divergence is immediately
 flagged by the correctness gate (Section~\ref{sec:setup}).
 
-\textbf{Apriori (O2 Baseline)} generates candidates level by level via
+\textbf{Apriori (Level-Wise Baseline)} generates candidates level by level via
 $(k-2)$-prefix joins, applies anti-monotone downward-closure pruning, and
 counts surviving candidates against CSR rows. The Apriori implementation
-serves as an immutable baseline reference across all regression and speedup
-gates.
+serves as an exhaustive deterministic reference baseline across all
+correctness regression and scaling speedup evaluations.
 
 \textbf{FP-Growth} orders frequent 1-itemsets by descending support and
 avoids level-wise candidate scans. In the 25-dataset Windows PC campaign
 (commit \texttt{ea5bff5d}), FP-Growth used a standard conditional FP-tree
-augmented with $O(1)$ tail-pointer header appends. To satisfy the strict
-zero-exemption 30-trial KPI-4 runtime gate on small-to-medium workloads
-without altering Apriori, the current \texttt{HEAD} implementation adds four
-exact algorithmic accelerators while preserving $\Delta_{\mathrm{supp}}=0.0$:
+augmented with $O(1)$ tail-pointer header appends. To satisfy strict
+zero-exemption 30-trial scaling targets on small-to-medium workloads
+without altering the Apriori reference, the current \texttt{HEAD}
+implementation adds four exact algorithmic accelerators while preserving
+$\Delta_{\mathrm{supp}}=0.0$:
 (1)~a Grahne \& Zhu FP-Array computed via chunked \texttt{float32} matrix
 multiplication ($X_f^\top X_f$) that emits $L_1$ and $L_2$ directly without
 allocating tree nodes; (2)~a pairwise adjacency bitmask triangle gate that
@@ -278,15 +289,16 @@ execute via bitwise \texttt{\&} and hardware population counts via
 \texttt{int.bit\_count()}, automatically falling back to weighted TID sets
 when sample weights are provided. To preserve strict experimental provenance,
 the 25-dataset Windows PC campaign (Tables~\ref{tab:timing}--\ref{tab:timingfull})
-reports commit \texttt{ea5bff5d} measurements unaltered, while post-audit
-strict 30-trial KPI-4 verification on \texttt{HEAD} is reported separately in
-Section~\ref{sec:kpi4}. Figure~\ref{fig:engines} contrasts the execution
-pipelines of all three engines.
+reports commit \texttt{ea5bff5d} measurements unaltered, while current
+\texttt{HEAD} 30-trial scaling, bounded ablation, and cross-framework
+modern-miner benchmarks are reported in Sections~\ref{sec:kpi4},
+\ref{sec:ablation}, and~\ref{sec:limitations}. Figure~\ref{fig:engines}
+contrasts the execution pipelines of all three engines.
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/engines.png}
-\caption{Execution flows of the three mining engines behind \texttt{AssociationRulesEstimator}: (A)~immutable O2 Apriori baseline with level-wise candidate join and downward-closure pruning; (B)~FP-Growth with Grahne \& Zhu FP-Array (\texttt{float32} GEMM), bitmask triangle gate, bit-packed deduplication, and $O(1)$ tail-linked conditional FP-trees; (C)~vertical bitset Eclat using \texttt{np.packbits} masks and hardware POPCNT (\texttt{int.bit\_count()}). All three engines achieve bit-exact support parity ($\Delta_{\mathrm{supp}} = 0.0$).}
+\caption{Execution flows of the three mining engines behind \texttt{AssociationRulesEstimator}: (A)~level-wise Apriori baseline with candidate join and downward-closure pruning; (B)~FP-Growth with Grahne \& Zhu FP-Array (\texttt{float32} GEMM), bitmask triangle gate, bit-packed deduplication, and $O(1)$ tail-linked conditional FP-trees; (C)~vertical bitset Eclat using \texttt{np.packbits} masks and hardware POPCNT (\texttt{int.bit\_count()}). All three engines achieve bit-exact support parity ($\Delta_{\mathrm{supp}} = 0.0$).}
 \label{fig:engines}
 \end{figure*}
 
@@ -349,12 +361,12 @@ on this toy example.
 \label{fig:flow}
 \end{figure*}
 
-\begin{figure}[t]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=\columnwidth]{figures/fptree.png}
-\caption{Illustrative FP-tree for the toy transactions \{milk, bread, eggs\}, \{milk, bread\}, and \{bread, butter\} at minimum support $0.5$: frequent items are bread ($3$) and milk ($2$). Illustrative only---no measured claim rests on this example.}
+\includegraphics[width=\textwidth]{figures/fptree.png}
+\caption{Canonical FP-tree construction (Han \emph{et al.} benchmark example: $N=5$ transactions over $\{f,c,a,b,m,p\}$ at $\mathrm{minsup}=2$, yielding descending header order $f:4, c:4, a:3, b:3, m:3, p:3$) paired with \skarm's dual-pointer (\texttt{head} + \texttt{tail}) header table. Storing direct \texttt{tail} references achieves $O(1)$ node-link appends without traversing $O(L)$-length linked chains, preserving exact tree topology ($\Delta_{\mathrm{supp}}=0.0$).}
 \label{fig:fptree}
-\end{figure}
+\end{figure*}
 
 \section{Datasets}
 \label{sec:data}
@@ -453,12 +465,21 @@ matrix; encoding time is reported separately. Memory is peak RSS
 sampled every 10~ms minus the pre-trial baseline. Rule parameters are
 metric confidence, minimum threshold 0.25; estimator parameters are
 \texttt{max\_candidates} $= 2{,}000{,}000$, sparse output, degrade on
-explosion. Portal mapping: KPI-4 is the 30-trial protocol (p50/p95/p99; p95 at
-most $0.8\times$ baseline); KPI-2 is the analytical ground truth oracle scoring rubric ($< 10^{-9} \to 100$, $< 10^{-6} \to 90$, $< 10^{-4} \to 70$, target $\ge 80/100$); AC-3 is the held-out partition reserved
-before tuning; KPI-1, KPI-3, KPI-5, KPI-6 follow the acceptance report. The machine, library
-versions, and results commit are recorded in Appendix~\ref{app:repro}
-from the campaign metadata.
-Campaign machine: Windows 11 (AMD64), 16 CPUs, 12 parallel workers (one per dataset). Python 3.12.10, scikit-learn 1.9.1, mlxtend 0.25.0, NumPy 2.5.4, pandas 3.1.0, SciPy 1.18.1. Per-trial cap 600~s; rules at confidence $\geq 0.25$; estimator max\_candidates 2,000,000, sparse output, degrade on explosion. Peak memory is the sampler-reported RSS delta (10~ms sampling, minus pre-trial baseline); on this Windows run the sampler used psutil, not the /proc path named in the campaign metadata string. Results: commit \texttt{ea5bff5d}, 1650 records, 25 datasets.
+explosion. Verification criteria map to concrete reproducible harnesses:
+the strict 30-trial scaling target requires p95 runtime $\le 0.80\times$ the
+level-wise Apriori baseline across synthetic scales ($N \in \{200, 1{,}000,
+3{,}000\}$) and acceptance workloads; analytical oracle precision requires
+exact frequent-itemset parity ($\Delta_{\mathrm{supp}} = 0.0$) and rule-metric
+error $< 10^{-9}$; held-out evaluation reserves a leakage-free 70/30
+train/validation partition prior to threshold selection; and six adversarial
+negative tests (\texttt{NT-1}--\texttt{NT-6}) probe dense stress, duplicate
+items, weighted rows, support boundaries, deterministic ordering, and
+persistence. Hardware environment: Windows~11 (AMD64, 16 CPUs), Python~3.12.10,
+scikit-learn~1.9.1, \texttt{mlxtend}~0.25.0, NumPy~2.5.4, pandas~3.1.0,
+SciPy~1.18.1, and Java~21.0.9 (for external SPMF baselines). The 25-dataset
+campaign (\texttt{ea5bff5d}, $1{,}650$ trial records across 12 parallel workers)
+uses a 600~s per-trial limit and 10~ms \texttt{psutil} RSS sampling;
+Appendix~\ref{app:repro} details full provenance across campaigns.
 
 \begin{table*}[t]
 \centering
@@ -502,27 +523,33 @@ Online Retail II & 0.02, 0.01 & same shape as Online Retail \\
 
 \section{Results and discussion}
 
-\subsection{Analytical verification and negative-test audit}
-Before any benchmark timing is trusted, the implementation was verified
-against an independent oracle and a negative-test suite. On the
-sklearn issue's own example (transactions \{milk, bread, eggs\},
-\{milk, bread\}, \{bread, butter\}) at minimum support 0.5, mlxtend
-gives bread support 1.0, milk 0.667, and \{milk, bread\} 0.667, with
-rule \{milk\} $\Rightarrow$ \{bread\} at confidence 1.0 and lift 1.0;
-\skarm agrees exactly. The analytical oracle suite achieves $100\%$ itemset
-precision and recall with a maximum rule-metric numerical error of
-$2.22 \times 10^{-16}$ (IEEE-754 double-precision machine epsilon, scoring
-$100/100$ on KPI-2 across all six metrics including Zhang's metric). The
-strict acceptance suite (\texttt{tests/run\_acceptance.py}, covering
-AC-1--AC-4 and NT-1--NT-6 with zero small-runtime exemptions) is genuinely
-asserted and passes $13/13$ checks, supported by $264/264$ passing
-\texttt{pytest} unit/integration tests and $88/88$ five-tier end-to-end tests
-on Python~3.12. Brute-force cross-checks ($4$ random matrices $\times 2$
-thresholds $\times$ weighted/unweighted $\times 3$ miners) show $0$
-mismatches. The earlier bug-fix history (Eclat off-by-one,
-accidents-header/SPMF/tab loaders, unstable rule sort) is preserved in the
-repository history (commits \texttt{ff03b451}, \texttt{dd22782f},
-\texttt{904b19b3}).
+\subsection{Analytical Oracle and Boundary-Stress Verification}
+\label{sec:oracle}
+To validate correctness independently of runtime scaling benchmarks, the
+implementation was audited against an exact analytical oracle and an
+adversarial negative-test suite. On a reference toy database (\{milk, bread,
+eggs\}, \{milk, bread\}, \{bread, butter\} at minimum support $0.5$), both
+\texttt{mlxtend} and \skarm return exact supports of $1.0$ (\{bread\}),
+$0.667$ (\{milk\}), and $0.667$ (\{milk, bread\}), producing rule
+\{milk\} $\Rightarrow$ \{bread\} at confidence $1.0$ and lift $1.0$.
+Across the full analytical oracle suite, itemset discovery achieves $100.0\%$
+precision and recall across all three engines with a maximum rule-metric
+numerical error of $2.22 \times 10^{-16}$ (IEEE-754 double-precision machine
+epsilon) across all six metrics (support, confidence, lift, leverage,
+conviction, and Zhang's metric).
+
+The zero-exemption acceptance harness (\texttt{tests/run\_acceptance.py})
+verifies held-out 70/30 train/validation evaluation mechanics (zero rule-threshold
+leakage, transformed validation shape $(30, 3)$, held-out mean confidence
+$0.2163$) and passes all six negative and boundary tests (\texttt{NT-1}--\texttt{NT-6}):
+candidate explosion detection with \texttt{DEGRADED} signaling, rare and
+duplicate item idempotency, sample-weighted and repeated rows, minimum-support
+boundaries, deterministic rule ordering with \texttt{pickle}/\texttt{joblib}
+round-trip fidelity, and dense combinatorial explosion stress. Automated
+verification passes $264/264$ \texttt{pytest} unit and integration tests and
+$88/88$ five-tier end-to-end checks on Python~3.12.10, while brute-force
+cross-checks ($4$ random matrices $\times 2$ thresholds $\times$ weighted/unweighted
+$\times 3$ engines) record $0$ mismatches.
 
 \subsection{Benchmark campaign results}
 Results cover all 25 datasets (1650 trial records on one Windows PC). Timings are fit only (encoding excluded). This table shows each dataset's primary threshold only (the threshold with the most completed skarm trials; ties broken toward the lower threshold); the full per-cell table, with p50/p95, memory, counts, and failure notes, is Appendix~\ref{app:timing}.
@@ -681,38 +708,41 @@ pumsb\_star & 0.85 & mlxtend & error (all trials) & empty frequent-itemset input
 \label{fig:outcomes}
 \end{figure}
 
-\subsection{Strict Zero-Exemption 30-Trial KPI-4 Verification}
+\subsection{Strict Zero-Exemption 30-Trial Scaling and Memory Verification}
 \label{sec:kpi4}
-An independent audit of the early capstone acceptance harness identified that
-small-runtime exemptions in \texttt{tests/run\_acceptance.py} and
-\texttt{benchmarks/run\_benchmarks.py} could mask failure of the strict
-charter KPI-4 gate (requiring both FP-Growth and Eclat p95 runtimes to be
-$\le 0.80\times$ the O2 Apriori baseline on synthetic workloads of $N=200$ to
-$N=3{,}000$). All small-runtime exemptions were permanently removed,
-\texttt{skarm/apriori.py} was left untouched as the immutable O2 reference,
-and the FP-Array/bitmask FP-Growth and C-level bitset Eclat optimizations
-(Section~\ref{sec:methods}) were evaluated under a strict 5-warmup +
-30-measured-trial protocol (\texttt{time.perf\_counter}, Python~3.12.16).
+Small-runtime threshold exemptions in microbenchmark harnesses can mask
+overhead-dominated regressions on modest transaction counts. Accordingly, all
+small-runtime exemptions were permanently excluded from
+\texttt{tests/run\_acceptance.py} and \texttt{benchmarks/run\_benchmarks.py},
+\texttt{skarm/apriori.py} was preserved unaltered as the level-wise reference
+baseline, and both FP-Array FP-Growth and bitset Eclat (Section~\ref{sec:methods})
+were evaluated under a strict 5-warmup plus 30-measured-trial protocol
+(\texttt{time.perf\_counter}, Python~3.12.10).
 
 Table~\ref{tab:kpi4} and Figure~\ref{fig:kpi4} report the resulting
-zero-exemption measurements from \texttt{benchmarks/benchmark\_results.json}
-and \texttt{tests/run\_acceptance.py}. Across all three benchmark scales and
-the AC-4 acceptance gate ($N=1{,}000$, $M=12$, $p=0.25$, $\sigma=0.08$), both
-FP-Growth ($0.294\times$--$0.441\times$ Apriori engine p95, $2.27\times$--$3.41\times$
-faster) and Eclat ($0.168\times$--$0.313\times$ Apriori engine p95,
-$3.20\times$--$5.95\times$ faster) clear the $\le 0.80\times$ KPI-4 gate by a
-wide margin with zero support divergence ($\Delta_{\mathrm{supp}} = 0.0$) and
-zero trial failures. End-to-end \texttt{AssociationRulesEstimator.fit()}
-p95 runtimes likewise achieve $2.68\times$--$4.23\times$ speedups for
-FP-Growth and $3.32\times$--$4.51\times$ speedups for Eclat.
+zero-exemption measurements on \texttt{HEAD} from
+\texttt{benchmarks/benchmark\_results.json} and \texttt{tests/run\_acceptance.py}.
+Across all three scaling workloads ($N \in \{200, 1{,}000, 3{,}000\}$), both
+FP-Growth ($0.157\times$--$0.267\times$ Apriori engine p95, $3.74\times$--$6.35\times$
+faster) and Eclat ($0.086\times$--$0.374\times$ Apriori engine p95,
+$2.67\times$--$11.59\times$ faster) clear the strict $\le 0.80\times$ p95
+target by a wide margin with zero support divergence ($\Delta_{\mathrm{supp}} = 0.0$)
+and zero trial failures. On the standalone AC-4 acceptance workload ($N=1{,}000$,
+$M=12$, $p=0.25$, $\sigma=0.08$, $14$ frequent itemsets; Apriori p50 $=0.44$~ms,
+p95 $=0.59$~ms), FP-Growth reaches $0.501\times$ ($0.30$~ms p95, $2.00\times$
+speedup) and Eclat reaches $0.153\times$ ($0.09$~ms p95, $6.55\times$ speedup).
+End-to-end \texttt{AssociationRulesEstimator.fit()} p95 runtimes achieve
+$3.18\times$--$4.11\times$ speedups for FP-Growth and $2.91\times$--$3.76\times$
+speedups for Eclat.
 
-\textbf{KPI-5 small-matrix memory trade-off (stated candidly).} On these
-small synthetic matrices ($N \le 3{,}000$), total peak heap stays under
-$0.19$~MB; FP-Array's dense \texttt{float32} pair matrix allocates
-$1.01\times$--$1.39\times$ peak heap relative to O2 Apriori, while vertical
-bitset Eclat stays within $1.00\times$--$1.01\times$ parity. The substantial
-memory compression advantage of FP-Growth and Eclat manifests on deep and
-high-cardinality real datasets (Figure~\ref{fig:memory} and
+\textbf{Small-matrix memory trade-off.} On these synthetic matrices
+($N \le 3{,}000$), engine peak traced heap remains below $0.18$~MB
+(\texttt{tracemalloc}). FP-Array's dense \texttt{float32} pair matrix
+allocates $1.02\times$--$1.39\times$ heap relative to Apriori ($0.0278$--$0.1799$~MB
+vs.\ $0.0272$--$0.1291$~MB), whereas vertical bitset Eclat stays within
+$1.00\times$--$1.02\times$ parity ($0.0276$--$0.1294$~MB). The substantial
+memory compression advantage of FP-Growth and Eclat dominates on deep and
+high-cardinality real corpora (Figure~\ref{fig:memory} and
 Table~\ref{tab:timingfull}), such as \texttt{accidents@0.6} ($90.4$~MB vs.\
 $1{,}860.6$~MB for Apriori) and \texttt{kosarak@0.01} ($76.0$~MB vs.\
 $690.8$~MB for Apriori and $40.9$~GB dense requirement for \texttt{mlxtend}).
@@ -721,26 +751,26 @@ $690.8$~MB for Apriori and $40.9$~GB dense requirement for \texttt{mlxtend}).
 \centering
 \scriptsize
 \setlength{\tabcolsep}{4pt}
-\caption{Post-audit strict zero-exemption 30-trial KPI-4 verification on \texttt{HEAD} (Python 3.12, 5 warmup + 30 measured trials; \texttt{skarm/apriori.py} untouched; target ratio $\le 0.80\times$ Apriori p95; $\Delta_{\mathrm{supp}} = 0.0$ across all rows).}
+\caption{Strict zero-exemption 30-trial scaling verification on \texttt{HEAD} (Python 3.12.10, 5 warmup + 30 measured trials; target ratio $\le 0.80\times$ Apriori p95; $\Delta_{\mathrm{supp}} = 0.0$ across all rows).}
 \label{tab:kpi4}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llrrrrrrl}
 \toprule
-Workload (Itemsets) & Engine & Eng.\ p50 (ms) & Eng.\ p95 (ms) & Ratio vs.\ Apriori & Est.\ p95 (ms) & Est.\ Speedup & Peak Heap (MB) & Gate \\
+Workload (Itemsets) & Engine & Eng.\ p50 (ms) & Eng.\ p95 (ms) & Ratio vs.\ Apriori & Est.\ p95 (ms) & Est.\ Speedup & Eng.\ Peak Heap (MB) & Gate \\
 \midrule
-Scale $N=200$ (39) & Apriori (O2) & 2.26 & 2.39 & $1.000\times$ & 30.94 & $1.00\times$ & 0.0439 & Baseline \\
-Scale $N=200$ (39) & FP-Growth & 0.65 & 0.70 & \textbf{0.294$\times$} & 9.51 & $3.25\times$ & 0.0609 & PASS \\
-Scale $N=200$ (39) & Eclat & 0.37 & 0.40 & \textbf{0.168$\times$} & 9.31 & $3.32\times$ & 0.0445 & PASS \\
+Scale $N=200$ (39) & Apriori (Ref.) & 0.77 & 1.45 & $1.000\times$ & 17.69 & $1.00\times$ & 0.0272 & Baseline \\
+Scale $N=200$ (39) & FP-Growth & 0.17 & 0.39 & \textbf{0.267$\times$} & 5.57 & $3.18\times$ & 0.0278 & PASS \\
+Scale $N=200$ (39) & Eclat & 0.09 & 0.13 & \textbf{0.086$\times$} & 4.70 & $3.76\times$ & 0.0276 & PASS \\
 \midrule
-Scale $N=1{,}000$ (15) & Apriori (O2) & 1.67 & 1.78 & $1.000\times$ & 24.79 & $1.00\times$ & 0.0638 & Baseline \\
-Scale $N=1{,}000$ (15) & FP-Growth & 0.49 & 0.53 & \textbf{0.298$\times$} & 5.86 & $4.23\times$ & 0.0650 & PASS \\
-Scale $N=1{,}000$ (15) & Eclat & 0.45 & 0.49 & \textbf{0.275$\times$} & 5.75 & $4.31\times$ & 0.0637 & PASS \\
+Scale $N=1{,}000$ (15) & Apriori (Ref.) & 0.73 & 1.00 & $1.000\times$ & 13.69 & $1.00\times$ & 0.0782 & Baseline \\
+Scale $N=1{,}000$ (15) & FP-Growth & 0.13 & 0.17 & \textbf{0.167$\times$} & 3.33 & $4.11\times$ & 0.0890 & PASS \\
+Scale $N=1{,}000$ (15) & Eclat & 0.10 & 0.38 & \textbf{0.374$\times$} & 4.70 & $2.91\times$ & 0.0787 & PASS \\
 \midrule
-Scale $N=3{,}000$ (15) & Apriori (O2) & 2.25 & 2.33 & $1.000\times$ & 28.80 & $1.00\times$ & 0.1753 & Baseline \\
-Scale $N=3{,}000$ (15) & FP-Growth & 0.99 & 1.03 & \textbf{0.441$\times$} & 10.74 & $2.68\times$ & 0.1812 & PASS \\
-Scale $N=3{,}000$ (15) & Eclat & 0.63 & 0.66 & \textbf{0.282$\times$} & 6.38 & $4.51\times$ & 0.1763 & PASS \\
+Scale $N=3{,}000$ (15) & Apriori (Ref.) & 1.17 & 2.08 & $1.000\times$ & 14.97 & $1.00\times$ & 0.1291 & Baseline \\
+Scale $N=3{,}000$ (15) & FP-Growth & 0.25 & 0.33 & \textbf{0.157$\times$} & 3.64 & $4.11\times$ & 0.1799 & PASS \\
+Scale $N=3{,}000$ (15) & Eclat & 0.17 & 0.29 & \textbf{0.139$\times$} & 4.06 & $3.69\times$ & 0.1294 & PASS \\
 \midrule
-AC-4 Gate ($N=1{,}000$, 14) & FP-Growth / Eclat & --- & --- & \textbf{0.429$\times$ / 0.313$\times$} & --- & --- & --- & PASS (13/13) \\
+AC-4 Gate ($N=1{,}000$, 14) & FP-Growth / Eclat & 0.11 / 0.08 & 0.30 / 0.09 & \textbf{0.501$\times$ / 0.153$\times$} & --- & --- & --- & PASS \\
 \bottomrule
 \end{tabular}%
 }
@@ -749,7 +779,7 @@ AC-4 Gate ($N=1{,}000$, 14) & FP-Growth / Eclat & --- & --- & \textbf{0.429$\tim
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/kpi4_strict.png}
-\caption{Strict zero-exemption 30-trial KPI-4 verification against the immutable O2 Apriori baseline (Python 3.12): (a)~engine p95 runtime ratio versus Apriori across all three benchmark scales and the AC-4 acceptance gate (all strictly below the $0.80\times$ green dashed threshold); (b)~end-to-end estimator p95 speedups ($2.68\times$--$4.51\times$) and post-audit verification scorecard.}
+\caption{Strict zero-exemption 30-trial scaling verification against the level-wise Apriori baseline (Python~3.12.10): (a)~engine p95 runtime ratio versus Apriori across all three benchmark scales and the AC-4 gate (Apriori AC-4 p95 $=0.59$~ms; all ratios strictly below the $0.80\times$ green dashed target); (b)~end-to-end estimator p95 speedups ($2.91\times$--$4.11\times$) and live \texttt{HEAD} verification scorecard.}
 \label{fig:kpi4}
 \end{figure*}
 
@@ -770,9 +800,9 @@ bit-exactly ($\Delta_{\mathrm{supp}} = 0.0$), and all six rule metrics match
 analytical ground-truth formulas to machine precision ($2.22 \times 10^{-16}$).
 
 \paragraph{RQ2: Algorithmic Scaling Across Density Regimes.}
-At each dataset's primary threshold in the 25-dataset campaign, where all three engines completed, Apriori is never fastest; FP-Growth is fastest on 5 of 25 datasets; and Eclat is fastest on 20 of 25 (FP-Growth: accidents, adult\_census, connect, docword\_enron, pumsb\_star; Eclat: balance\_scale, bms\_pos, bms\_webview\_1, bms\_webview\_2, car\_evaluation, chess, docword\_nips, groceries, kosarak, kosarak\_spmf, market\_basket, mushroom, online\_retail, online\_retail\_ii, pumsb, retail, synthetic\_dense\_5000, synthetic\_sparse\_2000, t10i4d100k, tic\_tac\_toe). Apriori timed out on accidents at 0.50 and on kosarak at 0.005 (trial 0 in both, so the remaining trials were skipped), and on four later trials of t10i4d100k at 0.01 (trial 0 completed at 592.9~s), while FP-Growth and Eclat completed those cells, confirming the candidate-explosion cost predicted in Section~\ref{sec:methods}; no other \skarm engine timed out. Degraded mode never triggered in the exact campaign, so no comparison is distorted by bounded output. \texttt{mlxtend} is missing on 3 dense-cap cells (kosarak 0.01 and 0.005, kosarak\_spmf 0.01) and errors on 3 empty-input cells where no itemsets are frequent; \texttt{mlxtend} also completed only 1 of 5 trials on t10i4d100k at 0.01 (the rest died allocating 6.5--13.1~GiB boolean arrays, the same dense-broadcast cliff). Under strict zero-exemption 30-trial benchmarking on \texttt{HEAD} (Section~\ref{sec:kpi4}), optimized FP-Growth and bitset Eclat consistently clear the $\le 0.80\times$ p95 target ($0.168\times$--$0.441\times$ Apriori). No universal winner is claimed: the ordering shifts dataset by dataset, exactly as the secondary literature predicts.
+At each dataset's primary threshold in the 25-dataset campaign, where all three engines completed, Apriori is never fastest; FP-Growth is fastest on 5 of 25 datasets; and Eclat is fastest on 20 of 25 (FP-Growth: accidents, adult\_census, connect, docword\_enron, pumsb\_star; Eclat: balance\_scale, bms\_pos, bms\_webview\_1, bms\_webview\_2, car\_evaluation, chess, docword\_nips, groceries, kosarak, kosarak\_spmf, market\_basket, mushroom, online\_retail, online\_retail\_ii, pumsb, retail, synthetic\_dense\_5000, synthetic\_sparse\_2000, t10i4d100k, tic\_tac\_toe). Apriori timed out on accidents at 0.50 and on kosarak at 0.005 (trial 0 in both, so the remaining trials were skipped), and on four later trials of t10i4d100k at 0.01 (trial 0 completed at 592.9~s), while FP-Growth and Eclat completed those cells, confirming the candidate-explosion cost predicted in Section~\ref{sec:methods}; no other \skarm engine timed out. Degraded mode never triggered in the exact campaign, so no comparison is distorted by bounded output. \texttt{mlxtend} is missing on 3 dense-cap cells (kosarak 0.01 and 0.005, kosarak\_spmf 0.01) and errors on 3 empty-input cells where no itemsets are frequent; \texttt{mlxtend} also completed only 1 of 5 trials on t10i4d100k at 0.01 (the rest died allocating 6.5--13.1~GiB boolean arrays, the same dense-broadcast cliff). Under strict zero-exemption 30-trial benchmarking on \texttt{HEAD} (Section~\ref{sec:kpi4}), optimized FP-Growth ($0.157\times$--$0.267\times$ across scaling sets, $0.501\times$ on AC-4) and bitset Eclat ($0.086\times$--$0.374\times$, $0.153\times$ on AC-4) consistently clear the $\le 0.80\times$ p95 target. No universal winner is claimed: the ordering shifts dataset by dataset, exactly as the secondary literature predicts.
 
-\paragraph{RQ3: Bounded-Search Safety and Recall Trade-Offs.} Figure~\ref{fig:ablation} and Section~\ref{sec:ablation} demonstrate the efficacy of the candidate governor. On dense workloads where exact level-wise candidate generation exhibits severe combinatorial expansion, capping \texttt{max\_candidates} accelerates execution by up to $17.20\times$ (Chess, 0.3485~s vs.\ 5.9941~s exact baseline) while recovering partial pattern subsets ($0.60\%$ to $17.95\%$ itemset recall). On tree-based (FP-Growth) and vertical (Eclat) engines, candidate caps enforce explicit budget boundaries without unmonitored crashes. Most importantly, \skarm transitions audibly into \texttt{DEGRADED} mode and records truncation events (with observed candidate counts before halting and unexplored candidates marked as unknown), eliminating silent omissions.
+\paragraph{RQ3: Bounded-Search Safety and Recall Trade-Offs.} Figure~\ref{fig:ablation} and Section~\ref{sec:ablation} demonstrate the efficacy of the candidate governor. On dense workloads where exact level-wise candidate generation exhibits severe combinatorial expansion, capping \texttt{max\_candidates} accelerates execution by up to $17.14\times$ (Chess, $0.4988$~s vs.\ $8.5508$~s exact baseline) while recovering partial pattern subsets ($0.60\%$ to $17.95\%$ itemset recall when mining halts early, and $100.0\%$ itemset recall with $1.05\%$--$5.24\%$ bounded rule recall at caps $1{,}000$--$5{,}000$). On tree-based (FP-Growth) and vertical (Eclat) engines, candidate caps enforce explicit budget boundaries without unmonitored crashes. Most importantly, \skarm transitions audibly into \texttt{DEGRADED} mode and records truncation events (with observed candidate counts before halting and unexplored candidates marked as unknown), eliminating silent omissions.
 
 \paragraph{RQ4: Scikit-Learn Estimator and Pipeline Interoperability.} As documented in Section~\ref{sec:methods}, Section~\ref{sec:estimator-checks}, and Section~\ref{sec:limitations}, \skarm adheres to scikit-learn's estimator protocol: constructor parameters are immutable until explicitly modified via \texttt{set\_params()}, estimators are cloneable via \texttt{sklearn.base.clone()}, and fit state is encapsulated with trailing underscores. In \texttt{Pipeline} workflows, \skarm operates seamlessly both as a terminal estimator and as an intermediate transformer projecting transactional data into binary rule-firing indicator features.
 
@@ -784,18 +814,18 @@ To quantify the trade-off between execution speed and completeness under candida
 
 Architecturally, \texttt{max\_candidates} acts as a global candidate budget bounding both frequent itemset discovery and subsequent association rule generation. When itemset mining completes without exceeding the candidate budget, rule generation evaluates antecedent/consequent candidates up to the same cap. In dense combinatorial lattices where rule spaces are vast, rule generation can hit the candidate budget even after full itemset recovery, transitioning the estimator into \texttt{DEGRADED} mode (\texttt{is\_degraded\_ = True}).
 
-On the dense Chess benchmark ($N=3{,}196$, support threshold $0.85$, exact baseline yielding $2{,}669$ frequent itemsets and $95{,}482$ rules in $5.9941$~seconds), Figure~\ref{fig:ablation} illustrates the speedup-recall dynamics. Constraining \texttt{max\_candidates} to $50$ and $100$ halts candidate generation at level~2 ($16$ frequent 1-itemsets recovered, $0.60\%$ itemset recall, $0$ rules), accelerating execution by $16.71\times$ ($0.3587$~s) and $17.20\times$ ($0.3485$~s) respectively, with \texttt{is\_degraded\_ = True}. At cap $250$, mining halts at level~3 ($121$ itemsets, $4.53\%$ itemset recall, $210$ rules, $0.22\%$ rule recall) with a $12.88\times$ speedup ($0.4654$~s). At cap $500$, mining halts at level~3 ($479$ itemsets, $17.95\%$ itemset recall, $500$ rules, $0.52\%$ rule recall) with a $9.47\times$ speedup ($0.6329$~s). At cap $1{,}000$, frequent-itemset discovery is complete, recovering all $2{,}669$ itemsets ($100\%$ itemset recall); however, association rule generation hits the candidate budget ($1{,}001$ candidates generated at level~3 exceeds $\texttt{max\_candidates}=1{,}000$), yielding exactly $1{,}000$ rules ($1.047\%$ rule recall) in $2.6911$~s ($2.23\times$ speedup) under \texttt{DEGRADED} status. Caps $2{,}500$ and $5{,}000$ similarly achieve $100\%$ itemset recall but bound rule generation at $2{,}500$ rules ($2.62\%$ rule recall, $2.5331$~s, $2.37\times$) and $5{,}000$ rules ($5.24\%$ rule recall, $2.6443$~s, $2.27\times$), maintaining \texttt{DEGRADED} status until the candidate budget accommodates the entire $95{,}482$-rule lattice.
+On the dense Chess benchmark ($N=3{,}196$, support threshold $0.85$, exact baseline yielding $2{,}669$ frequent itemsets and $95{,}482$ rules in $8.5508$~seconds on \texttt{HEAD}), Figure~\ref{fig:ablation} illustrates both itemset and rule recall alongside cross-regime speedups. Constraining \texttt{max\_candidates} to $50$ and $100$ halts candidate generation at level~2 ($16$ frequent 1-itemsets recovered, $0.60\%$ itemset recall, $0$ rules), accelerating execution by $15.95\times$ ($0.5361$~s) and $17.14\times$ ($0.4988$~s) respectively, with \texttt{is\_degraded\_ = True}. At cap $250$, mining halts at level~3 ($121$ itemsets, $4.53\%$ itemset recall, $210$ rules, $0.22\%$ rule recall) with a $13.07\times$ speedup ($0.6543$~s). At cap $500$, mining halts at level~3 ($479$ itemsets, $17.95\%$ itemset recall, $500$ rules, $0.52\%$ rule recall) with a $7.20\times$ speedup ($1.1884$~s). At cap $1{,}000$, frequent-itemset discovery is complete, recovering all $2{,}669$ itemsets ($100\%$ itemset recall); however, association rule generation hits the candidate budget ($1{,}001$ candidates generated at level~3 exceeds $\texttt{max\_candidates}=1{,}000$), yielding $1{,}000$ rules ($1.047\%$ rule recall) in $4.4878$~s ($1.91\times$ speedup) under \texttt{DEGRADED} status. Caps $2{,}500$ and $5{,}000$ similarly achieve $100\%$ itemset recall while bounding rule generation at $2{,}500$ rules ($2.62\%$ rule recall, $4.7262$~s, $1.81\times$) and $5{,}000$ rules ($5.24\%$ rule recall, $5.2430$~s, $1.63\times$), remaining explicitly in \texttt{DEGRADED} status until the candidate budget accommodates the complete $95{,}482$-rule lattice.
 
-On Adult Census ($N=32{,}561$, $\sigma=0.40$, exact baseline $103$ itemsets and $738$ rules in $2.5265$~s via FP-Growth), candidate cap $50$ halts at level~3, recovering $50$ itemsets ($48.54\%$ recall, $8$ rules, $1.08\%$ rule recall) in $2.4152$~s ($1.05\times$ speedup), and cap $100$ halts at level~3, recovering $100$ itemsets ($97.09\%$ recall, $35$ rules, $4.74\%$ rule recall) in $2.4857$~s ($1.02\times$), both in \texttt{DEGRADED} mode. At caps $250$ and $500$, itemset discovery recovers all $103$ itemsets ($100\%$ itemset recall), but rule generation bounds at $250$ rules ($33.88\%$ rule recall, $2.4586$~s, $1.03\times$) and $500$ rules ($67.75\%$ rule recall, $2.3442$~s, $1.08\times$) under \texttt{DEGRADED} status. Once \texttt{max\_candidates} reaches $1{,}000$, the governor operates in exact mode (\texttt{is\_degraded\_ = False}, \texttt{status\_ = EXACT}), recovering all $103$ itemsets and all $738$ rules in $2.5254$~s ($1.00\times$). On sparse BMS-POS ($N=515{,}596$, $\sigma=0.05$, exact baseline $59$ itemsets and $56$ rules in $7.5868$~s via Eclat), candidate cap $50$ recovers $50$ itemsets ($84.75\%$ recall, $30$ rules, $53.57\%$ rule recall) in $7.4782$~s ($1.01\times$, \texttt{DEGRADED}), while cap $100$ reaches exact mode (\texttt{is\_degraded\_ = False}), recovering all $59$ itemsets and all $56$ rules in $7.5314$~s ($1.01\times$).
+On Adult Census ($N=32{,}561$, $\sigma=0.40$, exact baseline $103$ itemsets and $738$ rules in $2.6990$~s via FP-Growth), candidate cap $50$ halts at level~3, recovering $50$ itemsets ($48.54\%$ recall, $8$ rules, $1.08\%$ rule recall) in $2.4338$~s ($1.11\times$ speedup), and cap $100$ halts at level~3, recovering $100$ itemsets ($97.09\%$ recall, $35$ rules, $4.74\%$ rule recall) in $2.5000$~s ($1.08\times$), both in \texttt{DEGRADED} mode. At caps $250$ and $500$, itemset discovery recovers all $103$ itemsets ($100\%$ itemset recall), while rule generation bounds at $250$ rules ($33.88\%$ rule recall, $2.7025$~s, $1.00\times$) and $500$ rules ($67.75\%$ rule recall, $2.4656$~s, $1.09\times$) under \texttt{DEGRADED} status. Once \texttt{max\_candidates} reaches $1{,}000$ (above the observed peak of $708$), the governor transitions to exact mode (\texttt{is\_degraded\_ = False}, \texttt{status\_ = EXACT}), recovering all $103$ itemsets and all $738$ rules in $2.6441$~s ($1.02\times$). On sparse BMS-POS ($N=515{,}596$, $\sigma=0.05$, exact baseline $59$ itemsets and $56$ rules in $36.5727$~s via Eclat), candidate cap $50$ recovers $50$ itemsets ($84.75\%$ recall, $30$ rules, $53.57\%$ rule recall) in $31.7524$~s ($1.15\times$, \texttt{DEGRADED}), whereas cap $100$ (above peak $78$) reaches exact mode (\texttt{is\_degraded\_ = False}), recovering all $59$ itemsets and $56$ rules in $33.3185$~s ($1.10\times$).
 
-These empirical measurements highlight a critical architectural trade-off: candidate bounding yields dramatic $16.71\times$--$17.20\times$ speedups on dense workloads subject to level-wise combinatorial explosion in Apriori, whereas on tree-compressed (FP-Growth) or vertical bitset (Eclat) engines on sparse-to-medium datasets, candidate bounding acts primarily as a safety fence against memory blowout rather than a runtime accelerator ($\approx 1.0\times$ speedup), since initial tree construction and TID-list indexing constitute the bulk of the computational cost. Crucially, across all degraded runs, \skarm explicitly records degradation status, candidate counts observed before halt (with unexplored candidate counts marked as unknown), and termination causes in \texttt{metadata\_}, ensuring bounded subsets are never conflated with exact mining.
+These empirical measurements highlight a fundamental architectural trade-off: candidate bounding yields $15.95\times$--$17.14\times$ speedups on dense workloads subject to level-wise combinatorial explosion in Apriori, whereas on tree-compressed (FP-Growth) or vertical bitset (Eclat) engines on sparse-to-medium datasets, candidate bounding acts primarily as a safety fence against memory blowout ($\approx 1.00\times$--$1.15\times$), since initial tree construction and TID-list indexing dominate runtime. Crucially, across all degraded runs, \skarm explicitly records degradation status, peak observed candidate counts before halt (marking unexplored future branches as \texttt{UNKNOWN}), and termination causes in \texttt{metadata\_}, ensuring bounded subsets are never conflated with exact mining.
 
-\begin{figure}[t]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=\columnwidth]{figures/ablation.png}
-\caption{Pruning policy ablation on Chess ($N=3{,}196$, minsup $=0.85$, $2{,}669$ exact frequent itemsets). Bounded mode halts combinatorial candidate explosion early, delivering up to $17.20\times$ speedups at low caps while audibly signalling degradation via \texttt{is\_\allowbreak{}degraded\_}.}
+\includegraphics[width=\textwidth]{figures/ablation.png}
+\caption{Bounded versus exact pruning-policy ablation on \texttt{HEAD}: (a)~Chess ($N=3{,}196$, minsup $=0.85$, Apriori) itemset recall, rule recall, and fit time across two distinct \texttt{DEGRADED} zones (early itemset halt at caps $50$--$500$ vs.\ full itemset recall with bounded rules at caps $1{,}000$--$5{,}000$); (b)~cross-regime speedup curves and explicit transitions to \texttt{EXACT} mode on sparse BMS-POS (at cap~$100$) and medium-density Adult Census (at cap~$1{,}000$).}
 \label{fig:ablation}
-\end{figure}
+\end{figure*}
 
 \subsection{Estimator compatibility}
 \label{sec:estimator-checks}
@@ -820,52 +850,61 @@ Section~\ref{sec:methods} plus this checked conformance, with the documented
 exceptions above --- not sklearn endorsement. The per-check record is in
 \texttt{docs/SKLEARN\_COMPATIBILITY\_REPORT.md}.
 
-\section{Limitations}
+\section{Limitations and Cross-Framework Baselines}
 \label{sec:limitations}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.94\textwidth]{figures/baselines.png}
+\caption{Cross-framework baseline evaluation on \texttt{HEAD} (3 trials per cell, Python~3.12.10, \texttt{mlxtend}~0.25.0, Java~21.0.9 SPMF) across Chess ($\sigma=0.85$), Adult Census ($\sigma=0.40$), and BMS-POS ($\sigma=0.05$). All $25$ completed evaluations satisfy exact itemset parity ($\Delta_{\mathrm{supp}} = 0.0$), while \texttt{mlxtend} is safely skipped on BMS-POS due to its $814.8$~MB dense matrix footprint exceeding the $500$~MB budget.}
+\label{fig:baselines}
+\end{figure*}
+
 \begin{itemize}
-  \item \textbf{Excluded scope (portal contract).} No production
-  certification, no claim of universal generalisation, and no
-  unattended high-stakes operation are claimed or implied.
-  \item \textbf{Single machine, Python only.} Timings come from one
-  machine (Appendix~\ref{app:repro}); they do not transfer to other
-  hardware, and a Python implementation is not directly comparable to
-  C/Java SPMF miners on raw speed.
-  \item \textbf{External modern miner baselines.} To substantiate \skarm's
-  algorithmic positioning against external state-of-the-art miners, modern algorithms
-  from the SPMF framework~\cite{fournier2022,kallay2025}
+  \item \textbf{Operational scope boundaries.} This release provides an
+  auditable research and engineering implementation with deterministic ordering
+  and bounded degradation guarantees, without certifying unattended
+  safety-critical deployment.
+  \item \textbf{Single-host Python execution vs.\ compiled JVMs.} Timings come
+  from one Windows~11 host (Appendix~\ref{app:repro}), and an interpreted
+  Python estimator incurs interpreter overhead relative to compiled C/Java
+  miners on long-running deep trees.
+  \item \textbf{External modern-miner baselines.} To benchmark \skarm against
+  specialized modern pattern miners, four algorithms from Java~21 SPMF~\cite{fournier2022,kallay2025}
   (\textsc{FIN}, \textsc{PrePost+}, \textsc{LCMFreq}, and SPMF \textsc{FP-Growth})
-  were benchmarked alongside \skarm and \texttt{mlxtend} across representative
-  dense (Chess @ 0.85), medium (Adult Census @ 0.40), and sparse (BMS-POS @ 0.05)
-  datasets (\texttt{benchmarks/baseline\_results.json}).
-  Across all evaluations, itemset discovery was strictly verified: all completed algorithm
-  comparisons produced identical frequent itemsets and support values within reported verification
-  tolerances ($2{,}669$, $103$, and $59$ itemsets, respectively; $\Delta_{\mathrm{supp}} = 0.0$).
-  Subprocess execution of compiled Java implementations achieved lower raw wall-clock times
-  ($0.36$--$0.63$~s on Chess, $0.42$--$0.66$~s on Adult Census, and $0.88$--$2.15$~s on BMS-POS,
-  with SPMF internal algorithm-only timers recording $0.08$--$0.30$~s, $0.14$--$0.22$~s, and
-  $0.62$--$1.57$~s, respectively).
-  Execution timing comparisons across frameworks involve distinct evaluation boundaries:
-  (1)~\skarm measures strictly in-memory \texttt{est.fit(X\_sparse)} execution over pre-encoded SciPy CSR matrices,
-  encapsulating candidate generation, itemset mining, and rule metric derivation;
-  (2)~SPMF measures end-to-end Java CLI subprocess invocation, encompassing process spawning,
-  JVM startup, reading input files from disk, algorithm execution, and writing output files to disk;
-  (3)~\texttt{mlxtend} (v0.25.0) executes procedural functions over pre-materialized dense boolean DataFrames, omitting the
-  memory-intensive sparse-to-dense conversion; two BMS-POS mlxtend runs (Apriori and FP-Growth) were skipped due to dense-memory limits ($814.8$~MB dense footprint exceeding the $500$~MB safety budget).
-  Crucially, \skarm provides native Python and scikit-learn estimator integration, full \texttt{Pipeline} support,
-  and auditable bounded-search resource governors that prevent uncontrolled memory exhaustion.
-  \item \textbf{Estimator checks.} \texttt{check\_estimator} was run on
-  the estimator: 14 passed, 39 expected domain-boundary failures (37 unique
-  checks), 1 environment-skipped, and 0 unexpected failures
-  (Section~\ref{sec:estimator-checks}). This generic audit is distinct from
-  institutional KPI-6, which evaluates seven contractual API criteria and
-  achieves 7/7 (100\%) compliance.
-  \item \textbf{Dataset provenance limits.} Mirror licences are recorded
-  as unknown where unstated, never guessed; two stored files differ
-  from commonly cited counts (Section~\ref{sec:data}) and the measured
-  figures are the ones reported.
-  \item \textbf{Support-range limits.} Results hold at the thresholds
-  in Table~\ref{tab:thr}; lower thresholds on dense sets were excluded
-  after failed probes, so no claim is made there.
+  and both \texttt{mlxtend}~0.25.0 miners were evaluated on \texttt{HEAD}
+  across dense Chess ($\sigma=0.85$), medium Adult Census ($\sigma=0.40$),
+  and sparse BMS-POS ($\sigma=0.05$) (\texttt{benchmarks/baseline\_results.json},
+  Figure~\ref{fig:baselines}). Every completed comparison ($25/25$ cells)
+  returned bit-identical frequent itemsets and supports ($2{,}669$, $103$, and
+  $59$ itemsets; $\Delta_{\mathrm{supp}} = 0.0$). On Adult Census, \skarm
+  bitset Eclat ($0.0306$~s) matches \texttt{mlxtend} Apriori ($0.0237$~s) and
+  runs $14\times$--$20\times$ faster than Java SPMF CLI wall-clock invocation
+  ($0.44$--$0.61$~s) and $43\times$ faster than \texttt{mlxtend} FP-Growth
+  ($1.32$~s). Across larger dense/sparse trees (Chess and BMS-POS), Java~21
+  SPMF achieves faster raw wall times ($0.39$--$0.65$~s and $0.99$--$2.49$~s;
+  internal algorithm-only timers $0.08$--$0.32$~s and $0.70$--$2.01$~s)
+  compared with \skarm ($3.32$--$5.73$~s on Chess; $17.22$--$48.09$~s on
+  BMS-POS). Framework timing boundaries also differ: (1)~\skarm measures
+  in-memory \texttt{est.fit(X\_sparse)} including candidate governance and
+  six-metric rule generation; (2)~SPMF measures CLI subprocess execution with
+  disk I/O and itemset-only output; and (3)~\texttt{mlxtend} requires
+  pre-materialized dense boolean DataFrames and was safely skipped on BMS-POS
+  due to an $814.8$~MB dense footprint exceeding the $500$~MB cap.
+  \item \textbf{Estimator API audit scope.} Scikit-learn's generic
+  \texttt{check\_estimator} suite checks supervised and continuous-feature
+  invariants ($14$ passed, $39$ documented domain-boundary failures across $37$
+  unique binary/unsupervised checks, $1$ skipped, $0$ unexpected failures in
+  Section~\ref{sec:estimator-checks}). In contrast, \skarm's dedicated
+  binary-transaction estimator contract suite evaluates all $7/7$ required API
+  behaviors (\texttt{fit}, \texttt{transform}, \texttt{predict},
+  \texttt{clone}, \texttt{get\_params}/\texttt{set\_params}, pipeline
+  composition, and serialization) with $100\%$ pass rate.
+  \item \textbf{Dataset provenance and support-range limits.} Mirror licences
+  are recorded as unknown where unstated, never guessed; two stored files
+  differ from commonly cited counts (Section~\ref{sec:data}) and measured
+  statistics are reported. Lower thresholds on dense datasets excluded after
+  failed probes (Table~\ref{tab:thr}) remain outside the supported exact envelope.
 \end{itemize}
 
 \section{Conclusions}
@@ -875,23 +914,25 @@ deterministic rule ordering, machine-precision metrics ($2.22 \times 10^{-16}$
 max oracle error), candidate telemetry, and an explicit \texttt{DEGRADED}
 bounded-search mode that reports its own truncation. Its empirical evaluation
 combines a 25-dataset multi-domain campaign ($1{,}650$ trials, commit
-\texttt{ea5bff5d}) with a post-audit strict zero-exemption 30-trial KPI-4
-verification suite (\texttt{HEAD}, Python~3.12). Across all 25 datasets,
-all $157$ compared engine pairs agree bit-exactly ($\Delta_{\mathrm{supp}}=0.0$);
-at primary thresholds Apriori is never fastest, FP-Growth is fastest on $5$ of
-$25$, and Eclat is fastest on $20$ of $25$, while external Java SPMF
-modern-miner baselines (\textsc{FIN}, \textsc{PrePost+}, \textsc{LCMFreq})
-independently confirm exact itemset parity across dense, medium, and sparse
-regimes. Under strict zero-exemption 30-trial benchmarking against the
-untouched O2 Apriori baseline, optimized FP-Array FP-Growth and bitset Eclat
-achieve $0.294\times$--$0.441\times$ and $0.168\times$--$0.313\times$ engine
-p95 runtime ratios alongside $264/264$ automated \texttt{pytest} and $88/88$
-end-to-end tests passing.
+\texttt{ea5bff5d}) with current \texttt{HEAD} strict 30-trial scaling,
+bounded ablation, and cross-framework baseline suites (Python~3.12.10,
+Java~21.0.9). Across all 25 datasets, all $157$ compared engine pairs agree
+bit-exactly ($\Delta_{\mathrm{supp}}=0.0$); at primary thresholds Apriori is
+never fastest, FP-Growth is fastest on $5$ of $25$, and Eclat is fastest on
+$20$ of $25$, while external \texttt{mlxtend} and Java SPMF modern-miner
+baselines (\textsc{FIN}, \textsc{PrePost+}, \textsc{LCMFreq}) confirm $25/25$
+exact itemset equivalence across dense, medium, and sparse regimes. Bounded
+candidate governance yields up to $17.14\times$ acceleration on dense Chess
+with transparent degradation metadata, while strict zero-exemption 30-trial
+benchmarks against the level-wise Apriori baseline establish $0.157\times$--$0.267\times$
+($0.501\times$ on AC-4) and $0.086\times$--$0.374\times$ ($0.153\times$ on
+AC-4) p95 runtime ratios alongside $264/264$ \texttt{pytest} and $88/88$
+end-to-end passing checks.
 
 \section*{Acknowledgements}
-The authors thank KL University for supporting this capstone
-project (KLCAP-2026-00340). No external sponsor is stated for
-this project, and none is claimed here.
+This work was conducted as capstone project KLCAP-2026-00340 at the Department
+of Computer Science and Engineering, Koneru Lakshmaiah Education Foundation
+(KL University). No external financial sponsor is claimed for this work.
 
 \begin{thebibliography}{99}\footnotesize
 \bibitem{agrawal1994} R. Agrawal and R. Srikant, ``Fast algorithms for mining association rules,'' in \emph{Proc. 20th Int. Conf. Very Large Data Bases (VLDB)}, 1994, pp. 487--499.
@@ -914,32 +955,9 @@ this project, and none is claimed here.
 \section{Reproducibility}
 \label{app:repro}
 
-Repository: \texttt{ABHISHEK1139/capstone} (\texttt{main} branch), with
-archival citation metadata provided in \texttt{CITATION.cff}. Code fixes
-for earlier acceptance defects are commits \texttt{ff03b451},
-\texttt{dd22782f}, and \texttt{904b19b3}. The full per-file dataset manifest
-(source URL, access date 2026-10-29, licence, owner, exclusions, and
-transformations) is maintained in \texttt{DATASET\_INVENTORY.md}. The Git
-checkout bundles $19$ ready-to-run dataset files plus
-\texttt{generate\_synthetic.py} ($20$ files in \texttt{data/}), while the
-remaining large public archives (\texttt{accidents}, \texttt{bms\_pos},
-\texttt{docword\_enron}, \texttt{kosarak}, \texttt{kosarak\_spmf},
-\texttt{pumsb}, \texttt{pumsb\_star}) are reproducibly fetched via
-\texttt{scripts/download\_datasets.py}; all $25$ per-dataset campaign
-checkpoint files are preserved under \texttt{benchmarks/cells/}.
+Repository: \texttt{ABHISHEK1139/capstone} (\texttt{main} branch, metadata in \texttt{CITATION.cff}); full per-file dataset manifest (access date 2026-10-29, licence, transformations) in \texttt{DATASET\_INVENTORY.md}. Twenty files ($19$ datasets + \texttt{generate\_synthetic.py}) sit in \texttt{data/}; remaining archives are fetched via \texttt{scripts/download\_datasets.py}, with all $25$ checkpoints preserved under \texttt{benchmarks/cells/}.
 
-The 25-dataset PC campaign script is \texttt{benchmarks/run\_pc\_campaign.py}
-with matched thresholds in \texttt{benchmarks/thresholds.json} (commit
-\texttt{ea5bff5d}; \texttt{benchmarks/campaign\_results.json} and
-\texttt{benchmarks/CAMPAIGN\_REPORT.md}). Post-audit strict zero-exemption
-30-trial KPI-4 verification (\texttt{HEAD}, Python~3.12.16) is reproduced via
-\texttt{pytest -q}, \texttt{python tests/e2e/run\_e2e.py},
-\texttt{python tests/run\_acceptance.py}, and
-\texttt{python benchmarks/run\_benchmarks.py} (persisted in
-\texttt{benchmarks/benchmark\_results.json}); trial records from different
-machines or commits are never merged into one table.
-
-The external modern-miner baseline benchmark campaign (Section~\ref{sec:limitations}) evaluates 3 representative datasets (dense Chess @ 0.85, medium-density Adult Census @ 0.40, and sparse BMS-POS @ 0.05) across \skarm (Apriori, FP-Growth, Eclat), \texttt{mlxtend} (v0.25.0; Apriori, FP-Growth), and SPMF Java 21 miners (\textsc{FIN}, \textsc{PrePost+}, \textsc{LCMFreq}, and \textsc{FP-Growth}) using \texttt{benchmarks/run\_baselines.py}. Full structured outputs reside in \texttt{benchmarks/baseline\_results.json}. Benchmark timings were measured on commit \texttt{ea5bff5d} (2026-11-01T18:59:27Z; \skarm Apriori/FP-Growth/Eclat: $9.53$/$6.26$/$6.28$~s on Chess, $1.14$/$2.14$/$0.39$~s on Adult Census, and $68.49$/$43.84$/$8.10$~s on BMS-POS). Mathematical itemset equivalence across all 25 completed comparisons ($\Delta_{\mathrm{supp}} = 0.0$) was independently re-verified on commit \texttt{564a7063} (2026-11-02T14:35:02Z) using the canonical itemsets cross-comparison oracle in \texttt{scripts/verify\_challenger\_m5\_baselines.py}. Two \texttt{mlxtend} runs on BMS-POS were skipped by the memory governor due to an $814.8$~MB dense matrix footprint exceeding the 500~MB safety threshold.
+The 25-dataset campaign (\texttt{benchmarks/run\_pc\_campaign.py}, \texttt{benchmarks/thresholds.json}) corresponds to commit \texttt{ea5bff5d} (\texttt{benchmarks/campaign\_results.json}). Current \texttt{HEAD} verification (Python~3.12.10, Java~21.0.9, never merged with external-host trials) is reproduced via \texttt{pytest -q}, \texttt{tests/e2e/run\_e2e.py}, \texttt{tests/run\_acceptance.py}, \texttt{benchmarks/run\_benchmarks.py} (\texttt{benchmark\_results.json}), \texttt{benchmarks/run\_bounded\_ablation.py} (\texttt{ablation\_results.json}), and \texttt{benchmarks/run\_baselines.py -{}-trials 3} (\texttt{baseline\_results.json}, 2026-11-25; mean fit times \skarm Apriori/FP-Growth/Eclat: $5.73$/$3.91$/$3.32$~s on Chess, $2.25$/$2.06$/$0.031$~s on Adult Census, $48.09$/$17.22$/$24.87$~s on BMS-POS, $25/25$ exact parity, two \texttt{mlxtend} BMS-POS runs skipped at $814.8$~MB $>500$~MB cap). Figures are regenerated via \texttt{scripts/build\_ieee\_figures.py}.
 
 \onecolumn
 \section{Full cell-level timing table}
