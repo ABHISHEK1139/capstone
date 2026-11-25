@@ -1,0 +1,199 @@
+% =====================================================================
+% KONERU LAKSHMAIAH EDUCATION FOUNDATION (DEEMED TO BE UNIVERSITY)
+% KLEF COLLEGE OF ENGINEERING — CLUSTER A: SOFTWARE SYSTEMS ENGINEERING
+% FINAL PROJECT REPORT (KLCAP-2026-00340)
+% Project: skarm — Scalable Association-Rule Mining Estimator with
+%          Apriori Baseline
+% =====================================================================
+\documentclass[12pt,a4paper,oneside]{report}
+
+\usepackage[a4paper,left=38mm,right=25mm,top=25mm,bottom=25mm,headheight=15pt,headsep=7mm,footskip=10mm]{geometry}
+\renewcommand{\rmdefault}{utm}
+\renewcommand{\ttdefault}{ucr}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{lscape}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{tcolorbox}
+\usepackage{xspace}
+\usepackage{url}
+\def\UrlBreaks{\do\/\do\_\do\-\do\.}
+\usepackage[hidelinks,bookmarks=true,bookmarksopen=true]{hyperref}
+
+\graphicspath{{../paper/figures/}{assets/}}
+
+% Semantic KL & Engineering Palette
+\definecolor{KLDarkBlue}{HTML}{1B365D}
+\definecolor{KLBlue}{HTML}{1F5C99}
+\definecolor{KLLightBlue}{HTML}{EFF6FF}
+\definecolor{KLBorder}{HTML}{93C5FD}
+\definecolor{KLSlate}{HTML}{1E293B}
+\definecolor{KLMuted}{HTML}{475569}
+\definecolor{KLRule}{HTML}{CBD5E1}
+\definecolor{KLCodeBg}{HTML}{F8FAFC}
+\definecolor{KLGreen}{HTML}{065F46}
+
+\newcommand{\skarm}{\texttt{skarm}\xspace}
+
+% Typography: 12pt Times with compact single-to-1.5 thesis cadence (40-50 page calibration)
+\linespread{1.14}
+\setlength{\parskip}{2.2pt}
+\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{5em}
+\setlength{\tabcolsep}{3.5pt}
+\setlength{\textfloatsep}{5pt plus 1.5pt minus 1.5pt}
+\setlength{\intextsep}{5pt plus 1.5pt minus 1.5pt}
+\setlength{\floatsep}{4pt plus 1.5pt minus 1.5pt}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+% Equation numbering per chapter: (X.Y)
+\numberwithin{equation}{chapter}
+\numberwithin{figure}{chapter}
+\numberwithin{table}{chapter}
+
+% KL Part V Section & Chapter Hierarchy (16pt Chapter, 14pt L1, 12pt L2, 12pt L3 it)
+\titleformat{\chapter}[block]
+  {\normalfont\fontsize{15}{18}\selectfont\bfseries\color{KLDarkBlue}\filright}
+  {\MakeUppercase{\chaptertitlename\ \thechapter:}}
+  {0.45em}
+  {\fontsize{15}{18}\selectfont\bfseries\MakeUppercase}
+\titlespacing*{\chapter}{0pt}{-16pt}{4pt}
+
+\titleformat{\section}
+  {\normalfont\fontsize{13}{15.5}\selectfont\bfseries\color{KLBlue}\filright}
+  {\thesection}{0.6em}{}
+\titlespacing*{\section}{0pt}{6pt}{2pt}
+
+\titleformat{\subsection}
+  {\normalfont\fontsize{12}{14}\selectfont\bfseries\color{KLSlate}\filright}
+  {\thesubsection}{0.6em}{}
+\titlespacing*{\subsection}{0pt}{5pt}{1.5pt}
+
+\titleformat{\subsubsection}
+  {\normalfont\fontsize{12}{14}\selectfont\bfseries\itshape\color{KLSlate}\filright}
+  {\thesubsubsection}{0.6em}{}
+\titlespacing*{\subsubsection}{0pt}{3pt}{1pt}
+
+% Captions: 10pt single spaced
+\makeatletter
+\long\def\@makecaption#1#2{%
+  \vskip\abovecaptionskip
+  \begingroup
+  \fontsize{10}{12}\selectfont
+  \sbox\@tempboxa{\textbf{#1:} #2}%
+  \ifdim \wd\@tempboxa >\hsize
+    \textbf{#1:} #2\par
+  \else
+    \global \@minipagefalse
+    \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+  \fi
+  \endgroup
+  \vskip\belowcaptionskip}
+
+% Custom Running Header & Bottom-Right Pagination (without fancyhdr dependency)
+\def\ps@klbody{%
+  \def\@oddhead{\vbox{\hbox to\textwidth{\fontsize{8}{10}\selectfont\color{KLMuted}KL UNIVERSITY\ \ $|$\ \ CAPSTONE FINAL REPORT\ \ $|$\ \ CLUSTER A - SOFTWARE SYSTEMS ENGINEERING\hfil}\vskip 2pt\color{KLRule}\hrule height 0.5pt}}%
+  \let\@evenhead\@oddhead
+  \def\@oddfoot{\vbox{\hbox to\textwidth{\hfil\fontsize{9.5}{11}\selectfont\color{KLSlate}\thepage}}}%
+  \let\@evenfoot\@oddfoot
+}
+\def\ps@plain{%
+  \def\@oddhead{\vbox{\hbox to\textwidth{\fontsize{8}{10}\selectfont\color{KLMuted}KL UNIVERSITY\ \ $|$\ \ CAPSTONE FINAL REPORT\ \ $|$\ \ CLUSTER A - SOFTWARE SYSTEMS ENGINEERING\hfil}\vskip 2pt\color{KLRule}\hrule height 0.5pt}}%
+  \let\@evenhead\@oddhead
+  \def\@oddfoot{\vbox{\hbox to\textwidth{\hfil\fontsize{9.5}{11}\selectfont\color{KLSlate}\thepage}}}%
+  \let\@evenfoot\@oddfoot
+}
+\def\ps@klfront{%
+  \let\@oddhead\@empty
+  \let\@evenhead\@empty
+  \let\@oddfoot\@empty
+  \let\@evenfoot\@empty
+}
+\makeatother
+
+% Code Listing Style (Courier 9pt single spaced with line numbers)
+\lstset{
+  language=Python,
+  basicstyle=\ttfamily\fontsize{8.8}{10.8}\selectfont,
+  backgroundcolor=\color{KLCodeBg},
+  frame=single,
+  rulecolor=\color{KLRule},
+  numbers=left,
+  numberstyle=\tiny\color{KLMuted},
+  stepnumber=1,
+  numbersep=6pt,
+  breaklines=true,
+  breakatwhitespace=true,
+  keywordstyle=\bfseries\color{KLBlue},
+  commentstyle=\itshape\color{KLGreen},
+  stringstyle=\color{KLDarkBlue},
+  showstringspaces=false,
+  tabsize=4,
+  literate={_}{{\_}}1,
+  aboveskip=6pt,
+  belowskip=6pt
+}
+
+% Highlighted Mandate / Identity Box
+\newtcolorbox{klbox}[1][KLBlue]{
+  colback=KLLightBlue,
+  colframe=#1,
+  boxrule=0.8pt,
+  arc=1.5pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt
+}
+
+\setlist[itemize]{nosep, topsep=1pt, partopsep=0pt, leftmargin=1.4em}
+\setlist[enumerate]{nosep, topsep=1pt, partopsep=0pt, leftmargin=1.6em}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{1}
+
+\makeatletter
+\renewcommand*\l@section{\@dottedtocline{1}{1.5em}{6.5em}}
+\renewcommand*\l@table{\@dottedtocline{1}{1.5em}{5.6em}}
+\renewcommand*\l@figure{\@dottedtocline{1}{1.5em}{5.6em}}
+\makeatother
+
+\begin{document}
+
+% ---------------------------------------------------------------------
+% PRELIMINARY PAGES (Outer cover + Inner title unnumbered; Roman i..N)
+% ---------------------------------------------------------------------
+\input{chapters/00_frontmatter}
+
+% ---------------------------------------------------------------------
+% CORE REPORT CHAPTERS 1..10 (Arabic pagination starting at Page 1)
+% ---------------------------------------------------------------------
+\clearpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+\pagestyle{klbody}
+
+\input{chapters/ch01_03}
+\input{chapters/ch04_05}
+\input{chapters/ch06_07}
+\input{chapters/ch08_10}
+
+% ---------------------------------------------------------------------
+% APPENDICES A..I (Continuous Arabic pagination, sections under Appendices)
+% ---------------------------------------------------------------------
+\clearpage
+\appendix
+\chapter*{Appendices}
+\addcontentsline{toc}{chapter}{Appendices}
+\setcounter{section}{0}
+\renewcommand{\thesection}{Appendix~\Alph{section}}
+\numberwithin{table}{section}
+\numberwithin{figure}{section}
+\renewcommand{\thetable}{\Alph{section}.\arabic{table}}
+\renewcommand{\thefigure}{\Alph{section}.\arabic{figure}}
+\input{chapters/appendices}
+
+\end{document}

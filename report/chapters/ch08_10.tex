@@ -1,0 +1,143 @@
+% =====================================================================
+% CHAPTERS 8 TO 10 AND IEEE REFERENCES
+% =====================================================================
+
+\chapter{Outcomes, Impact, Sustainability and Feasibility}
+
+\begingroup
+\linespread{1.06}\selectfont
+\setlength{\parskip}{1.5pt}
+\section{Planned vs. Achieved Technical Outcomes (\texttt{O1}--\texttt{O5}, Template F)}
+Table~\ref{tab:ch8_templateF} audits planned Semester~VII Gate~0 (G0) targets against verified final Semester~VIII outcomes across technical deliverables, beneficiary impact boundaries, and SDG alignment.
+
+\begin{table}[ht!]
+\centering
+\caption{Outcomes and Impact Assessment Matrix (Cluster A Template F).}
+\label{tab:ch8_templateF}
+\fontsize{7.8}{9.6}\selectfont
+\renewcommand{\arraystretch}{0.80}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|p{0.18\textwidth}|p{0.24\textwidth}|p{0.28\textwidth}|p{0.24\textwidth}|}
+\hline
+\textbf{Dimension} & \textbf{Planned at G0} & \textbf{Achieved / Demonstrated} & \textbf{Evidence \& Gap} \\
+\hline
+\textbf{Technical Outcome (\texttt{O1}--\texttt{O5})} & Auditable \texttt{scikit-learn}-compatible estimator uniting Apriori, FP-Growth, Eclat with bounded pruning & Delivered \skarm \texttt{v0.1.0} (13 modules): 100\% oracle precision, $2.22\times 10^{-16}$ metric error, $0.086\times$--$0.374\times$ Eclat / $0.157\times$--$0.267\times$ FP p95 ratios, $17.14\times$ bounded dense speedup & Verified by 264/264 \texttt{pytest}, 88/88 E2E, \texttt{AC-1..4}, 25-corpus campaign (\texttt{ea5bff5d}) + \texttt{HEAD} baselines \\
+\hline
+\textbf{Real-World Impact Boundary} & Usable Python library reducing sparse OOM failures in analytics pipelines & Verified sparse execution on Kosarak ($76.03$~MB vs.\ $40.9$~GB dense \texttt{mlxtend}) \& BMS-POS ($814.8$~MB skip); pipeline \texttt{fit}/\texttt{transform}/\texttt{predict} tested in Tier~4 & Proxy laboratory validation only; longitudinal enterprise deployment outside capstone scope \\
+\hline
+\textbf{Primary SDG Target (SDG~9.5 / 9.b)} & Advance open scientific infrastructure with zero-cost reproducible software & Released open MIT code (\texttt{CITATION.cff}, 25 dataset provenance records, reproducible Python scripts) slashing memory footprint $>95\%$ & Academic/research reproducibility proved; broader community PyPI adoption next \\
+\hline
+\end{tabular}}
+\end{table}
+
+\section{Demonstrated Beneficiary Value vs. Pilot Boundary}
+For ML engineers and data analysts, \texttt{skarm} eliminates three concrete workflow friction points verified in Chapter~6 and Chapter~7: (1)~direct \texttt{Pipeline} and \texttt{GridSearchCV} compatibility without bespoke glue wrappers; (2)~sparse CSR ingestion on clickstreams where dense DataFrames fail; and (3)~auditable \texttt{DEGRADED} flags when dense rule spaces explode combinatorially. Because no live external enterprise production deployment was contracted at Gate~G0, these improvements represent verified software-engineering and benchmark outcomes rather than field-deployment telemetry.
+
+\section{Safety, Ethics, Privacy and Open-Source Licensing}
+All 25 corpora are public benchmarks or deterministically generated synthetic sets containing zero personal identifiable information (PII), healthcare records, or biometric attributes. Unstated mirror licences are labeled explicitly as \texttt{unknown} in \texttt{DATASET\_\protect\allowbreak{}INVENTORY.md}. Software safety risks (silent rule truncation or host RAM exhaustion) are mitigated directly by \texttt{PruningPolicy}, \texttt{DegradedModeWarning}, and strict binary domain input validation (\texttt{Boundary\protect\allowbreak{}Condition\protect\allowbreak{}Error}). \skarm is distributed permissively under the \textbf{MIT License}.
+
+\section{Techno-Economic Feasibility and Sustainability}
+\skarm requires zero proprietary licences, zero GPU hardware, and zero cloud subscriptions; the entire 25-corpus evaluation, CI suite, and release package execute on commodity workstation hardware. Energy and hardware lifecycle efficiency directly benefit from CSR bitset compression: on \texttt{accidents@0.60}, peak RSS drops from \texttt{1,860.6 MB} (Apriori) to \texttt{90.38 MB} (FP-Growth), reducing multi-gigabyte heap pressure and enabling laptop-scale analytics without cluster provisioning.
+
+\section{Translation Pathway to Full Production Deployment}
+Translating \skarm from research-grade capstone release (\texttt{v0.1.0}) to high-throughput production service requires: (1)~compiling critical Eclat bitset/FP-tree recursion loops in Cython or Rust (\texttt{PyO3}) to close the interpreter speed gap vs.\ Java SPMF on $500\text{k}+$ sparse transaction logs; (2)~publishing wheels (\texttt{pyproject.toml}) to PyPI with Linux/macOS/Windows binary builds; and (3)~enforcing OS-level cgroup memory limits alongside \texttt{PruningPolicy} inside container orchestrators.\par
+\endgroup
+
+% =====================================================================
+% CHAPTER 9
+% =====================================================================
+\chapter{Project Execution, Review-Gate Closure and Team Contributions}
+
+\section{Two-Semester Lifecycle Synthesis}
+Execution spanned Semester~VII (\texttt{CP1}: Problem validation, SRS freeze, \texttt{O1}--\texttt{O2} Apriori baseline, and 25-corpus collection) and Semester~VIII (\texttt{CP2}: \texttt{O3} FP-Growth + bitset Eclat engineering, \texttt{O4} estimator/CLI/telemetry integration, \texttt{O5} 25-dataset campaign, zero-exemption 30-trial scaling, bounded ablation, Java SPMF comparisons, and final defence documentation).
+
+\section{Review-Gate Closure Summary (\texttt{G0}, \texttt{R1}, \texttt{PDR}, \texttt{CDR}, \texttt{Final Defence})}
+Table~\ref{tab:ch9_gates} synthesizes formal gate progression aligned with Cluster~A Template~I (expanded closure details in Appendix~F).
+
+\begin{table}[ht!]
+\centering
+\caption{Two-Semester Capstone Review-Gate Closure Summary (Template I).}
+\label{tab:ch9_gates}
+\fontsize{8.2}{10.2}\selectfont
+\renewcommand{\arraystretch}{0.85}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|p{0.11\textwidth}|p{0.13\textwidth}|p{0.34\textwidth}|p{0.26\textwidth}|p{0.08\textwidth}|}
+\hline
+\textbf{Gate} & \textbf{Schedule} & \textbf{Key Decision / Closure Condition} & \textbf{Closure Evidence} & \textbf{Status} \\
+\hline
+\textbf{G0} & CP1 Wk~2 & Approved mandate (\texttt{KLCAP-2026-00340}), scope boundary (\#32712 external library) & \texttt{D1\_\protect\allowbreak{}PROBLEM\_\protect\allowbreak{}CHARTER}, \texttt{CITATION.cff} & Closed \\
+\hline
+\textbf{R1} & CP1 Wk~6 & Frozen SRS (\texttt{REQ-F-01..07}, \texttt{NFR-01..06}), baseline selection, 25 datasets & \texttt{DATASET\_\protect\allowbreak{}INVENTORY.md}, \texttt{D1} & Closed \\
+\hline
+\textbf{PDR} & CP1 Wk~15 & Approved 5-layer architecture, ADRs~01--04, verified Apriori \texttt{O2} oracle ($2.22\times 10^{-16}$) & \texttt{skarm/\protect\allowbreak{}apriori.py}, \texttt{D2} & Closed \\
+\hline
+\textbf{CDR} & CP2 Wk~3 & Frozen \texttt{O3}--\texttt{O5} design, $O(1)$ tail links, strict 30-trial protocol, \texttt{NT-1..6} plan & \texttt{D3}, \texttt{D4}, \texttt{fpgrowth.py}, \texttt{eclat.py} & Closed \\
+\hline
+\textbf{Final Defence} & CP2 Wk~15 & 264/264 tests, 25-dataset parity ($157/157$), \texttt{HEAD} ablation \& SPMF baselines, Final Report & \texttt{D5}--\texttt{D7}, \texttt{paper-ieee.pdf}, \texttt{43de794} & Closed \\
+\hline
+\end{tabular}}
+\end{table}
+
+\section{Material Risks, Deviations and Change Management}
+Four technical risks materialized and were resolved transparently (Template~G/G1 in Appendix~F): (1)~quadratic slowdowns in initial single-pointer FP-tree inserts on BMS-POS were resolved via dual \texttt{head/\protect\allowbreak{}tail} links (\texttt{O(1)} append); (2)~Python runtime overhead on small synthetic matrices under removed microbenchmark exemptions was solved cleanly via FP-Array GEMM + triangle gating + \texttt{np.packbits} bitset Eclat while keeping \texttt{apriori.py} untouched; (3)~upstream \texttt{scikit-learn} \texttt{check\_\protect\allowbreak{}estimator} rejections of continuous Gaussian matrices were audited into \texttt{SKLEARN\_\protect\allowbreak{}COMPATIBILITY\_\protect\allowbreak{}REPORT.md} rather than masked by silent binarization; and (4)~600~s Apriori timeouts on dense probes (\texttt{accidents@0.50}, \texttt{kosarak@0.005}) were logged explicitly in Table~\ref{tab:ch9_gates}/Appendix~I.
+
+\section{Configuration, Reproducibility and Team Verification}
+Repository provenance strictly isolates host/commit measurements: commit \texttt{ea5bff5d} preserves the 25-dataset Windows campaign (\texttt{1,650} records), while \texttt{HEAD} commits (\texttt{ad2b9a8} / \texttt{43de794}) verify all 264 tests, strict 30-trial scaling, ablation, and Java SPMF baselines. Individual contributions are verified in Appendix~G (Template~M), and ethical/AI tool disclosures appear in Appendix~H (Template~O).
+
+% =====================================================================
+% CHAPTER 10
+% =====================================================================
+\chapter{Conclusions, Contributions, Limitations and Future Work}
+
+\begingroup
+\linespread{1.05}\selectfont
+\setlength{\parskip}{1.5pt}
+\section{Mandate-Level Conclusions and Objective Status}
+Project \texttt{KLCAP-2026-00340} fulfilled its complete engineering mandate. Across Semesters~VII and~VIII, the team designed, integrated, and independently validated \skarm (\texttt{v0.1.0}), a sparse-native, \texttt{scikit-learn}-compatible association-rule mining estimator package rooted in an untouched Apriori reference baseline. All five objectives (\texttt{O1}--\texttt{O5}) closed cleanly at Final Defence with zero open failures or unverified claims:
+\begin{itemize}
+  \item \textbf{O1 (Problem \& SRS Closure --- Complete)}: Confirmed upstream issue \#32712 closure and froze verifiable contracts (\texttt{REQ-F-01..07}, \texttt{NFR-01..06}).
+  \item \textbf{O2 (Apriori Baseline \& Oracle --- Complete)}: Verified $100\%$ precision/recall and $2.22 \times 10^{-16}$ max rule-metric error across all six metrics.
+  \item \textbf{O3 (FP-Growth, Eclat \& Pruning Governor --- Complete)}: Cleared strict zero-exemption 30-trial scaling gates (\texttt{0.157x}--\texttt{0.267x} FP-Growth, \texttt{0.086x}--$0.374\times$ Eclat engine p95 vs.\ Apriori) and achieved $17.14\times$ bounded dense speedups under explicit \texttt{DEGRADED} flagging.
+  \item \textbf{O4 (System Integration --- Complete)}: Unified 13 modules with \texttt{BaseEstimator}/\texttt{Pipeline} compatibility (\texttt{7/\protect\allowbreak{}7} contracts, \texttt{0} unexpected \texttt{check\_\protect\allowbreak{}estimator} failures), CLI, and \texttt{RuleExplorer}.
+  \item \textbf{O5 (Acceptance \& Empirical Campaign --- Complete)}: Passed \texttt{264/\protect\allowbreak{}264} \texttt{pytest}, \texttt{88/\protect\allowbreak{}88} E2E, \texttt{6/\protect\allowbreak{}6} negative tests, \texttt{157/\protect\allowbreak{}157} 25-corpus engine pairs, and \texttt{25/\protect\allowbreak{}25} cross-language \texttt{mlxtend}/SPMF comparisons ($\Delta_{\mathrm{supp}}=0.0$).
+\end{itemize}
+
+\section{Original Engineering and Scientific Contributions}
+\begin{enumerate}
+  \item \textbf{Unified Sparse Tri-Engine Estimator}: First \texttt{scikit-learn}-compatible Python library unifying level-wise Apriori, FP-Array/$O(1)$-tail FP-Growth, and hardware-POPCNT bitset Eclat over one shared CSR matrix.
+  \item \textbf{Auditable Bounded-Search Governor}: Formal \texttt{EXACT}/\texttt{DEGRADED} result-state telemetry preventing silent partial rule truncation on dense combinatorial lattices.
+  \item \textbf{Reproducible Cross-Domain Empirical Audit}: Matched-ladder benchmarking across 25 measured datasets ($1{,}650$ trials) and cross-language Java~21 SPMF baselines with explicit timeout and dense-memory skip reporting.
+\end{enumerate}
+
+\section{Limitations, Residual Risks and Prioritised Next Work}
+Known technical limitations remain transparently scoped: (1)~interpreted Python loops run slower than compiled Java SPMF on $500\text{k}+$ sparse clickstreams (\texttt{BMS-POS}: $17.22\text{--}24.87$~s vs.\ $0.99\text{--}2.49$~s); (2)~matrices must strictly satisfy discrete binary incidence semantics; (3)~cooperative 10~ms RSS polling does not replace OS cgroup hard limits; and (4)~benchmarks reflect single-node workstation execution without field pilot deployment. Prioritised future engineering targets: (1)~compiling bitset Eclat and FP-tree projections in Cython/Rust; (2)~GPU-accelerated bitwise intersections (\texttt{CuPy}/CUDA) for dense $10^6$-row matrices; and (3)~PyPI wheel distribution with container-native memory guards.\par
+\endgroup
+
+% =====================================================================
+% IEEE REFERENCES
+% =====================================================================
+\clearpage
+\addcontentsline{toc}{chapter}{References}
+\begingroup
+\linespread{1.0}\fontsize{9.5}{11.5}\selectfont
+\begin{thebibliography}{99}
+\bibitem{agrawal1994} R.~Agrawal and R.~Srikant, ``Fast algorithms for mining association rules,'' in \emph{Proc.\ 20th Int.\ Conf.\ Very Large Data Bases (VLDB)}, 1994, pp.~487--499.
+\bibitem{han2000} J.~Han, J.~Pei, and Y.~Yin, ``Mining frequent patterns without candidate generation,'' in \emph{Proc.\ ACM SIGMOD Int.\ Conf.\ Manage.\ Data}, 2000, pp.~1--12.
+\bibitem{han2004} J.~Han, J.~Pei, and Y.~Yin, ``Mining frequent patterns without candidate generation: A frequent-pattern tree approach,'' \emph{Data Min.\ Knowl.\ Discov.}, vol.~8, no.~1, pp.~53--87, 2004.
+\bibitem{grahne2005} G.~Grahne and J.~Zhu, ``Fast algorithms for frequent itemset mining using FP-trees,'' \emph{IEEE Trans.\ Knowl.\ Data Eng.}, vol.~17, no.~10, pp.~1347--1362, 2005.
+\bibitem{zaki1997} M.~J.~Zaki, S.~Parthasarathy, M.~Ogihara, and W.~Li, ``New algorithms for fast discovery of association rules,'' in \emph{Proc.\ 3rd Int.\ Conf.\ Knowl.\ Discov.\ Data Mining (KDD)}, 1997, pp.~283--286.
+\bibitem{zaki2000} M.~J.~Zaki, ``Scalable algorithms for association mining,'' \emph{IEEE Trans.\ Knowl.\ Data Eng.}, vol.~12, no.~3, pp.~372--390, 2000. \url{https://doi.org/10.1109/69.846291}
+\bibitem{sklearn2662} scikit-learn Issue \#2662 (2013--2014): Pattern mining scoped outside core scikit-learn. [Online]. Available: \url{https://github.com/scikit-learn/scikit-learn/issues/2662} (accessed Oct.~2026).
+\bibitem{sklearn32712} scikit-learn Issue \#32712 (Nov.~2025): ``Add Apriori Algorithm for Association Rule Mining,'' closed as \texttt{not\_\protect\allowbreak{}planned}. [Online]. Available: \url{https://github.com/scikit-learn/scikit-learn/issues/32712} (verified 24~Nov.~2026).
+\bibitem{scikitmine} \texttt{scikit-mine} repository (SLIM, LCM, LCMMax). [Online]. Available: \url{https://github.com/scikit-mine/scikit-mine} (checked 24~Nov.~2026; last master commit May~2023).
+\bibitem{mlxtend} S.~Raschka, \texttt{mlxtend} v0.25.0 \texttt{frequent\_\protect\allowbreak{}patterns} User Guide. [Online]. Available: \url{https://rasbt.github.io/mlxtend/user_guide/frequent_patterns/} (accessed Oct.~2026).
+\bibitem{spmf} P.~Fournier-Viger, SPMF Dataset Collection and Open-Source Data Mining Library. [Online]. Available: \url{https://www.philippe-fournier-viger.com/spmf/index.php?link=datasets.php} (accessed Oct.~2026).
+\bibitem{fournier2022} P.~Fournier-Viger \emph{et al.}, ``Pattern mining: Current challenges and opportunities,'' in \emph{Proc.\ DASFAA 2022 Int.\ Workshops}, LNCS vol.~13248, Springer, 2022, pp.~34--49. \url{https://doi.org/10.1007/978-3-031-11217-1_3}
+\bibitem{kallay2025} P.~Kallay and T.~D.~Mihoc, ``Comparative analysis of frequent pattern mining algorithms (Apriori, Eclat, FP-Growth, FIN, PrePost+, Pascal, LCMFreq),'' \emph{Acta Univ.\ Sapientiae, Informatica}, vol.~17, art.~8, Aug.~2025. \url{https://doi.org/10.1007/s44427-025-00008-1}
+\bibitem{hahsler} M.~Hahsler, ``Association-rule measures survey,'' \emph{arules} documentation. [Online]. Available: \url{https://michael.hahsler.net/arules/docs/measures} (accessed Oct.~2026).
+\bibitem{sklearnchecks} scikit-learn Developers, ``Developing scikit-learn estimators (\texttt{check\_\protect\allowbreak{}estimator}).'' [Online]. Available: \url{https://scikit-learn.org/stable/developers/develop.html} (accessed Oct.~2026).
+\bibitem{iso29148} ISO/IEC/IEEE~29148:2018, \emph{Systems and software engineering --- Life cycle processes --- Requirements engineering}.
+\bibitem{iso42010} ISO/IEC/IEEE~42010:2022, \emph{Software, systems and enterprise --- Architecture description}.
+\bibitem{iso25010} ISO/IEC~25010:2023, \emph{Systems and software engineering --- Systems and software Quality Requirements and Evaluation (SQuaRE) --- Product quality model}.
+\end{thebibliography}
+\endgroup

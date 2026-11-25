@@ -18,6 +18,8 @@ env/
 # LaTeX auxiliary build files (keep .pdf and .tex)
 *.aux
 *.log
+*.lof
+*.lot
 *.nav
 *.out
 *.snm
