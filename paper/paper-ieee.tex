@@ -720,8 +720,10 @@ $690.8$~MB for Apriori and $40.9$~GB dense requirement for \texttt{mlxtend}).
 \begin{table*}[t]
 \centering
 \scriptsize
+\setlength{\tabcolsep}{4pt}
 \caption{Post-audit strict zero-exemption 30-trial KPI-4 verification on \texttt{HEAD} (Python 3.12, 5 warmup + 30 measured trials; \texttt{skarm/apriori.py} untouched; target ratio $\le 0.80\times$ Apriori p95; $\Delta_{\mathrm{supp}} = 0.0$ across all rows).}
 \label{tab:kpi4}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{llrrrrrrl}
 \toprule
 Workload (Itemsets) & Engine & Eng.\ p50 (ms) & Eng.\ p95 (ms) & Ratio vs.\ Apriori & Est.\ p95 (ms) & Est.\ Speedup & Peak Heap (MB) & Gate \\
@@ -740,7 +742,8 @@ Scale $N=3{,}000$ (15) & Eclat & 0.63 & 0.66 & \textbf{0.282$\times$} & 6.38 & $
 \midrule
 AC-4 Gate ($N=1{,}000$, 14) & FP-Growth / Eclat & --- & --- & \textbf{0.429$\times$ / 0.313$\times$} & --- & --- & --- & PASS (13/13) \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table*}
 
 \begin{figure*}[t]
