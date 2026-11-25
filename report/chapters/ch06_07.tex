@@ -27,23 +27,22 @@ Running \texttt{.venv/\protect\allowbreak{}Scripts/\protect\allowbreak{}python.e
 \label{tab:ch6_e2e}
 \fontsize{9.5}{12}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|l|p{0.44\textwidth}|r|r|r|l|}
-\hline
+\begin{tabular}{@{}lL{0.44\textwidth}rrrl@{}}
+\toprule
 \textbf{Tier} & \textbf{Verification Scope} & \textbf{Tests} & \textbf{Pass} & \textbf{Time (s)} & \textbf{Status} \\
-\hline
+\midrule
 Tier 1 & Input formats, core miners, metrics, states, contracts & 32 & 32 & 2.06 & PASS \\
-\hline
+\addlinespace[1.2pt]
 Tier 2 & Transaction boundaries, duplicates, extremes, budgets & 29 & 29 & 0.37 & PASS \\
-\hline
+\addlinespace[1.2pt]
 Tier 3 & Pairwise cross-feature interaction combinations & 6 & 6 & 0.89 & PASS \\
-\hline
+\addlinespace[1.2pt]
 Tier 4 & Retail MBA, e-commerce pipeline, clickstream, census, ETL & 5 & 5 & 0.99 & PASS \\
-\hline
+\addlinespace[1.2pt]
 Tier 5 & Extreme matrices, budgets, pickle/joblib, pandas \texttt{set\_\protect\allowbreak{}output} & 16 & 16 & 4.44 & PASS \\
-\hline
+\addlinespace[1.2pt]
 \textbf{Total} & \textbf{All 5 Verification Tiers} & \textbf{88} & \textbf{88} & \textbf{8.76} & \textbf{PASS} \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \section{\texttt{scikit-learn} \texttt{check\_\protect\allowbreak{}estimator} Compatibility and API Contract Audit}
@@ -55,23 +54,22 @@ We executed \texttt{sklearn.utils.estimator\_\protect\allowbreak{}checks.check\_
 \label{tab:ch6_sklearn}
 \fontsize{9.5}{12}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.40\textwidth}|r|r|p{0.34\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.40\textwidth}rrL{0.34\textwidth}@{}}
+\toprule
 \textbf{Check Category} & \textbf{Executions} & \textbf{Unique Keys} & \textbf{Domain Verification Verdict} \\
-\hline
+\midrule
 Core Structural \& Estimator API & 14 & 14 & Passed (100\% structural compliance) \\
-\hline
+\addlinespace[1.2pt]
 Continuous / Non-Binary Float Rejection (incl.\ 2 supervised-$y$ checks) & 28 & 26 & Expected boundary rejection (\texttt{ValueError}) \\
-\hline
+\addlinespace[1.2pt]
 Synthetic Mock Containers (\texttt{\_\protect\allowbreak{}NotAnArray}) & 2 & 2 & Expected transaction-stream guard (\texttt{TypeError}) \\
-\hline
+\addlinespace[1.2pt]
 Custom \texttt{Boundary\protect\allowbreak{}Condition\protect\allowbreak{}Error} Phrasing & 9 & 9 & Expected explicit domain error wording \\
-\hline
+\addlinespace[1.2pt]
 Environment Skipped (\texttt{SCIPY\_\protect\allowbreak{}ARRAY\_\protect\allowbreak{}API} unset) & 1 & 1 & Skipped by \texttt{scikit-learn} harness \\
-\hline
+\addlinespace[1.2pt]
 \textbf{Unexpected Failures} & \textbf{0} & \textbf{0} & \textbf{PASS (0 unexpected failures)} \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \section{Negative-Test, Recovery and Security Validation (\texttt{NT-1}--\texttt{NT-6})}
@@ -83,23 +81,22 @@ Table~\ref{tab:ch6_nt} documents the six adversarial and boundary conditions ver
 \label{tab:ch6_nt}
 \fontsize{9}{11.5}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.08\textwidth}|p{0.23\textwidth}|p{0.30\textwidth}|p{0.24\textwidth}|p{0.08\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.08\textwidth}L{0.23\textwidth}L{0.30\textwidth}L{0.24\textwidth}L{0.08\textwidth}@{}}
+\toprule
 \textbf{ID} & \textbf{Adversarial Trigger} & \textbf{Verified System Behavior} & \textbf{Security / Audit Control} & \textbf{Verdict} \\
-\hline
+\midrule
 \textbf{NT-1} & Dense $M=22, 100\%$ matrix ($4.19\times 10^6$ potential sets), cap $=500$ & Halts at level~3 ($501>500$); emits \texttt{DegradedModeWarning}; returns valid partial rules & Sets \texttt{is\_\protect\allowbreak{}degraded\_\protect\allowbreak{}=True}, logs reason & PASS \\
-\hline
+\addlinespace[1.2pt]
 \textbf{NT-2} & Repeated intra-row duplicates (\texttt{['A','A','B']}) & Idempotent deduplication inside \texttt{TransactionEncoder} & Support arithmetic uninflated & PASS \\
-\hline
+\addlinespace[1.2pt]
 \textbf{NT-3} & Non-uniform weights \texttt{[3.0, 1.0, 6.0]} + negative weights & Matches weighted formula $\sum w_i \mathbf{1}/\sum w_i$; rejects negative weights & Raises \texttt{ValueError} on $<0$ weights & PASS \\
-\hline
+\addlinespace[1.2pt]
 \textbf{NT-4} & $\sigma \in \{0.0, 1.0\}$ \& invalid $\sigma \in \{-0.05, 1.5\}$ & Handles boundaries cleanly; rejects out-of-range parameters & \texttt{Boundary\protect\allowbreak{}Condition\protect\allowbreak{}Error} raised & PASS \\
-\hline
+\addlinespace[1.2pt]
 \textbf{NT-5} & Shuffled inputs + \texttt{joblib} / \texttt{pickle} round-trips & Bit-identical DataFrame rows and restored estimator attributes & Canonical lexicographic sort keys & PASS \\
-\hline
+\addlinespace[1.2pt]
 \textbf{NT-6} & Dense stress ($50 \times 20, 80\%$ density) under \texttt{fpgrowth} \& \texttt{apriori} & Caps exploration safely without OOM under ETL bursts (Tier~4.5) & \texttt{MemorySampler} + governor active & PASS \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \section{Performance Acceptance (\texttt{AC-4}) and Defect Closure Summary}
@@ -130,21 +127,21 @@ Across all 42 dataset--threshold cells in the 25-corpus campaign, all \textbf{15
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=0.82\textwidth,height=0.185\textheight,keepaspectratio]{runtime.png}
+\includegraphics[width=0.85\textwidth,height=0.192\textheight,keepaspectratio]{runtime.png}
 \caption{Primary-threshold mean fit time (s, log scale) across all 25 datasets (\texttt{ea5bff5d}). Red crosses denote \texttt{mlxtend} omissions from dense-frame caps or empty frequent-itemset errors. Source: Authors' own work.}
 \label{fig:ch7_runtime}
 \end{figure}
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=0.82\textwidth,height=0.185\textheight,keepaspectratio]{memory.png}
+\includegraphics[width=0.85\textwidth,height=0.192\textheight,keepaspectratio]{memory.png}
 \caption{Primary-threshold peak RSS memory delta (MB, 10~ms \texttt{psutil} sampling, log scale) showing \skarm's sparse memory savings over \texttt{mlxtend} on sparse high-cardinality inputs. Source: Authors' own work.}
 \label{fig:ch7_memory}
 \end{figure}
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=0.82\textwidth,height=0.185\textheight,keepaspectratio]{throughput.png}
+\includegraphics[width=0.85\textwidth,height=0.192\textheight,keepaspectratio]{throughput.png}
 \caption{Transaction throughput (transactions per second) at primary support thresholds across all 25 datasets, highlighting Eclat bitset efficiency on sparse retail/clickstream corpora. Source: Authors' own work.}
 \label{fig:ch7_throughput}
 \end{figure}
@@ -153,14 +150,14 @@ At each dataset's primary threshold, \textbf{Apriori is fastest on 0/25 datasets
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=0.84\textwidth,height=0.205\textheight,keepaspectratio]{scatter.png}
+\includegraphics[width=0.85\textwidth,height=0.185\textheight,keepaspectratio]{scatter.png}
 \caption{Combinatorial expansion of frequent itemsets vs.\ association rules ($\mathrm{conf} \ge 0.25$) across density regimes, demonstrating $>30\times$ amplification on dense corpora. Source: Authors' own work.}
 \label{fig:ch7_scatter}
 \end{figure}
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=0.84\textwidth,height=0.205\textheight,keepaspectratio]{outcomes.png}
+\includegraphics[width=0.85\textwidth,height=0.185\textheight,keepaspectratio]{outcomes.png}
 \caption{Complete execution audit of all 1,650 campaign trials (98.0\% exact completions alongside explicitly logged \texttt{mlxtend} exclusions and 600~s timeouts). Source: Authors' own work.}
 \label{fig:ch7_outcomes}
 \end{figure}
@@ -174,30 +171,29 @@ Table~\ref{tab:ch7_kpi4} and Figure~\ref{fig:ch7_kpi4} report the freshly measur
 \label{tab:ch7_kpi4}
 \fontsize{8.8}{11.5}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|l|l|r|r|r|r|r|r|l|}
-\hline
+\begin{tabular}{@{}llrrrrrrl@{}}
+\toprule
 \textbf{Workload (Sets)} & \textbf{Engine} & \textbf{p50 (ms)} & \textbf{p95 (ms)} & \textbf{Ratio} & \textbf{Est.\ p95} & \textbf{Speedup} & \textbf{Heap (MB)} & \textbf{Gate} \\
-\hline
+\midrule
 Scale $N=200$ (39) & Apriori (Ref.) & 0.77 & 1.45 & 1.000$\times$ & 17.69 & 1.00$\times$ & 0.0272 & Ref \\
 Scale $N=200$ (39) & FP-Growth & 0.17 & 0.39 & \textbf{0.267$\times$} & 5.57 & 3.18$\times$ & 0.0278 & PASS \\
 Scale $N=200$ (39) & Eclat & 0.09 & 0.13 & \textbf{0.086$\times$} & 4.70 & 3.76$\times$ & 0.0276 & PASS \\
-\hline
+\addlinespace[1.2pt]
 Scale $N=1{,}000$ (15) & Apriori (Ref.) & 0.73 & 1.00 & 1.000$\times$ & 13.69 & 1.00$\times$ & 0.0782 & Ref \\
 Scale $N=1{,}000$ (15) & FP-Growth & 0.13 & 0.17 & \textbf{0.167$\times$} & 3.33 & 4.11$\times$ & 0.0890 & PASS \\
 Scale $N=1{,}000$ (15) & Eclat & 0.10 & 0.38 & \textbf{0.374$\times$} & 4.70 & 2.91$\times$ & 0.0787 & PASS \\
-\hline
+\addlinespace[1.2pt]
 Scale $N=3{,}000$ (15) & Apriori (Ref.) & 1.17 & 2.08 & 1.000$\times$ & 14.97 & 1.00$\times$ & 0.1291 & Ref \\
 Scale $N=3{,}000$ (15) & FP-Growth & 0.25 & 0.33 & \textbf{0.157$\times$} & 3.64 & 4.11$\times$ & 0.1799 & PASS \\
 Scale $N=3{,}000$ (15) & Eclat & 0.17 & 0.29 & \textbf{0.139$\times$} & 4.06 & 3.69$\times$ & 0.1294 & PASS \\
-\hline
+\addlinespace[1.2pt]
 AC-4 ($N=1{,}000$, 14) & FP / Eclat & 0.11 / 0.08 & 0.30 / 0.09 & \textbf{0.501 / 0.153} & --- & 2.00 / 6.55 & --- & PASS \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=0.84\textwidth,height=0.195\textheight,keepaspectratio]{kpi4_strict.png}
+\includegraphics[width=0.82\textwidth,height=0.155\textheight,keepaspectratio]{kpi4_strict.png}
 \caption{Live \texttt{HEAD} strict 30-trial scaling \& acceptance verification (5 warmup + 30 measured trials, zero small-runtime exemptions): all ratios stay strictly below the $0.80\times$ dashed target. Source: Authors' own work.}
 \label{fig:ch7_kpi4}
 \end{figure}
@@ -211,11 +207,13 @@ To measure speed-versus-completeness trade-offs across density regimes, \texttt{
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=0.84\textwidth,height=0.18\textheight,keepaspectratio]{ablation.png}
+\includegraphics[width=0.80\textwidth,height=0.145\textheight,keepaspectratio]{ablation.png}
 \caption{Live \texttt{HEAD} bounded vs.\ exact pruning ablation: (a)~Chess itemset vs.\ rule recall and fit time across two \texttt{DEGRADED} phases; (b)~cross-regime speedup curves and explicit transitions to \texttt{EXACT} mode on BMS-POS (cap~100) and Adult Census (cap~1,000). Source: Authors' own work.}
 \label{fig:ch7_ablation}
 \end{figure}
 
+\begingroup
+\setlength{\intextsep}{4pt plus 1pt minus 1pt}
 \section{Cross-Framework Modern Miner Baselines (\texttt{HEAD})}
 Table~\ref{tab:ch7_baselines} and Figure~\ref{fig:ch7_baselines} present fresh 3-trial evaluations (\texttt{benchmarks/baseline\_\protect\allowbreak{}results.json}, \texttt{2026-11-25}) comparing \texttt{skarm} against \texttt{mlxtend 0.25.0} and compiled Java~21 SPMF miners (\textsc{FIN}, \textsc{PrePost+}, \textsc{LCMFreq}, \textsc{FP-Growth}). Across all \textbf{25 completed engine runs}, canonical frequent itemsets and supports matched \textbf{bit-exactly} ($\Delta_{\mathrm{supp}}=0.0$). On Adult Census ($\sigma=0.40$), \texttt{skarm} bitset Eclat (\texttt{0.0306 s}) matches \texttt{mlxtend} Apriori (\texttt{0.0237 s}) and runs $14\times$--$20\times$ faster than Java SPMF CLI invocation (\texttt{0.44}--\texttt{0.61 s}) and $43\times$ faster than \texttt{mlxtend} FP-Growth (\texttt{1.3242 s}). On BMS-POS ($\sigma=0.05$), \texttt{mlxtend} was safely skipped due to its \texttt{814.8 MB} dense matrix footprint exceeding the \texttt{500 MB} budget, whereas \texttt{skarm} FP-Growth (\texttt{17.22 s}) and Eclat (\texttt{24.87 s}) completed cleanly alongside compiled Java SPMF (\texttt{0.99}--\texttt{2.49 s}).
 
@@ -223,33 +221,32 @@ Table~\ref{tab:ch7_baselines} and Figure~\ref{fig:ch7_baselines} present fresh 3
 \centering
 \caption{Live \texttt{HEAD} Cross-Framework Timing \& Parity Comparison (3 Trials/Cell, $\Delta_{\mathrm{supp}}=0.0$).}
 \label{tab:ch7_baselines}
-\fontsize{9}{11.5}\selectfont
+\fontsize{8.0}{9.6}\selectfont
+\renewcommand{\arraystretch}{0.82}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|l|l|r|r|r|l|}
-\hline
+\begin{tabular}{@{}llrrrl@{}}
+\toprule
 \textbf{Framework \& Engine} & \textbf{Language} & \textbf{Chess (0.85)} & \textbf{Adult (0.40)} & \textbf{BMS-POS (0.05)} & \textbf{Exact Parity} \\
-\hline
+\midrule
 \skarm Apriori & Python 3.12 & 5.73 s & 2.25 s & 48.09 s & Yes ($\Delta=0.0$) \\
 \skarm FP-Growth & Python 3.12 & 3.91 s & 2.06 s & 17.22 s & Yes ($\Delta=0.0$) \\
 \skarm Eclat (Bitset) & Python 3.12 & 3.32 s & \textbf{0.031 s} & 24.87 s & Yes ($\Delta=0.0$) \\
-\hline
 \texttt{mlxtend} Apriori & Python 3.12 & 0.15 s & 0.024 s & SKIP (814.8 MB) & Yes (where run) \\
 \texttt{mlxtend} FP-Growth & Python 3.12 & 0.38 s & 1.32 s & SKIP (814.8 MB) & Yes (where run) \\
-\hline
 SPMF \textsc{FIN} (wall / int.) & Java 21 & 0.45 / 0.11 s & 0.51 / 0.22 s & 2.31 / 2.01 s & Yes ($\Delta=0.0$) \\
 SPMF \textsc{PrePost+} (wall / int.) & Java 21 & 0.43 / 0.08 s & 0.45 / 0.15 s & 0.99 / 0.70 s & Yes ($\Delta=0.0$) \\
 SPMF \textsc{LCMFreq} (wall / int.) & Java 21 & 0.65 / 0.32 s & 0.61 / 0.21 s & 2.49 / 1.55 s & Yes ($\Delta=0.0$) \\
 SPMF \textsc{FP-Growth} (wall / int.) & Java 21 & 0.39 / 0.08 s & 0.44 / 0.13 s & 1.09 / 0.78 s & Yes ($\Delta=0.0$) \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=0.84\textwidth,height=0.18\textheight,keepaspectratio]{baselines.png}
+\includegraphics[width=0.78\textwidth,height=0.125\textheight,keepaspectratio]{baselines.png}
 \caption{Live \texttt{HEAD} cross-framework baseline comparison (\texttt{skarm} vs.\ \texttt{mlxtend} vs.\ Java~21 SPMF): bars plot end-to-end runtime / JVM wall time and diamonds mark SPMF internal algorithm timers. Source: Authors' own work.}
 \label{fig:ch7_baselines}
 \end{figure}
 
 \section{Discussion of Empirical Trade-Offs and Unproven Boundaries}
-Measured results resolve the literature discrepancy transparently: no single algorithm wins universally across all densities. Vertical Eclat excels on 20/25 sparse-to-medium workloads via C-level POPCNT intersections, while FP-Growth dominates on dense/long-transaction regimes (\texttt{accidents}, \texttt{connect}, \texttt{pumsb\_\protect\allowbreak{}star}) via shared prefix compression. Compiled Java miners in SPMF achieve faster raw loop speed on multi-hundred-thousand-row files (\texttt{BMS-POS}) because they execute statically compiled bytecode outputting itemsets only; conversely, \texttt{skarm} delivers native \texttt{scikit-learn} estimator integration, weighted arithmetic, six rule metrics, and sparse CSR memory safety where dense Python alternatives fail. Lower support thresholds that triggered 600~s Apriori timeouts (\texttt{accidents@0.50}, \texttt{kosarak@0.005}) or memory exhaustion remain explicitly documented outside the unconstrained exact envelope.
+Measured results resolve the literature discrepancy transparently: no single algorithm wins universally across all densities. Vertical Eclat excels on 20/25 sparse-to-medium workloads via C-level POPCNT intersections, while FP-Growth dominates on dense/long-transaction regimes (\texttt{accidents}, \texttt{connect}, \texttt{pumsb\_\protect\allowbreak{}star}) via shared prefix compression. Compiled Java miners in SPMF achieve faster raw loop speed on multi-hundred-thousand-row files (\texttt{BMS-POS}) because they execute statically compiled bytecode outputting itemsets only; conversely, \texttt{skarm} delivers native \texttt{scikit-learn} estimator integration, weighted arithmetic, six rule metrics, and sparse CSR memory safety where dense Python alternatives fail. Lower support thresholds that triggered 600~s Apriori timeouts (\texttt{accidents@0.50}, \texttt{kosarak@0.005}) or memory exhaustion remain explicitly documented outside the unconstrained exact envelope.\par
+\endgroup

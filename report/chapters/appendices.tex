@@ -11,21 +11,20 @@
 \caption{Objective-to-Evidence Traceability Matrix across \texttt{O1}--\texttt{O5} (Template H).}
 \fontsize{8.5}{11}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.05\textwidth}|p{0.19\textwidth}|p{0.12\textwidth}|p{0.14\textwidth}|p{0.16\textwidth}|p{0.16\textwidth}|p{0.10\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.05\textwidth}L{0.19\textwidth}L{0.12\textwidth}L{0.14\textwidth}L{0.16\textwidth}L{0.16\textwidth}L{0.10\textwidth}@{}}
+\toprule
 \textbf{Obj.} & \textbf{Success Criterion} & \textbf{Req.\ Refs} & \textbf{Design Refs} & \textbf{Build Refs} & \textbf{Test / Valid.} & \textbf{Status} \\
-\hline
+\midrule
 \textbf{O1} & Issue \#32712 claim verified; SRS \& ADRs frozen & \texttt{REQ-F-01}, \texttt{NFR-04} & Ch.~4 (\texttt{ADR-01..02}) & \texttt{datasets.py}, \texttt{DATASET\_\protect\allowbreak{}INV.} & \texttt{test\_\protect\allowbreak{}encoder.py}, \texttt{AC-3} & Complete \\
-\hline
+\addlinespace[1.2pt]
 \textbf{O2} & Apriori precision $100\%$; metric error $<10^{-9}$ & \texttt{REQ-F-02}, \texttt{REQ-F-04} & Ch.~4.4.1, Eq.\ oracle & \texttt{apriori.py}, \texttt{rules.py} & \texttt{test\_\protect\allowbreak{}apriori.py}, \texttt{KPI-1}, \texttt{KPI-2} & Complete \\
-\hline
+\addlinespace[1.2pt]
 \textbf{O3} & p95 $\le 0.80\times$ Apriori; bounded trade-offs proved & \texttt{REQ-F-03}, \texttt{NFR-01} & \texttt{ADR-03}, \texttt{ADR-05} & \texttt{fpgrowth.py}, \texttt{eclat.py}, \texttt{pruning.py} & \texttt{run\_\protect\allowbreak{}benchmarks}, \texttt{run\_\protect\allowbreak{}bounded\_\protect\allowbreak{}abl.} & Complete \\
-\hline
+\addlinespace[1.2pt]
 \textbf{O4} & Estimator $7/7$ API contracts; E2E \& CLI integrated & \texttt{REQ-F-06..07}, \texttt{NFR-05} & Ch.~4.3--4.5, \texttt{ADR-04} & \texttt{estimator.py}, \texttt{cli.py}, \texttt{explorer.py} & \texttt{test\_\protect\allowbreak{}estimator}, \texttt{check\_\protect\allowbreak{}estimator} & Complete \\
-\hline
+\addlinespace[1.2pt]
 \textbf{O5} & $6/6$ negative tests; 25-corpus parity; baselines & \texttt{NFR-02}, \texttt{NFR-03} & Ch.~6.1, \texttt{ADR-06} & \texttt{run\_\protect\allowbreak{}pc\_\protect\allowbreak{}campaign}, \texttt{run\_\protect\allowbreak{}baselines} & 264 \texttt{pytest}, 88 E2E, SPMF parity & Complete \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \section{Requirements Acceptance Matrix \& Test Index (Template J)}
@@ -36,10 +35,10 @@
 \caption{Software Requirements \& Release Acceptance Matrix (Template J).}
 \fontsize{8.5}{11}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.11\textwidth}|p{0.18\textwidth}|p{0.18\textwidth}|p{0.17\textwidth}|p{0.20\textwidth}|p{0.09\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.11\textwidth}L{0.18\textwidth}L{0.18\textwidth}L{0.17\textwidth}L{0.20\textwidth}L{0.09\textwidth}@{}}
+\toprule
 \textbf{Req.\ ID} & \textbf{Attribute} & \textbf{Threshold} & \textbf{Component} & \textbf{Actual Result} & \textbf{Status} \\
-\hline
+\midrule
 \texttt{REQ-F-01} & Sparse CSR \& \texttt{NT-2} & Deduplicated CSR & \texttt{pre\protect\allowbreak{}processing.py} & 0 inflation; 25 corpora parsed & PASS \\
 \texttt{REQ-F-02} & Apriori reference & $100\%$ oracle match & \texttt{apriori.py} & 100\% prec/rec; brute-force 0 diff & PASS \\
 \texttt{REQ-F-03} & FP-Growth \& Eclat & $\Delta_{\mathrm{supp}}=0.0$ & \texttt{fpgrowth.py}, \texttt{eclat.py} & 157/157 + 25/25 SPMF exact & PASS \\
@@ -49,8 +48,7 @@
 \texttt{NFR-01} & Strict 30-trial scale & $\text{p95}\le 0.80\times$ & Engines + \texttt{AC-4} & FP $0.157\text{--}0.267\times$; Eclat $0.086\text{--}0.374\times$ & PASS \\
 \texttt{NFR-02} & Negative suite & 6/6 recovery & \texttt{test\_\protect\allowbreak{}negative\_\protect\allowbreak{}cases} & 6/6 pass (\texttt{NT-1..6}) & PASS \\
 \texttt{NFR-05} & Full CI suite & All suites green & GitHub Actions & 264/264 \texttt{pytest}; 88/88 E2E & PASS \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \clearpage
@@ -61,18 +59,17 @@
 \caption{Applied Engineering Standards, Versions and Verification Scope.}
 \fontsize{9}{11.5}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.24\textwidth}|p{0.35\textwidth}|p{0.35\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.24\textwidth}L{0.35\textwidth}L{0.35\textwidth}@{}}
+\toprule
 \textbf{Standard / Clause} & \textbf{Applied Principle in \skarm} & \textbf{Verified Artefact} \\
-\hline
+\midrule
 ISO/IEC/IEEE 29148:2018 & Traceable \texttt{REQ-F-01..07} \& \texttt{NFR-01..06} & Ch.~3 \& Appendix~B (Template~J) \\
 ISO/IEC/IEEE 42010:2022 & Multi-view architecture \& \texttt{ADR-01..06} & Ch.~4 \& Appendix~E (Template~K) \\
 ISO/IEC/IEEE 12207:2017 & Semesters~VII--VIII gate governance \& Git config & Ch.~9 \& Appendix~F (Templates~G/I) \\
 ISO/IEC/IEEE 29119:2021 & Multi-tier oracle, E2E, boundary negative testing & Ch.~6, 264/264 tests, \texttt{NT-1..6} \\
 ISO/IEC 25010:2023 & Performance efficiency, reliability, API portability & Ch.~3.3 \& Ch.~7 empirical evaluation \\
 MIT Open-Source License & Permissive distribution \& third-party attribution & \texttt{LICENSE}, \texttt{CITATION.cff}, \texttt{DATASET\_\protect\allowbreak{}INV.} \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \section{Master Evidence Register \& Reproduction Manifest (Template N)}
@@ -82,10 +79,10 @@ MIT Open-Source License & Permissive distribution \& third-party attribution & \
 \caption{Master Evidence Register (Template N) with Exact Repository Pointers.}
 \fontsize{8.5}{11}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.12\textwidth}|p{0.31\textwidth}|p{0.14\textwidth}|p{0.35\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.12\textwidth}L{0.31\textwidth}L{0.14\textwidth}L{0.35\textwidth}@{}}
+\toprule
 \textbf{Evid.\ ID} & \textbf{Description} & \textbf{Relates To} & \textbf{Repository Path / Revision} \\
-\hline
+\midrule
 \texttt{E-SRC-001} & Complete \skarm Python library & All \texttt{O1}--\texttt{O5} & \texttt{skarm/\protect\allowbreak{}*.py} (\texttt{43de794}) \\
 \texttt{E-DAT-002} & 25-corpus inventory \& generators & \texttt{O1}, \texttt{O5} & \texttt{DATASET\_\protect\allowbreak{}INVENTORY.md}, \texttt{data/\protect\allowbreak{}} \\
 \texttt{E-TST-003} & Full 264-test \texttt{pytest} \& 88 E2E logs & \texttt{O4}, \texttt{O5} & \texttt{tests/\protect\allowbreak{}}, \texttt{tests/e2e/e2e\_\protect\allowbreak{}results.json} \\
@@ -95,12 +92,11 @@ MIT Open-Source License & Permissive distribution \& third-party attribution & \
 \texttt{E-ABL-007} & Live \texttt{HEAD} bounded pruning ablation & \texttt{O3} & \texttt{benchmarks/ablation\_\protect\allowbreak{}results.json} \\
 \texttt{E-BAS-008} & Live \texttt{HEAD} \texttt{mlxtend} \& Java SPMF & \texttt{O5} & \texttt{benchmarks/baseline\_\protect\allowbreak{}results.json} \\
 \texttt{E-API-009} & \texttt{check\_\protect\allowbreak{}estimator} compatibility audit & \texttt{O4} & \texttt{docs/SKLEARN\_\protect\allowbreak{}COMPATIBILITY\_\protect\allowbreak{}REPORT.md} \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 Exact reproduction commands from repository root:
-\begin{lstlisting}[language=bash,caption={Deterministic Verification and Manuscript Reproduction Commands.}]
+\begin{lstlisting}[language=bash,basicstyle=\ttfamily\fontsize{8.2}{9.8}\selectfont,caption={Deterministic Verification and Manuscript Reproduction Commands.}]
 .venv/Scripts/python.exe -m pytest -q
 .venv/Scripts/python.exe tests/run_acceptance.py
 .venv/Scripts/python.exe tests/e2e/run_e2e.py
@@ -118,18 +114,17 @@ Exact reproduction commands from repository root:
 \caption{Complete Architecture Decision Register (Template K).}
 \fontsize{8.5}{11}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.09\textwidth}|p{0.18\textwidth}|p{0.22\textwidth}|p{0.27\textwidth}|p{0.18\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.09\textwidth}L{0.18\textwidth}L{0.22\textwidth}L{0.27\textwidth}L{0.18\textwidth}@{}}
+\toprule
 \textbf{ADR} & \textbf{Decision} & \textbf{Alternatives} & \textbf{Selected Option \& Consequence} & \textbf{Evidence} \\
-\hline
+\midrule
 ADR-01 & Package scope & Core sklearn PR vs.\ standalone lib & Standalone package per \#32712 closure & \texttt{estimator.py} \\
 ADR-02 & Incidence store & Dense DF vs.\ CSR sparse & SciPy boolean CSR; avoids 40.9~GB blowup & \texttt{pre\protect\allowbreak{}processing.py} \\
 ADR-03 & Candidate budget & Silent truncate vs.\ explicit flag & \texttt{PruningPolicy} + \texttt{is\_\protect\allowbreak{}degraded\_\protect\allowbreak{}=True} & \texttt{pruning.py} \\
 ADR-04 & Non-binary floats & Auto-binarize vs.\ reject & Explicit \texttt{ValueError}; preserves data integrity & \texttt{test\_\protect\allowbreak{}check\_\protect\allowbreak{}est.} \\
 ADR-05 & Engine kernels & Pure naive loops vs.\ bitset/FP-Array & $O(1)$ tail, FP-Array GEMM, \texttt{int.bit\_\protect\allowbreak{}count()} & \texttt{fpgrowth.py}, \texttt{eclat.py} \\
 ADR-06 & Microbench rule & Small-runtime exempt vs.\ zero-exempt & Removed exemptions; requires real speedups & \texttt{run\_\protect\allowbreak{}acceptance.py} \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \begin{table}[ht!]
@@ -137,16 +132,15 @@ ADR-06 & Microbench rule & Small-runtime exempt vs.\ zero-exempt & Removed exemp
 \caption{API, Data and Software Asset Register Summary (Template L).}
 \fontsize{8.5}{11}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.22\textwidth}|p{0.14\textwidth}|p{0.18\textwidth}|p{0.18\textwidth}|p{0.22\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.22\textwidth}L{0.14\textwidth}L{0.18\textwidth}L{0.18\textwidth}L{0.22\textwidth}@{}}
+\toprule
 \textbf{Asset / Interface} & \textbf{Version} & \textbf{Source / Producer} & \textbf{Consumer} & \textbf{Licence \& Location} \\
-\hline
+\midrule
 \texttt{Association\protect\allowbreak{}Rules\protect\allowbreak{}Estimator} & \texttt{v0.1.0} & Team (\texttt{estimator.py}) & Pipelines, CLI & MIT / \texttt{skarm/\protect\allowbreak{}} \\
 \texttt{TransactionEncoder} & \texttt{v0.1.0} & Team (\texttt{pre\protect\allowbreak{}processing.py}) & Miners, \texttt{Pipeline} & MIT / \texttt{skarm/\protect\allowbreak{}} \\
 25 Benchmark Datasets & Frozen \texttt{2026-10-29} & UCI, FIMI, SPMF, Synth (\texttt{seed=42}) & Campaign, Ablation & Public / \texttt{unknown} documented in \texttt{DATASET\_\protect\allowbreak{}INV.} \\
 SPMF External Reference & Java~21 (\texttt{spmf.jar}) & Fournier-Viger \cite{spmf} & Baseline verifier & GPLv3 / \texttt{benchmarks/\protect\allowbreak{}} \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \section{Gate Closure \& Design Change Register (Templates G, G1, I)}
@@ -156,15 +150,14 @@ SPMF External Reference & Java~21 (\texttt{spmf.jar}) & Fournier-Viger \cite{spm
 \caption{Approved Specification vs.\ As-Built Implementation Comparison (Templates G \& G1).}
 \fontsize{8.5}{11}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.09\textwidth}|p{0.18\textwidth}|p{0.24\textwidth}|p{0.25\textwidth}|p{0.18\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.09\textwidth}L{0.18\textwidth}L{0.24\textwidth}L{0.25\textwidth}L{0.18\textwidth}@{}}
+\toprule
 \textbf{ID} & \textbf{Subsystem} & \textbf{Approved Specification} & \textbf{As-Built / Executed} & \textbf{Reason \& Impact} \\
-\hline
+\midrule
 \texttt{CHG-01} & FP-Tree header (\texttt{O3}) & Standard single \texttt{head} pointer chain & Dual \texttt{head} + \texttt{tail} $O(1)$ append pointers & Eliminated BMS-POS quadratic lag; $\Delta_{\mathrm{supp}}=0.0$ \\
 \texttt{CHG-02} & Small-scale kernels (\texttt{O3}) & Pure recursive FP-Tree / Python sets & Added FP-Array GEMM, triangle gate, \texttt{np.packbits} bitsets & Cleared zero-exemption $\le 0.80\times$ p95 gate \\
 \texttt{CHG-03} & Memory governor (\texttt{O4}) & Continuous polling thread on all fits & On-demand 10~ms \texttt{MemorySampler} when budget active & Removed polling overhead on fast fits \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \clearpage
@@ -175,16 +168,15 @@ SPMF External Reference & Java~21 (\texttt{spmf.jar}) & Fournier-Viger \cite{spm
 \caption{Individual Contribution Statement and Evidence Matrix (Template M).}
 \fontsize{8.5}{11}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.20\textwidth}|p{0.11\textwidth}|p{0.33\textwidth}|p{0.30\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.20\textwidth}L{0.11\textwidth}L{0.33\textwidth}L{0.30\textwidth}@{}}
+\toprule
 \textbf{Member (ID)} & \textbf{Owned} & \textbf{Substantive Engineering Work} & \textbf{Verifiable Evidence \& Guide Sign-Off} \\
-\hline
+\midrule
 Abhishek Kumar (\texttt{2300033822}) & O2, O3, O4, O5 & Engineered \texttt{estimator.py}, \texttt{fpgrowth.py}, bitset \texttt{eclat.py}, \texttt{pruning.py}, CI workflows, 25-corpus \& baseline harnesses & Commits up to \texttt{43de794}; 264/264 tests; Verified by Dr.~D.~Ramya \\
 Gontla Venkata Anvitha (\texttt{2300032207}) & O1, O2, O4 & Verified upstream \#32712 gap, authored \texttt{datasets.py}, sparse \texttt{TransactionEncoder}, \texttt{DATASET\_\protect\allowbreak{}INVENTORY.md} & \texttt{test\_\protect\allowbreak{}encoder.py}, 25 data loaders, \texttt{NT-2}/\texttt{NT-3}; Verified by Guide \\
 Kamma Giridhar (\texttt{2300030295}) & O2, O3, O5 & Implemented \texttt{apriori.py} baseline, 6-metric formulas in \texttt{rules.py}, analytical oracle fixtures & \texttt{test\_\protect\allowbreak{}apriori.py}, \texttt{KPI-2} $2.22\times 10^{-16}$, \texttt{D2}; Verified by Guide \\
 Paladagula Venkata Rajeev (\texttt{2300030497}) & O3, O4, O5 & Built \texttt{explorer.py}, \texttt{cli.py}, \texttt{telemetry.py}, \texttt{check\_\protect\allowbreak{}estimator} audit \& user runbook \texttt{D6} & 7/7 contract pass, \texttt{SKLEARN\_\protect\allowbreak{}COMPATIBILITY\_\protect\allowbreak{}REPORT}; Verified by Guide \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \section{Responsible Use of AI Tools \& Integrity Declarations (Template O)}
@@ -194,14 +186,13 @@ Paladagula Venkata Rajeev (\texttt{2300030497}) & O3, O4, O5 & Built \texttt{exp
 \caption{Responsible Use of AI and Digital Tools Disclosure (Template O).}
 \fontsize{8.8}{11.5}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.22\textwidth}|p{0.22\textwidth}|p{0.22\textwidth}|p{0.28\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.22\textwidth}L{0.22\textwidth}L{0.22\textwidth}L{0.28\textwidth}@{}}
+\toprule
 \textbf{Tool / Model} & \textbf{Purpose} & \textbf{Affected Artefact} & \textbf{Human Verification \& Data Exposure} \\
-\hline
+\midrule
 Runtime \skarm software & Production / library inference & \texttt{skarm/\protect\allowbreak{}*.py} & Zero AI/LLM models used; 100\% deterministic algorithms \\
 LLM Coding \& Drafting Assistant & Documentation scaffolding, LaTeX formatting, test refactoring & \texttt{docs/\protect\allowbreak{}}, \texttt{report/\protect\allowbreak{}}, \texttt{scripts/build\_\protect\allowbreak{}ieee\_\protect\allowbreak{}figures.py} & Line-by-line audit + live execution of every script, JSON metric, and 264 tests; zero PII/confidential data exposed \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \clearpage
@@ -209,20 +200,16 @@ LLM Coding \& Drafting Assistant & Documentation scaffolding, LaTeX formatting, 
 \label{app:corpus_summary}
 Table~\ref{tab:appI_summary} summarizes primary-threshold fit times (s) across all 25 corpora (\texttt{ea5bff5d}); bold highlights fastest \texttt{skarm} engine per dataset, with complete per-cell percentiles (\texttt{p50}, \texttt{p95}, RSS peak MB, itemsets, rules, timeout notes) stored in \texttt{benchmarks/\protect\allowbreak{}cells/\protect\allowbreak{}*.json} and \texttt{paper/\protect\allowbreak{}paper-ieee.pdf}.
 
-\begingroup
-\fontsize{8}{9.5}\selectfont
-\renewcommand{\arraystretch}{0.78}
-\begin{longtable}{p{0.25\textwidth}rrrrp{0.20\textwidth}}
+\begin{table}[ht!]
+\centering
 \caption{Primary-Threshold Mean Fit Time (Seconds) Across All 25 Corpora (\texttt{ea5bff5d}).}
-\label{tab:appI_summary}\\
+\label{tab:appI_summary}
+\fontsize{9}{11.2}\selectfont
+\renewcommand{\arraystretch}{0.95}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrl@{}}
 \toprule
-\textbf{Dataset} & \textbf{MinSupp} & \textbf{Apriori (s)} & \textbf{FP-Growth (s)} & \textbf{Eclat (s)} & \textbf{\texttt{mlxtend} (s)} \\
+\textbf{\color{KLDarkBlue} Dataset} & \textbf{\color{KLDarkBlue} MinSupp} & \textbf{\color{KLDarkBlue} Apriori (s)} & \textbf{\color{KLDarkBlue} FP-Growth (s)} & \textbf{\color{KLDarkBlue} Eclat (s)} & \textbf{\color{KLDarkBlue} \texttt{mlxtend} (s)} \\
 \midrule
-\endfirsthead
-\toprule
-\textbf{Dataset} & \textbf{MinSupp} & \textbf{Apriori (s)} & \textbf{FP-Growth (s)} & \textbf{Eclat (s)} & \textbf{\texttt{mlxtend} (s)} \\
-\midrule
-\endhead
 \texttt{accidents} & 0.6 & 473.5 & \textbf{60.92} & 97.93 & 4.76 \\
 \texttt{adult\_\protect\allowbreak{}census} & 0.05 & 76.62 & \textbf{19.04} & 20.95 & 19.14 \\
 \texttt{balance\_\protect\allowbreak{}scale} & 0.2 & 0.033 & 0.032 & \textbf{0.009} & 0.006 \\
@@ -249,5 +236,10 @@ Table~\ref{tab:appI_summary} summarizes primary-threshold fit times (s) across a
 \texttt{t10i4d100k} & 0.02 & 164.5 & 48.41 & \textbf{4.78} & 34.40 \\
 \texttt{tic\_\protect\allowbreak{}tac\_\protect\allowbreak{}toe} & 0.3 & 0.069 & 0.102 & \textbf{0.024} & 0.012 \\
 \bottomrule
-\end{longtable}
-\endgroup
+\end{tabular*}
+\end{table}
+
+\begin{klbox}[KLGreen]
+\fontsize{9.5}{12.5}\selectfont
+\textbf{Empirical Takeaway Across All 25 Corpora:} Vertical bitset \textbf{Eclat wins on 20/25} datasets and \textbf{FP-Growth wins on 5/25} dense/long-transaction sets (\texttt{accidents}, \texttt{adult\_\protect\allowbreak{}census}, \texttt{connect}, \texttt{docword\_\protect\allowbreak{}enron}, \texttt{pumsb\_\protect\allowbreak{}star}), while level-wise \textbf{Apriori is fastest on 0/25}. All \textbf{157/157} completed engine pairs agree bit-exactly ($\Delta_{\mathrm{supp}} = 0.0$), and sparse CSR execution avoids \texttt{mlxtend}'s \texttt{40.9 GB} dense-matrix cap on \texttt{kosarak}.
+\end{klbox}

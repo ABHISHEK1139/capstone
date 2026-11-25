@@ -13,29 +13,28 @@ This two-semester engineering capstone project is executed under Koneru Lakshmai
 \label{tab:ch1_identity}
 \fontsize{9.5}{12.5}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.34\textwidth}|p{0.62\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.34\textwidth}L{0.62\textwidth}@{}}
+\toprule
 \textbf{Attribute} & \textbf{Verified Project Record} \\
-\hline
+\midrule
 Portal Use-Case ID & \texttt{KLCAP-2026-00340} \\
-\hline
+\addlinespace[1.2pt]
 Approved Title & Scalable Association-Rule Mining Estimator with Apriori Baseline \\
-\hline
+\addlinespace[1.2pt]
 Delivered Library Name & \skarm (\texttt{v0.1.0}, MIT Licence) \\
-\hline
+\addlinespace[1.2pt]
 Dominant Specialization & AI for Computational Intelligence \\
-\hline
+\addlinespace[1.2pt]
 Related Specializations & Data Engineering for AI; Software Modelling \& DevOps \\
-\hline
+\addlinespace[1.2pt]
 Cluster Classification & Cluster A --- Software Systems Engineering (Team \texttt{C2C-25}) \\
-\hline
+\addlinespace[1.2pt]
 Faculty Guide & Dr.~Dudigam Ramya, Department of CSE \\
-\hline
+\addlinespace[1.2pt]
 Student Team & Gontla Venkata Anvitha (2300032207); Abhishek Kumar (2300033822); Kamma Giridhar (2300030295); Paladagula Venkata Rajeev (2300030497) \\
-\hline
+\addlinespace[1.2pt]
 Repository Location & \url{https://github.com/ABHISHEK1139/capstone} (\texttt{main} branch) \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \section{Verified Problem Source and Upstream Status}
@@ -73,23 +72,22 @@ Table~\ref{tab:ch1_scope} separates verified in-scope deliverables from explicit
 \centering
 \caption{Project Scope Boundaries, Assumptions, Constraints and Dependencies.}
 \label{tab:ch1_scope}
-\fontsize{9.5}{12.5}\selectfont
+\fontsize{9.0}{11.5}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.20\textwidth}|p{0.76\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.20\textwidth}L{0.76\textwidth}@{}}
+\toprule
 \textbf{Dimension} & \textbf{Approved Engineering Boundary} \\
-\hline
+\midrule
 \textbf{In Scope} & Canonical Apriori baseline; optimized FP-Growth and bitset Eclat miners; SciPy CSR \texttt{TransactionEncoder}; 6-metric rule generator; \texttt{PruningPolicy} (\texttt{max\_\protect\allowbreak{}candidates}, \texttt{max\_\protect\allowbreak{}len}, \texttt{max\_\protect\allowbreak{}memory\_\protect\allowbreak{}mb}); \texttt{Association\protect\allowbreak{}Rules\protect\allowbreak{}Estimator} (\texttt{fit}, \texttt{transform}, \texttt{predict}); CLI \& \texttt{RuleExplorer}; 25-corpus campaign, strict 30-trial scaling, ablation, SPMF/\texttt{mlxtend} baselines, and 264 automated tests. \\
-\hline
+\addlinespace[1.2pt]
 \textbf{Out of Scope} & Upstream pull request into \texttt{scikit-learn} core (forbidden by \#32712 closure); distributed multi-node cluster execution (Spark/Dask); continuous non-binary regression mining; unattended production/safety-critical certification. \\
-\hline
+\addlinespace[1.2pt]
 \textbf{Assumptions} & Input transactions fit single-host RAM in sparse CSR representation; target domain is strictly discrete binary items ($X \in \{0,1\}^{N \times M}$) with optional non-negative weights. \\
-\hline
+\addlinespace[1.2pt]
 \textbf{Constraints} & Strict Python~3.10+ compatibility (\texttt{>=1.24 NumPy}, \texttt{>=1.10 SciPy}, \texttt{>=1.3 sklearn}); strict zero-exemption 30-trial scaling rule ($\text{p95} \le 0.80\times$ Apriori); explicit \texttt{DEGRADED} flag on any bounded termination. \\
-\hline
+\addlinespace[1.2pt]
 \textbf{Dependencies} & \texttt{numpy}, \texttt{scipy}, \texttt{pandas}, \texttt{scikit-learn}, \texttt{joblib}, \texttt{psutil}, \texttt{pytest}; Java~21+ and \texttt{spmf.jar} solely for external cross-language baseline verification. \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \section{O1--O5 Objectives and Success Criteria}
@@ -99,23 +97,22 @@ The two-semester execution roadmap decomposes the mandate into five linked objec
 \centering
 \caption{Project Objectives, Measurable Success Criteria and Ownership (Template E).}
 \label{tab:ch1_objectives}
-\fontsize{9}{11.8}\selectfont
+\fontsize{8.8}{11.2}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.055\textwidth}|p{0.24\textwidth}|p{0.24\textwidth}|p{0.165\textwidth}|p{0.05\textwidth}|p{0.17\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.055\textwidth}L{0.24\textwidth}L{0.24\textwidth}L{0.165\textwidth}L{0.05\textwidth}L{0.17\textwidth}@{}}
+\toprule
 \textbf{ID} & \textbf{Objective Summary} & \textbf{Measurable Success Criterion} & \textbf{Owner(s)} & \textbf{Sem} & \textbf{Deliverable} \\
-\hline
+\midrule
 \textbf{O1} & Validate problem (\#32712), freeze SRS, ADR baseline, and risk register & Confirmed issue locator, FR/NFR matrix, zero-leakage partition & Abhishek, Anvitha & VII & D1 Charter \& SRS \\
-\hline
+\addlinespace[1.2pt]
 \textbf{O2} & Build reproducible conventional Apriori baseline and analytical oracle & $100\%$ precision/recall vs.\ oracle; rule error $< 10^{-9}$ (target $\ge 80/100$) & Giridhar, Abhishek & VII & D2 Baseline (\texttt{apriori.py}) \\
-\hline
+\addlinespace[1.2pt]
 \textbf{O3} & Engineer FP-Growth, vertical Eclat, and auditable pruning governor & Strict 30-trial p95 $\le 0.80\times$ Apriori; $\Delta_{\mathrm{supp}}=0.0$; bounded trade-offs & Abhishek, Giridhar & VIII & D3 (\texttt{fpgrowth.py}, \newline\texttt{eclat.py}) \\
-\hline
+\addlinespace[1.2pt]
 \textbf{O4} & Integrate \texttt{TransactionEncoder}, estimator API, CLI, explorer, and telemetry & $7/7$ contract compliance; clean \texttt{check\_\protect\allowbreak{}estimator}; \texttt{Pipeline} interoperability & Abhishek, Rajeev, Anvitha & VIII & D4 Integrated System \\
-\hline
+\addlinespace[1.2pt]
 \textbf{O5} & Execute 25-corpus campaign, external baselines, \texttt{AC-1..4}, \texttt{NT-1..6} & $6/6$ negative tests pass; $157/157$ exact engine parity; $264/264$ tests pass & All Members (Abhishek Lead) & VIII & D5--D7 \& Final Report \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \section{Intended Technical Outcome vs. Real-World Impact}
@@ -143,7 +140,11 @@ Following KL University Cluster~A standards, Chapters~2 and~3 establish the lite
 A structured literature and ecosystem review was conducted across four evidence channels between October~2025 and November~2026: (1)~foundational database and data mining proceedings (VLDB, ACM SIGMOD, KDD, IEEE TKDE, DAMI); (2)~recent algorithmic benchmarking studies (2022--2025); (3)~upstream Python and Java open-source repositories (\texttt{scikit-learn}, \texttt{mlxtend}, \texttt{scikit-mine}, \texttt{SPMF}) audited directly on GitHub and release documentation (last re-verified 24~November~2026); and (4)~applicable ISO/IEC/IEEE software systems engineering standards. Inclusion prioritized reproducible algorithms with formal complexity bounds, exact support semantics, or open reference implementations.
 
 \section{Scientific and Technical Literature}
-Frequent-itemset mining (FIM) formalizes pattern discovery over a binary transaction database $\mathcal{D}$ by enumerating all itemsets $X \subseteq \mathcal{I}$ satisfying $\mathrm{supp}(X) \ge \sigma$. Three classical algorithmic paradigms anchor the field:
+Frequent-itemset mining (FIM) formalizes pattern discovery over a weighted database $\mathcal{D} = \{T_1, \dots, T_N\}$ by enumerating all itemsets $X \subseteq \mathcal{I}$ satisfying threshold $\sigma \in (0, 1]$:
+\begin{equation}
+\mathrm{supp}_w(X) = \frac{\sum_{r=1}^{N} w_r \cdot \mathbb{I}[X \subseteq T_r]}{\sum_{r=1}^{N} w_r} \ge \sigma, \qquad w_r \ge 0.
+\end{equation}
+Three classical algorithmic paradigms anchor the field:
 \begin{enumerate}
   \item \textbf{Horizontal Level-Wise Candidate Generation (Apriori)}: Agrawal and Srikant \cite{agrawal1994} introduced the anti-monotonicity (downward-closure) property ensuring every subset of a frequent itemset is frequent. Apriori joins $L_{k-1} \bowtie L_{k-1}$ to construct candidates $C_k$, prunes invalid candidates, and performs $k$ database passes. While conceptually auditable, level-wise joins trigger candidate explosion on dense workloads with low support thresholds.
   \item \textbf{Prefix-Tree Pattern Growth (FP-Growth \& FP-Array)}: Han, Pei, and Yin \cite{han2000,han2004} eliminated explicit $C_k$ generation via a two-pass compressed prefix tree (FP-Tree) linked through a frequency-ordered header table. Grahne and Zhu \cite{grahne2005} further demonstrated that an FP-Array matrix of pairwise frequent counts accelerates 2-itemset enumeration and conditional projection without dynamic tree traversal overhead.
@@ -171,27 +172,26 @@ Table~\ref{tab:ch2_comparison} evaluates \skarm against existing ecosystems acro
 \label{tab:ch2_comparison}
 \fontsize{8.5}{11.2}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.18\textwidth}|p{0.19\textwidth}|p{0.19\textwidth}|p{0.19\textwidth}|p{0.17\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.18\textwidth}L{0.19\textwidth}L{0.19\textwidth}L{0.19\textwidth}L{0.17\textwidth}@{}}
+\toprule
 \textbf{Criterion} & \textbf{\skarm (This Work)} & \textbf{\texttt{mlxtend} v0.25.0} & \textbf{\texttt{scikit-mine}} & \textbf{SPMF (Java 21)} \\
-\hline
+\midrule
 \textbf{API Contract} & Native \texttt{BaseEstimator} + \texttt{Pipeline} & Procedural functions only & Partial custom estimators & Java CLI subprocess / GUI \\
-\hline
+\addlinespace[1.2pt]
 \textbf{Data Structure} & Sparse SciPy CSR + dense array & Dense boolean DataFrame & Sparse/list encoders & Flat integer text files \\
-\hline
+\addlinespace[1.2pt]
 \textbf{Core Algorithms} & Apriori, FP-Growth, Eclat & Apriori, FP-Growth, H-Mine (no Eclat) & SLIM, LCM, LCMMax (no Apriori/Eclat) & 250+ (FIN, PrePost+, LCMFreq) \\
-\hline
+\addlinespace[1.2pt]
 \textbf{Rule Metrics} & 6 certified ($\le 2.22\times 10^{-16}$) & 6+ (conviction, Zhang's) & Itemsets only (no rules) & Selected rule miners \\
-\hline
+\addlinespace[1.2pt]
 \textbf{Safety Governor} & \texttt{max\_\protect\allowbreak{}candidates}, \texttt{max\_\protect\allowbreak{}len}, 10~ms RSS cap & None (OOM cliff at 40.9~GB) & None & JVM \texttt{-Xmx} heap crash \\
-\hline
+\addlinespace[1.2pt]
 \textbf{Truncation Audit} & Explicit \texttt{EXACT}/\texttt{DEGRADED} flag & Silent / exception abort & None & Process termination \\
-\hline
+\addlinespace[1.2pt]
 \textbf{Sample Weights} & Full \texttt{sample\_\protect\allowbreak{}weight} support & None & None & Utility variants only \\
-\hline
+\addlinespace[1.2pt]
 \textbf{Repo Status} & Active, 264/264 CI pass & Active procedural & Dormant (last commit May~2023) & Active Java archive \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \section{Limitations, Contradictions and Unresolved Needs}
@@ -233,25 +233,24 @@ Aligned with ISO/IEC/IEEE~29148, Table~\ref{tab:ch3_fr} defines all seven functi
 \label{tab:ch3_fr}
 \fontsize{9}{11.5}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.13\textwidth}|p{0.10\textwidth}|p{0.49\textwidth}|p{0.22\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.13\textwidth}L{0.10\textwidth}L{0.49\textwidth}L{0.22\textwidth}@{}}
+\toprule
 \textbf{Req.\ ID} & \textbf{Obj.} & \textbf{Requirement Specification} & \textbf{Module Target} \\
-\hline
+\midrule
 \texttt{REQ-F-01} & O1, O4 & \texttt{TransactionEncoder} shall convert Python lists, generators, FIMI files, and DataFrames into sorted boolean SciPy CSR matrices or NumPy arrays with duplicate-token idempotency. & \texttt{skarm/\protect\allowbreak{}pre\protect\allowbreak{}processing.py}, \texttt{datasets.py} \\
-\hline
+\addlinespace[1.2pt]
 \texttt{REQ-F-02} & O2 & Implement conventional level-wise Apriori baseline supporting binary sparse/dense matrices and non-negative transaction weights. & \texttt{skarm/\protect\allowbreak{}apriori.py} \\
-\hline
+\addlinespace[1.2pt]
 \texttt{REQ-F-03} & O3 & Implement FP-Growth (FP-Array + triangle gate + bit-packed $O(1)$ tail-linked FP-Tree) and Eclat (vertical C-level bitset TID intersection) matching Apriori exact supports ($\Delta_{\mathrm{supp}}=0.0$). & \texttt{skarm/\protect\allowbreak{}fpgrowth.py}, \texttt{skarm/\protect\allowbreak{}eclat.py} \\
-\hline
+\addlinespace[1.2pt]
 \texttt{REQ-F-04} & O2, O4 & Compute six rule quality metrics (support, confidence, lift, leverage, conviction, Zhang's metric) with IEEE-754 stability and deterministic sorting. & \texttt{skarm/\protect\allowbreak{}rules.py} \\
-\hline
+\addlinespace[1.2pt]
 \texttt{REQ-F-05} & O3, O4 & Enforce \texttt{max\_\protect\allowbreak{}candidates}, \texttt{max\_\protect\allowbreak{}len}, \texttt{max\_\protect\allowbreak{}time\_\protect\allowbreak{}seconds}, and \texttt{max\_\protect\allowbreak{}memory\_\protect\allowbreak{}mb}; transition cleanly to \texttt{DEGRADED} or raise \texttt{Candidate\protect\allowbreak{}Explosion\protect\allowbreak{}Error}. & \texttt{skarm/\protect\allowbreak{}pruning.py} \\
-\hline
+\addlinespace[1.2pt]
 \texttt{REQ-F-06} & O4 & Expose \texttt{Association\protect\allowbreak{}Rules\protect\allowbreak{}Estimator} conforming to \texttt{BaseEstimator} and \texttt{TransformerMixin} (\texttt{fit}, \texttt{transform}, \texttt{predict}, \texttt{clone}, \texttt{Pipeline}, \texttt{joblib}). & \texttt{skarm/\protect\allowbreak{}estimator.py}, \texttt{metrics.py} \\
-\hline
+\addlinespace[1.2pt]
 \texttt{REQ-F-07} & O4, O5 & Deliver CLI utility, \texttt{RuleExplorer}, \texttt{TelemetryLogger}, and automated benchmark/acceptance harnesses. & \texttt{cli.py}, \texttt{explorer.py}, \texttt{telemetry.py} \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \section{Quality-Attribute Requirements (\texttt{NFR-01}--\texttt{NFR-06})}
@@ -263,23 +262,22 @@ Mapped to ISO/IEC~25010 quality dimensions, Table~\ref{tab:ch3_nfr} specifies qu
 \label{tab:ch3_nfr}
 \fontsize{9}{11.5}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.13\textwidth}|p{0.20\textwidth}|p{0.61\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.13\textwidth}L{0.20\textwidth}L{0.61\textwidth}@{}}
+\toprule
 \textbf{Req.\ ID} & \textbf{ISO~25010 Attribute} & \textbf{Testable Threshold Specification} \\
-\hline
+\midrule
 \texttt{NFR-01} & Performance Efficiency & Under 5 warmup + 30 measured trials (zero exemptions), both FP-Growth and Eclat p95 runtimes shall satisfy $\le 0.80\times$ Apriori baseline across $N \in \{200, 1{,}000, 3{,}000\}$ and \texttt{AC-4}. \\
-\hline
+\addlinespace[1.2pt]
 \texttt{NFR-02} & Reliability & All six negative tests (\texttt{NT-1}--\texttt{NT-6}) shall pass with zero unhandled process crashes or silent partial truncations. \\
-\hline
+\addlinespace[1.2pt]
 \texttt{NFR-03} & Functional Accuracy & Frequent-itemset precision/recall vs.\ oracle $= 100\%$ ($\ge 98\%$ threshold); max rule-metric error $< 10^{-9}$ (target rubric $\ge 80/100$). \\
-\hline
+\addlinespace[1.2pt]
 \texttt{NFR-04} & Determinism & Repeated fits on shuffled columns or restored \texttt{joblib}/\texttt{pickle} artifacts shall emit bit-identical DataFrames; 70/30 splits remain leakage-free. \\
-\hline
+\addlinespace[1.2pt]
 \texttt{NFR-05} & Maintainability & Modular PEP-8 source architecture with $\ge 250$ passing automated tests across Python~3.10, 3.11, and 3.12 CI matrix. \\
-\hline
+\addlinespace[1.2pt]
 \texttt{NFR-06} & Resource Governance & Continuous 10~ms RSS telemetry (\texttt{psutil}) when \texttt{max\_\protect\allowbreak{}memory\_\protect\allowbreak{}mb} is active; peak candidate counter logged in \texttt{metadata\_\protect\allowbreak{}}. \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \section{Data Requirements and Corpus Provenance}
@@ -306,17 +304,16 @@ Table~\ref{tab:ch3_ac} defines the acceptance gate contract enforced by \texttt{
 \label{tab:ch3_ac}
 \fontsize{9}{11.5}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.12\textwidth}|p{0.24\textwidth}|p{0.58\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.12\textwidth}L{0.24\textwidth}L{0.58\textwidth}@{}}
+\toprule
 \textbf{Gate ID} & \textbf{Condition Name} & \textbf{Formal Pass Criterion} \\
-\hline
+\midrule
 \textbf{AC-1} & Representative Precision & Itemset precision \& recall $= 100.0\%$ ($\ge 98.0\%$) across Apriori, FP-Growth, Eclat; max rule-metric error $< 10^{-9}$ (\texttt{KPI-2} $= 100/100$). \\
-\hline
+\addlinespace[1.2pt]
 \textbf{AC-2} & Boundary \& Recovery & All six negative tests (\texttt{NT-1} dense explosion, \texttt{NT-2} duplicate/rare tokens, \texttt{NT-3} weights, \texttt{NT-4} $\sigma$ limits, \texttt{NT-5} ordering/pickle, \texttt{NT-6} dense stress) pass. \\
-\hline
+\addlinespace[1.2pt]
 \textbf{AC-3} & Held-Out Mechanics & Zero-leakage 70/30 train/validation split transforms validation set and scores held-out mean rule confidence consistently. \\
-\hline
+\addlinespace[1.2pt]
 \textbf{AC-4} & Frozen Resource Envelope & 5 warmup + 30 trials (zero small-runtime exemptions) on $N=1{,}000, M=12, p=0.25, \sigma=0.08$: FP-Growth \& Eclat $\text{p95} \le 0.80\times$ Apriori with $\Delta_{\mathrm{supp}}=0.0$. \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}

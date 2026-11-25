@@ -5,8 +5,10 @@
 \chapter{Outcomes, Impact, Sustainability and Feasibility}
 
 \begingroup
-\linespread{1.06}\selectfont
-\setlength{\parskip}{1.5pt}
+\fontsize{10.6}{12.5}\selectfont
+\setlength{\parskip}{0.5pt}
+\setlength{\intextsep}{5pt plus 1pt minus 1pt}
+\titlespacing*{\section}{0pt}{2.5pt}{0.5pt}
 \section{Planned vs. Achieved Technical Outcomes (\texttt{O1}--\texttt{O5}, Template F)}
 Table~\ref{tab:ch8_templateF} audits planned Semester~VII Gate~0 (G0) targets against verified final Semester~VIII outcomes across technical deliverables, beneficiary impact boundaries, and SDG alignment.
 
@@ -14,20 +16,17 @@ Table~\ref{tab:ch8_templateF} audits planned Semester~VII Gate~0 (G0) targets ag
 \centering
 \caption{Outcomes and Impact Assessment Matrix (Cluster A Template F).}
 \label{tab:ch8_templateF}
-\fontsize{7.8}{9.6}\selectfont
-\renewcommand{\arraystretch}{0.80}
+\fontsize{7.2}{8.6}\selectfont
+\renewcommand{\arraystretch}{0.75}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.18\textwidth}|p{0.24\textwidth}|p{0.28\textwidth}|p{0.24\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.16\textwidth}L{0.22\textwidth}L{0.34\textwidth}L{0.23\textwidth}@{}}
+\toprule
 \textbf{Dimension} & \textbf{Planned at G0} & \textbf{Achieved / Demonstrated} & \textbf{Evidence \& Gap} \\
-\hline
+\midrule
 \textbf{Technical Outcome (\texttt{O1}--\texttt{O5})} & Auditable \texttt{scikit-learn}-compatible estimator uniting Apriori, FP-Growth, Eclat with bounded pruning & Delivered \skarm \texttt{v0.1.0} (13 modules): 100\% oracle precision, $2.22\times 10^{-16}$ metric error, $0.086\times$--$0.374\times$ Eclat / $0.157\times$--$0.267\times$ FP p95 ratios, $17.14\times$ bounded dense speedup & Verified by 264/264 \texttt{pytest}, 88/88 E2E, \texttt{AC-1..4}, 25-corpus campaign (\texttt{ea5bff5d}) + \texttt{HEAD} baselines \\
-\hline
 \textbf{Real-World Impact Boundary} & Usable Python library reducing sparse OOM failures in analytics pipelines & Verified sparse execution on Kosarak ($76.03$~MB vs.\ $40.9$~GB dense \texttt{mlxtend}) \& BMS-POS ($814.8$~MB skip); pipeline \texttt{fit}/\texttt{transform}/\texttt{predict} tested in Tier~4 & Proxy laboratory validation only; longitudinal enterprise deployment outside capstone scope \\
-\hline
 \textbf{Primary SDG Target (SDG~9.5 / 9.b)} & Advance open scientific infrastructure with zero-cost reproducible software & Released open MIT code (\texttt{CITATION.cff}, 25 dataset provenance records, reproducible Python scripts) slashing memory footprint $>95\%$ & Academic/research reproducibility proved; broader community PyPI adoption next \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \section{Demonstrated Beneficiary Value vs. Pilot Boundary}
@@ -36,11 +35,8 @@ For ML engineers and data analysts, \texttt{skarm} eliminates three concrete wor
 \section{Safety, Ethics, Privacy and Open-Source Licensing}
 All 25 corpora are public benchmarks or deterministically generated synthetic sets containing zero personal identifiable information (PII), healthcare records, or biometric attributes. Unstated mirror licences are labeled explicitly as \texttt{unknown} in \texttt{DATASET\_\protect\allowbreak{}INVENTORY.md}. Software safety risks (silent rule truncation or host RAM exhaustion) are mitigated directly by \texttt{PruningPolicy}, \texttt{DegradedModeWarning}, and strict binary domain input validation (\texttt{Boundary\protect\allowbreak{}Condition\protect\allowbreak{}Error}). \skarm is distributed permissively under the \textbf{MIT License}.
 
-\section{Techno-Economic Feasibility and Sustainability}
-\skarm requires zero proprietary licences, zero GPU hardware, and zero cloud subscriptions; the entire 25-corpus evaluation, CI suite, and release package execute on commodity workstation hardware. Energy and hardware lifecycle efficiency directly benefit from CSR bitset compression: on \texttt{accidents@0.60}, peak RSS drops from \texttt{1,860.6 MB} (Apriori) to \texttt{90.38 MB} (FP-Growth), reducing multi-gigabyte heap pressure and enabling laptop-scale analytics without cluster provisioning.
-
-\section{Translation Pathway to Full Production Deployment}
-Translating \skarm from research-grade capstone release (\texttt{v0.1.0}) to high-throughput production service requires: (1)~compiling critical Eclat bitset/FP-tree recursion loops in Cython or Rust (\texttt{PyO3}) to close the interpreter speed gap vs.\ Java SPMF on $500\text{k}+$ sparse transaction logs; (2)~publishing wheels (\texttt{pyproject.toml}) to PyPI with Linux/macOS/Windows binary builds; and (3)~enforcing OS-level cgroup memory limits alongside \texttt{PruningPolicy} inside container orchestrators.\par
+\section{Feasibility, Sustainability and Production Translation Pathway}
+\skarm requires zero proprietary licences, zero GPU hardware, and zero cloud subscriptions; the entire 25-corpus evaluation, CI suite, and release package execute on commodity workstation hardware. Energy and hardware lifecycle efficiency directly benefit from CSR bitset compression: on \texttt{accidents@0.60}, peak RSS drops from \texttt{1,860.6 MB} (Apriori) to \texttt{90.38 MB} (FP-Growth), reducing multi-gigabyte heap pressure and enabling laptop-scale analytics without cluster provisioning. Translating \skarm from research-grade capstone release (\texttt{v0.1.0}) to high-throughput production service requires: (1)~compiling critical Eclat bitset/FP-tree recursion loops in Cython or Rust (\texttt{PyO3}) to close the interpreter speed gap vs.\ Java SPMF on $500\text{k}+$ sparse transaction logs; (2)~publishing wheels (\texttt{pyproject.toml}) to PyPI with Linux/macOS/Windows binary builds; and (3)~enforcing OS-level cgroup memory limits alongside \texttt{PruningPolicy} inside container orchestrators.\par
 \endgroup
 
 % =====================================================================
@@ -48,6 +44,10 @@ Translating \skarm from research-grade capstone release (\texttt{v0.1.0}) to hig
 % =====================================================================
 \chapter{Project Execution, Review-Gate Closure and Team Contributions}
 
+\begingroup
+\linespread{1.03}\selectfont
+\setlength{\parskip}{0.8pt}
+\titlespacing*{\section}{0pt}{3pt}{0.5pt}
 \section{Two-Semester Lifecycle Synthesis}
 Execution spanned Semester~VII (\texttt{CP1}: Problem validation, SRS freeze, \texttt{O1}--\texttt{O2} Apriori baseline, and 25-corpus collection) and Semester~VIII (\texttt{CP2}: \texttt{O3} FP-Growth + bitset Eclat engineering, \texttt{O4} estimator/CLI/telemetry integration, \texttt{O5} 25-dataset campaign, zero-exemption 30-trial scaling, bounded ablation, Java SPMF comparisons, and final defence documentation).
 
@@ -61,28 +61,28 @@ Table~\ref{tab:ch9_gates} synthesizes formal gate progression aligned with Clust
 \fontsize{8.2}{10.2}\selectfont
 \renewcommand{\arraystretch}{0.85}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.11\textwidth}|p{0.13\textwidth}|p{0.34\textwidth}|p{0.26\textwidth}|p{0.08\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.11\textwidth}L{0.13\textwidth}L{0.34\textwidth}L{0.26\textwidth}L{0.08\textwidth}@{}}
+\toprule
 \textbf{Gate} & \textbf{Schedule} & \textbf{Key Decision / Closure Condition} & \textbf{Closure Evidence} & \textbf{Status} \\
-\hline
+\midrule
 \textbf{G0} & CP1 Wk~2 & Approved mandate (\texttt{KLCAP-2026-00340}), scope boundary (\#32712 external library) & \texttt{D1\_\protect\allowbreak{}PROBLEM\_\protect\allowbreak{}CHARTER}, \texttt{CITATION.cff} & Closed \\
-\hline
+\addlinespace[1.2pt]
 \textbf{R1} & CP1 Wk~6 & Frozen SRS (\texttt{REQ-F-01..07}, \texttt{NFR-01..06}), baseline selection, 25 datasets & \texttt{DATASET\_\protect\allowbreak{}INVENTORY.md}, \texttt{D1} & Closed \\
-\hline
+\addlinespace[1.2pt]
 \textbf{PDR} & CP1 Wk~15 & Approved 5-layer architecture, ADRs~01--04, verified Apriori \texttt{O2} oracle ($2.22\times 10^{-16}$) & \texttt{skarm/\protect\allowbreak{}apriori.py}, \texttt{D2} & Closed \\
-\hline
+\addlinespace[1.2pt]
 \textbf{CDR} & CP2 Wk~3 & Frozen \texttt{O3}--\texttt{O5} design, $O(1)$ tail links, strict 30-trial protocol, \texttt{NT-1..6} plan & \texttt{D3}, \texttt{D4}, \texttt{fpgrowth.py}, \texttt{eclat.py} & Closed \\
-\hline
+\addlinespace[1.2pt]
 \textbf{Final Defence} & CP2 Wk~15 & 264/264 tests, 25-dataset parity ($157/157$), \texttt{HEAD} ablation \& SPMF baselines, Final Report & \texttt{D5}--\texttt{D7}, \texttt{paper-ieee.pdf}, \texttt{43de794} & Closed \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \section{Material Risks, Deviations and Change Management}
 Four technical risks materialized and were resolved transparently (Template~G/G1 in Appendix~F): (1)~quadratic slowdowns in initial single-pointer FP-tree inserts on BMS-POS were resolved via dual \texttt{head/\protect\allowbreak{}tail} links (\texttt{O(1)} append); (2)~Python runtime overhead on small synthetic matrices under removed microbenchmark exemptions was solved cleanly via FP-Array GEMM + triangle gating + \texttt{np.packbits} bitset Eclat while keeping \texttt{apriori.py} untouched; (3)~upstream \texttt{scikit-learn} \texttt{check\_\protect\allowbreak{}estimator} rejections of continuous Gaussian matrices were audited into \texttt{SKLEARN\_\protect\allowbreak{}COMPATIBILITY\_\protect\allowbreak{}REPORT.md} rather than masked by silent binarization; and (4)~600~s Apriori timeouts on dense probes (\texttt{accidents@0.50}, \texttt{kosarak@0.005}) were logged explicitly in Table~\ref{tab:ch9_gates}/Appendix~I.
 
 \section{Configuration, Reproducibility and Team Verification}
-Repository provenance strictly isolates host/commit measurements: commit \texttt{ea5bff5d} preserves the 25-dataset Windows campaign (\texttt{1,650} records), while \texttt{HEAD} commits (\texttt{ad2b9a8} / \texttt{43de794}) verify all 264 tests, strict 30-trial scaling, ablation, and Java SPMF baselines. Individual contributions are verified in Appendix~G (Template~M), and ethical/AI tool disclosures appear in Appendix~H (Template~O).
+Repository provenance strictly isolates host/commit measurements: commit \texttt{ea5bff5d} preserves the 25-dataset Windows campaign (\texttt{1,650} records), while \texttt{HEAD} commits (\texttt{ad2b9a8} / \texttt{43de794}) verify all 264 tests, strict 30-trial scaling, ablation, and Java SPMF baselines. Individual contributions are verified in Appendix~G (Template~M), and ethical/AI tool disclosures appear in Appendix~H (Template~O).\par
+\endgroup
 
 % =====================================================================
 % CHAPTER 10

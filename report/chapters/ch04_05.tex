@@ -95,23 +95,22 @@ Table~\ref{tab:ch4_adrs} summarizes six material architectural decisions (expand
 \label{tab:ch4_adrs}
 \fontsize{9}{11.8}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.11\textwidth}|p{0.25\textwidth}|p{0.34\textwidth}|p{0.22\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.11\textwidth}L{0.25\textwidth}L{0.34\textwidth}L{0.22\textwidth}@{}}
+\toprule
 \textbf{ADR ID} & \textbf{Decision Topic} & \textbf{Selected Option \& Rationale} & \textbf{Evidence Link} \\
-\hline
+\midrule
 \textbf{ADR-01} & Repository positioning & Standalone \texttt{scikit-learn}-compatible library per \#32712 closure & \texttt{estimator.py} \\
-\hline
+\addlinespace[1.2pt]
 \textbf{ADR-02} & Canonical matrix format & SciPy boolean CSR sparse representation shared across all 3 engines & \texttt{pre\protect\allowbreak{}processing.py} \\
-\hline
+\addlinespace[1.2pt]
 \textbf{ADR-03} & Combinatorial safety & Multi-axis \texttt{PruningPolicy} with explicit \texttt{EXACT}/\texttt{DEGRADED} state & \texttt{pruning.py} \\
-\hline
+\addlinespace[1.2pt]
 \textbf{ADR-04} & Unsupervised contract & Reject non-binary floats (\texttt{Boundary\protect\allowbreak{}Condition\protect\allowbreak{}Error}) rather than silent binarization & \texttt{test\_\protect\allowbreak{}check\_\protect\allowbreak{}estimator} \\
-\hline
+\addlinespace[1.2pt]
 \textbf{ADR-05} & Deep-tree \& small-scale speedup & Dual \texttt{head/\protect\allowbreak{}tail} links + FP-Array GEMM + \texttt{np.packbits} bitset Eclat & \texttt{fpgrowth.py}, \texttt{eclat.py} \\
-\hline
+\addlinespace[1.2pt]
 \textbf{ADR-06} & Zero-exemption KPI gate & Remove microbenchmark exemptions; enforce strict 30-trial p95 $\le 0.80\times$ & \texttt{run\_\protect\allowbreak{}acceptance.py} \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 % =====================================================================
@@ -128,44 +127,56 @@ The implemented codebase resides in \url{https://github.com/ABHISHEK1139/capston
 \label{tab:ch5_modules}
 \fontsize{9}{11.5}\selectfont
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|p{0.28\textwidth}|r|p{0.10\textwidth}|p{0.48\textwidth}|}
-\hline
+\begin{tabular}{@{}L{0.28\textwidth}rL{0.10\textwidth}L{0.48\textwidth}@{}}
+\toprule
 \textbf{Module Path} & \textbf{LOC} & \textbf{Obj.} & \textbf{Implemented Subsystem Responsibility} \\
-\hline
+\midrule
 \texttt{skarm/\_\protect\allowbreak{}\_\protect\allowbreak{}init\_\protect\allowbreak{}\_\protect\allowbreak{}.py} & 56 & O4 & Package exports and version metadata (\texttt{0.1.0}) \\
-\hline
+\addlinespace[1.2pt]
 \texttt{skarm/\protect\allowbreak{}datasets.py} & 160 & O1, O5 & Unified parsers for FIMI \texttt{.dat}, SPMF \texttt{.txt}, Groceries CSV, header filtering \\
-\hline
+\addlinespace[1.2pt]
 \texttt{skarm/\protect\allowbreak{}pre\protect\allowbreak{}processing.py} & 227 & O1, O4 & \texttt{TransactionEncoder} (sorted-index CSR / dense ndarray, duplicate idempotency) \\
-\hline
+\addlinespace[1.2pt]
 \texttt{skarm/\protect\allowbreak{}apriori.py} & 320 & O2 & Untouched level-wise Apriori reference baseline with prefix-$(k-2)$ join \\
-\hline
+\addlinespace[1.2pt]
 \texttt{skarm/\protect\allowbreak{}fpgrowth.py} & 681 & O3 & FP-Array float32 GEMM, triangle gate, bit-packed dedup, $O(1)$ tail-linked tree \\
-\hline
+\addlinespace[1.2pt]
 \texttt{skarm/\protect\allowbreak{}eclat.py} & 437 & O3 & C-level \texttt{np.packbits} bitset TID masks (\texttt{int.bit\_\protect\allowbreak{}count()}) + weighted TID fallback \\
-\hline
+\addlinespace[1.2pt]
 \texttt{skarm/\protect\allowbreak{}pruning.py} & 354 & O3, O4 & \texttt{PruningPolicy}, 10~ms \texttt{MemorySampler}, exception \& warning classes \\
-\hline
+\addlinespace[1.2pt]
 \texttt{skarm/\protect\allowbreak{}rules.py} & 232 & O2, O4 & Deterministic association rule generation \& 6 machine-precision metrics \\
-\hline
+\addlinespace[1.2pt]
 \texttt{skarm/\protect\allowbreak{}metrics.py} & 121 & O4 & \texttt{GridSearchCV}-compatible unsupervised scorers (\texttt{mean\_\protect\allowbreak{}confidence\_\protect\allowbreak{}scorer}, etc.) \\
-\hline
+\addlinespace[1.2pt]
 \texttt{skarm/\protect\allowbreak{}estimator.py} & 529 & O4 & \texttt{Association\protect\allowbreak{}Rules\protect\allowbreak{}Estimator} (\texttt{fit}, \texttt{transform}, \texttt{predict}, auto-dispatch) \\
-\hline
+\addlinespace[1.2pt]
 \texttt{skarm/\protect\allowbreak{}explorer.py} & 113 & O4 & Interactive \texttt{RuleExplorer} summary formatting and rule filtering \\
-\hline
+\addlinespace[1.2pt]
 \texttt{skarm/\protect\allowbreak{}telemetry.py} & 85 & O4, O5 & \texttt{TelemetryLogger} and \texttt{RecoveryCoordinator} audit recording \\
-\hline
+\addlinespace[1.2pt]
 \texttt{skarm/\protect\allowbreak{}cli.py} & 120 & O4 & Command-line runner supporting \texttt{--demo}, \texttt{--dataset}, and \texttt{--algorithm} \\
-\hline
-\end{tabular}}
+\bottomrule\end{tabular}}
 \end{table}
 
 \section{Data Preprocessing and Sparse Pipeline Controls}
 \texttt{TransactionEncoder} implements \texttt{BaseEstimator} and \texttt{TransformerMixin}, accepting ragged Python lists, sets, or pandas Series/DataFrames. Internally, missing/null items are skipped cleanly (\texttt{\_\protect\allowbreak{}is\_\protect\allowbreak{}missing\_\protect\allowbreak{}token}), unique items are sorted deterministically to freeze \texttt{columns\_\protect\allowbreak{}}, and CSR matrices (\texttt{indptr}, \texttt{indices}, \texttt{data}) are constructed directly with \texttt{bool} dtype without materializing dense $\mathcal{O}(N \times M)$ intermediates. Calling \texttt{fit} or \texttt{fit\_\protect\allowbreak{}transform} guarantees zero duplicate inflation within any transaction (\texttt{['A','A','B']} contributes unit weight once per row).
 
 \section{Core Mining Engines and Metric Derivation}
-To ensure numerical consistency without screenshots of code, Listing~\ref{lst:metrics} reproduces the exact verified IEEE-754 metric kernels from \texttt{skarm/\protect\allowbreak{}rules.py} (lines~17--42) used to compute conviction and Zhang's association metric with zero-denominator stability, and Listing~\ref{lst:sampler} shows the on-demand 10~ms RSS watchdog from \texttt{skarm/\protect\allowbreak{}pruning.py} (lines~48--84).
+For every candidate association rule $A \Rightarrow C$ ($A, C \neq \emptyset, \; A \cap C = \emptyset$) derived from frequent itemsets, \texttt{skarm/\protect\allowbreak{}rules.py} evaluates six deterministic IEEE-754 quality metrics defined formally as:
+\begin{equation}
+\mathrm{conf}(A \Rightarrow C) = \frac{\mathrm{supp}(A \cup C)}{\mathrm{supp}(A)}, \quad
+\mathrm{lift}(A \Rightarrow C) = \frac{\mathrm{conf}(A \Rightarrow C)}{\mathrm{supp}(C)},
+\end{equation}
+\begin{equation}
+\mathrm{lev}(A \Rightarrow C) = s_{AC} - s_A s_C, \qquad
+\mathrm{conv}(A \Rightarrow C) = \frac{1 - s_C}{1 - \mathrm{conf}(A \Rightarrow C)},
+\end{equation}
+Let $s_{AC}=\mathrm{supp}(A \cup C)$, $s_A=\mathrm{supp}(A)$, and $s_C=\mathrm{supp}(C)$:
+\begin{equation}
+\mathrm{Zhang}(A \Rightarrow C) = \frac{s_{AC} - s_A s_C}{\max\!\big[s_{AC}(1 - s_A),\; s_A(s_C - s_{AC})\big]} \in [-1, +1].
+\end{equation}
+Listing~\ref{lst:metrics} reproduces the verified edge-case kernels (\texttt{skarm/\protect\allowbreak{}rules.py}, lines~17--42) ensuring zero-denominator stability, while Listing~\ref{lst:sampler} shows the 10~ms RSS watchdog (\texttt{skarm/\protect\allowbreak{}pruning.py}, lines~48--84).
 
 \begin{lstlisting}[caption={Verified Conviction and Zhang's Metric Edge-Case Implementations (\texttt{skarm/rules.py}, lines 17--41).},label={lst:metrics}]
 def compute_conviction(supp_c: float, confidence: float) -> float:
