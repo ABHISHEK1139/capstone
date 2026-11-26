@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Automated LaTeX compilation and verification script for the SKARM manuscript.
 
-Compiles paper/paper.tex using MiKTeX pdflatex twice, verifying:
+Compiles paper/paper-ieee.tex using MiKTeX pdflatex twice, verifying:
 - 0 fatal LaTeX errors
 - 0 undefined citations
 - 0 multiply-defined labels
 - Detection and audit of any overfull \\hbox occurrences
-- Successful generation of paper/paper.pdf
+- Successful generation of paper/paper-ieee.pdf
 """
 
 import os
@@ -156,13 +156,8 @@ def compile_file(tex_file: Path, repo_root: Path, passes: int = 2) -> bool:
 def main():
     repo_root = Path(__file__).resolve().parent.parent
     paper_dir = repo_root / "paper"
-    # Primary canonical manuscript
-    ok1 = compile_file(paper_dir / "paper.tex", repo_root, passes=2)
-    # IEEE transaction manuscript
-    ok2 = True
-    if (paper_dir / "paper-ieee.tex").is_file():
-        ok2 = compile_file(paper_dir / "paper-ieee.tex", repo_root, passes=2)
-    sys.exit(0 if (ok1 and ok2) else 1)
+    ok = compile_file(paper_dir / "paper-ieee.tex", repo_root, passes=2)
+    sys.exit(0 if ok else 1)
 
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ const PORT = Number(process.env.PORT) || 3000;
 const HOST = "0.0.0.0";
 const PUBLIC_DIR = path.resolve(__dirname, "public");
 const PAPER_FIGURES_DIR = path.resolve(__dirname, "paper", "figures");
-const PAPER_PDF_PATH = path.resolve(__dirname, "paper", "paper-ieee-graphical.pdf");
+const PAPER_PDF_PATH = path.resolve(__dirname, "paper", "paper-ieee.pdf");
 const BRIDGE_SCRIPT = path.resolve(__dirname, "scripts", "web_bridge.py");
 const ACCEPTANCE_SCRIPT = path.resolve(__dirname, "tests", "run_acceptance.py");
 const BENCHMARK_JSON = path.resolve(__dirname, "benchmarks", "benchmark_results.json");
@@ -316,7 +316,7 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    if ((req.method === "GET" || req.method === "HEAD") && pathname === "/paper/paper-ieee-graphical.pdf") {
+    if ((req.method === "GET" || req.method === "HEAD") && (pathname === "/paper/paper-ieee.pdf" || pathname === "/paper/paper-ieee-graphical.pdf")) {
       await serveFileConfined(path.dirname(PAPER_PDF_PATH), `/${path.basename(PAPER_PDF_PATH)}`, res, "skarm-ieee-research-paper.pdf");
       return;
     }

@@ -15,8 +15,8 @@ SKARM is a scikit-learn-style association rule mining framework providing unifie
   - 25 verified benchmark datasets across sparse, dense, long, and short transaction databases.
   - Automated campaign runner, 3-stage timing protocol ($t_{\text{encode}}, t_{\text{mine}}, t_{\text{rules}}$), and bounded ablation sweep harness.
 - **Manuscript Layer (`paper/`)**:
-  - IEEE TKDE / ACM TKDD camera-ready two-column LaTeX manuscript (`paper.tex`).
-  - HTML preview builder (`build_preview.py`) and academic publication figures (`paper/figures/`).
+  - IEEEtran camera-ready two-column LaTeX manuscript (`paper-ieee.tex` / `paper-ieee.pdf`).
+  - Academic publication figures (`paper/figures/`).
 
 ## Feature Inventory
 | # | Feature / Research Gap | Description | Milestone | Source |
@@ -95,10 +95,8 @@ SKARM is a scikit-learn-style association rule mining framework providing unifie
   - `pipeline_benchmark.py`: Pipeline, ColumnTransformer, and GridSearchCV integration benchmarks.
   - `cells/`: 25 per-dataset checkpoint JSON files.
 - `paper/`: Manuscript & Publication
-  - `paper.tex`: LaTeX source file for IEEE TKDE / ACM TKDD camera-ready submission.
-  - `build_preview.py`: HTML preview generator.
+  - `paper-ieee.tex`: LaTeX source file for IEEEtran camera-ready submission (`paper-ieee.pdf`).
   - `figures/`: Publication-grade PNG figures.
-  - `paper-preview.html`: Rendered HTML manuscript preview.
 - `tests/`: Test suite
   - `test_estimator.py`, `test_apriori.py`, `test_fpgrowth.py`, `test_eclat.py`, `test_rules.py`, `test_negative_cases.py`, `run_acceptance.py`.
   - `e2e/`: Independent E2E test suite (Tiers 1-4).

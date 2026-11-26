@@ -65,12 +65,13 @@ capstone/
 │   ├── run_baselines.py             # SPMF & mlxtend baseline comparison runner
 │   ├── run_bounded_ablation.py      # Candidate & memory governor ablation
 │   └── benchmark_results.json       # Versioned benchmark execution results
-├── paper/                           # Research manuscripts, slides & figures
-│   ├── paper-ieee.tex / .pdf        # IEEEtran manuscript
-│   ├── paper-ieee-graphical.pdf     # Graphical abstract edition
-│   ├── paper.tex / .pdf             # Full-length research manuscript
+├── paper/                           # Canonical IEEE research paper, slides & figures
+│   ├── paper-ieee.tex / .pdf        # IEEEtran LaTeX manuscript & compiled PDF
 │   ├── presentation_slides.md       # Viva defense slides
 │   └── figures/                     # Architecture, engine & ablation plots
+├── report/                          # KL University Cluster A 48-page Final Report
+│   ├── KL_Capstone_Final_Report_KLCAP-2026-00340.tex / .pdf
+│   └── chapters/                    # Modular LaTeX chapters & Appendices A-I
 ├── public/                          # Interactive Web Explorer frontend
 ├── server.mjs                       # Node.js server & Python web bridge
 ├── scripts/                         # Build, LaTeX compile & verification scripts

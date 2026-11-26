@@ -4,9 +4,9 @@
 **Project**: `skarm` — Scalable Association-Rule Mining Estimator with Apriori Baseline  
 **Repository**: `ABHISHEK1139/capstone` (main branch)  
 **Authors**: Abhishek Kumar (Lead Implementer), Gontla Venkata Anvitha, Kamma Giridhar, Paladagula Venkata Rajeev  
-**Supervisor / Guide**: Dr. Dudigam Ramya  
+**Supervisor / Guide**: Dr. Dudigam Ramya, Assistant Professor  
 **Institution**: Koneru Lakshmaiah Education Foundation (KL University), Department of Computer Science & Engineering  
-**Scope & Mandate**: Complete independent verification, comparative benchmarking, scikit-learn compatibility certification, and dual-manuscript readiness for research publication and capstone degree defense.
+**Scope & Mandate**: Complete independent verification, comparative benchmarking, scikit-learn compatibility certification, and camera-ready readiness for IEEE research publication (`paper/paper-ieee.tex`) and capstone degree defense (`report/KL_Capstone_Final_Report_KLCAP-2026-00340.tex`).
 
 ---
 
@@ -23,7 +23,7 @@ Technical verification complete; publication decisions pending (target venue sel
 | **Modern Baseline Campaign (Chess, Adult, BMS-POS)** | **COMPLETE** | 27 cells across SKARM (Apriori, FP-Growth, Eclat), mlxtend (v0.25.0), and SPMF Java 21 (FIN, PrePost+, LCMFreq, FP-Growth); 25 completed runs show $\Delta_{\mathrm{supp}} = 0.0$; 2 BMS-POS mlxtend runs skipped due to 814.8 MB dense-matrix limit; `benchmarks/baseline_results.json` |
 | **Scikit-Learn Compatibility Audit** | **CERTIFIED** | 14 passed core checks, 39 expected domain-specific boundary incompatibilities (37 unique expectation keys, 2 dual-executed checks), 1 environment-skipped check, 0 unexpected failures under `check_estimator`. Distinct from institutional KPI-6 (7/7, 100% API compliance) |
 | **Pruning & Memory Governor Ablation** | **COMPLETE** | Bounded degradation verified under severe candidate explosion; up to 17.20x speedups under auditable truncation (Chess, 0.3485s vs 5.9941s exact baseline); `benchmarks/ablation_results.json` |
-| **LaTeX Research Manuscripts** | **COMPILED** | Camera-ready manuscripts (`paper/paper.pdf`, `paper/paper-ieee.pdf`, and `paper/paper-ieee-graphical.pdf`) compiled via pdfTeX with 0 fatal errors, 0 undefined citations, and 0 overfull hboxes |
+| **LaTeX Research Manuscript & Report** | **COMPILED** | Canonical IEEEtran manuscript (`paper/paper-ieee.pdf`, 17 pages) and KL University Cluster A final report (`report/KL_Capstone_Final_Report_KLCAP-2026-00340.pdf`, 48 pages) compiled via pdfTeX with 0 fatal errors, 0 undefined citations, and 0 overfull hboxes |
 | **Institutional Deliverables** | **SUBMITTED** | Complete deliverables D1 through D7 submitted in `docs/` |
 
 ---
@@ -133,9 +133,9 @@ python scripts/verify_challenger_m5_baselines.py
 python benchmarks/run_baselines.py --datasets chess,adult_census,bms_pos --trials 3
 # Expected: 25 completed runs report EXACT MATCH (Delta_supp=0.0); 2 BMS-POS mlxtend runs skipped safely
 
-# 9. Recompile LaTeX manuscripts to PDF
+# 9. Recompile IEEE LaTeX manuscript to PDF
 python scripts/compile_paper.py
-# Expected: 0 fatal errors, 0 undefined citations, 0 overfull hboxes for both paper.pdf and paper-ieee.pdf
+# Expected: 0 fatal errors, 0 undefined citations, 0 overfull hboxes for paper-ieee.pdf
 ```
 
 ---
@@ -147,4 +147,4 @@ The following items are reserved for author team and faculty supervisor decision
    - Primary options: IEEE Transactions on Knowledge and Data Engineering (TKDE), ACM Transactions on Knowledge Discovery from Data (TKDD), Journal of Open Source Software (JOSS), SoftwareX, or PeerJ Computer Science.
    - If a venue with a strict 12-page limit is selected (e.g., standard IEEE conference), Appendix B (cell-level timing table) can be moved to an online supplementary repository or condensed.
 2. **Author and Supervisor Sign-Off**:
-   - Formal review and sign-off by Faculty Guide Dr. Dudigam Ramya and the student author team (Abhishek Kumar, Gontla Venkata Anvitha, Kamma Giridhar, Paladagula Venkata Rajeev).
+   - Formal review and sign-off by Faculty Guide Dr. Dudigam Ramya (Assistant Professor) and the student author team (Abhishek Kumar, Gontla Venkata Anvitha, Kamma Giridhar, Paladagula Venkata Rajeev).
