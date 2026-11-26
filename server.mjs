@@ -117,7 +117,7 @@ function runPythonBridge(payload) {
       [BRIDGE_SCRIPT],
       {
         cwd: __dirname,
-        timeout: 20000,
+        timeout: 30000,
         maxBuffer: 4 * 1024 * 1024,
         env: { ...process.env, PYTHONUNBUFFERED: "1" },
       },
@@ -428,8 +428,8 @@ const server = http.createServer(async (req, res) => {
   } catch (err) {
     const status = err && typeof err.statusCode === "number" ? err.statusCode : 500;
     const message =
-      status < 500 && err && err.message
-        ? err.message
+      (status < 500 || status === 504) && err && err.message
+        ? (status === 504 ? "Execution exceeded the 30s interactive web limit — raise min_support or lower max_candidates." : err.message)
         : "Internal server error while processing request.";
     sendJson(res, status, { error: message });
   }

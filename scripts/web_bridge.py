@@ -11,14 +11,29 @@ if REPO_ROOT not in sys.path:
 
 import numpy as np
 
-from skarm.datasets import (
-    dataset_summary,
-    load_fimi_dat,
-    load_groceries,
-    load_market_basket,
-    load_mushroom,
-)
+from skarm.datasets import dataset_summary, load_transactions
 from skarm.estimator import AssociationRulesEstimator
+
+DATASET_CATALOG = {
+    "groceries": ("Groceries Market Basket (9,835 txns)", "data/groceries.csv"),
+    "market_basket": ("Market Basket Optimisation (7,501 txns)", "data/market_basket.csv"),
+    "retail": ("Belgian Retail Store (88,162 txns)", "data/retail.dat"),
+    "online_retail": ("Online Retail UK (20,728 txns)", "data/online_retail.dat"),
+    "online_retail_ii": ("Online Retail II (22,103 txns)", "data/online_retail_ii.dat"),
+    "bms_webview_1": ("BMS-WebView-1 Clickstream (59,009 txns)", "data/Transactional_BMS-WebView-1.csv"),
+    "bms_webview_2": ("BMS-WebView-2 Clickstream (77,512 txns)", "data/BMS-WebView-2.dat"),
+    "t10i4d100k": ("IBM Quest T10I4D100K (100,000 txns)", "data/T10I4D100K.dat"),
+    "tic_tac_toe": ("UCI Tic-Tac-Toe Endgame (958 txns)", "data/tic_tac_toe.dat"),
+    "car_evaluation": ("UCI Car Evaluation (1,728 txns)", "data/car_evaluation.dat"),
+    "balance_scale": ("UCI Balance Scale (625 txns)", "data/balance_scale.dat"),
+    "mushroom": ("UCI Mushroom (8,124 txns · Dense)", "data/mushroom.dat"),
+    "chess": ("UCI Chess King-Rook (3,196 txns · Dense)", "data/chess.dat"),
+    "adult_census": ("UCI Adult Census (32,561 txns)", "data/adult_census.dat"),
+    "docword_nips": ("UCI Docword NIPS (1,500 docs · Dense Text)", "data/docword_nips.dat"),
+    "pumsb_star": ("Pumsb-Star Census (49,046 txns)", "data/pumsb_star.dat"),
+    "synthetic_sparse_2000": ("Synthetic Sparse Control (2,000 txns)", "data/synthetic_sparse_2000.dat"),
+    "synthetic_dense_5000": ("Synthetic Dense Control (5,000 txns)", "data/synthetic_dense_5000.dat"),
+}
 
 DEMO_TRANSACTIONS = [
     ["milk", "bread", "butter"],
@@ -47,25 +62,13 @@ def _safe_float(val):
 
 def _load_dataset(name, custom_txns):
     if name == "demo":
-        return "Synthetic Market Basket Demo", DEMO_TRANSACTIONS
-    if name == "groceries":
-        return "Groceries Market Basket (9,835 txns)", load_groceries(
-            os.path.join(REPO_ROOT, "data", "groceries.csv")
-        )
-    if name == "market_basket":
-        return "Market Basket Optimisation (7,501 txns)", load_market_basket(
-            os.path.join(REPO_ROOT, "data", "market_basket.csv")
-        )
-    if name == "tic_tac_toe":
-        return "UCI Tic-Tac-Toe Endgame (958 txns)", load_fimi_dat(
-            os.path.join(REPO_ROOT, "data", "tic_tac_toe.dat")
-        )
-    if name == "mushroom":
-        return "UCI Mushroom (8,124 txns)", load_mushroom(
-            os.path.join(REPO_ROOT, "data", "mushroom.dat")
-        )
+        return "Classroom Toy Matrix (10 txns)", DEMO_TRANSACTIONS
     if name == "custom":
         return "Custom User Transactions", custom_txns
+    entry = DATASET_CATALOG.get(name)
+    if entry is not None:
+        label, rel_path = entry
+        return label, load_transactions(os.path.join(REPO_ROOT, rel_path))
     raise ValueError(f"Unsupported dataset: {name}")
 
 
@@ -203,7 +206,7 @@ def main():
     if basket and total_rules > 0:
         basket_set = {str(x).strip().lower() for x in basket if str(x).strip()}
         matched = []
-        for _, row in rules_df.iterrows():
+        for _, row in rules_df.head(min(total_rules, 2500)).iterrows():
             ant_raw = row["antecedent_names"] if "antecedent_names" in row else row["antecedent"]
             con_raw = row["consequent_names"] if "consequent_names" in row else row["consequent"]
             ant_list = sorted(str(x) for x in ant_raw)
@@ -257,17 +260,30 @@ def main():
     if total_rules > 0 and probe_basket:
         try:
             t_vec = est.transform([probe_basket])[0]
-            f_names = list(est.get_feature_names_out())
             fired_idx = [idx for idx, flag in enumerate(t_vec) if bool(flag)]
+            if total_rules <= 2500:
+                f_names = list(est.get_feature_names_out())
+                fired_rules = [str(f_names[idx]) for idx in fired_idx[:8]]
+                total_feats = len(f_names)
+            else:
+                total_feats = total_rules
+                fired_rules = []
+                for idx in fired_idx[:8]:
+                    r_row = est.rules_.iloc[idx]
+                    ants = sorted(str(feature_names[i]) if i < len(feature_names) else str(i) for i in r_row["antecedent"])
+                    cons = sorted(str(feature_names[i]) if i < len(feature_names) else str(i) for i in r_row["consequent"])
+                    fired_rules.append(f"{{{', '.join(ants)}}} -> {{{', '.join(cons)}}}")
             pipeline_transform = {
                 "query_items": probe_basket,
                 "fired_count": len(fired_idx),
-                "total_features": len(f_names),
-                "active_rate_pct": round((len(fired_idx) / max(1, len(f_names))) * 100.0, 1),
+                "total_features": total_feats,
+                "active_rate_pct": round((len(fired_idx) / max(1, total_feats)) * 100.0, 1),
                 "vector_preview": [int(bool(b)) for b in t_vec[:24]],
-                "fired_rules": [str(f_names[idx]) for idx in fired_idx[:8]],
+                "fired_rules": fired_rules,
             }
-            estimator_score = _safe_float(est.score(transactions))
+            estimator_score = _safe_float(
+                est.score(transactions) if (total_rules * n_rows <= 250000) else est.score()
+            )
         except Exception:
             pipeline_transform = None
 

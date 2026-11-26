@@ -1,10 +1,32 @@
 const DATASET_DEFAULTS = {
   groceries: { min_support: "0.02", min_threshold: "0.25", metric: "confidence", basket: "yogurt, rolls/buns", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "auto" },
-  demo: { min_support: "0.2", min_threshold: "0.5", metric: "confidence", basket: "milk, bread", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "auto" },
   market_basket: { min_support: "0.015", min_threshold: "0.25", metric: "confidence", basket: "mineral water", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "auto" },
-  tic_tac_toe: { min_support: "0.25", min_threshold: "0.7", metric: "confidence", basket: "", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "eclat" },
+  retail: { min_support: "0.03", min_threshold: "0.40", metric: "confidence", basket: "", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "auto" },
+  online_retail: { min_support: "0.02", min_threshold: "0.50", metric: "confidence", basket: "", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "auto" },
+  online_retail_ii: { min_support: "0.02", min_threshold: "0.50", metric: "confidence", basket: "", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "auto" },
+  demo: { min_support: "0.2", min_threshold: "0.5", metric: "confidence", basket: "milk, bread", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "auto" },
+  bms_webview_1: { min_support: "0.01", min_threshold: "0.25", metric: "confidence", basket: "", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "auto" },
+  bms_webview_2: { min_support: "0.01", min_threshold: "0.25", metric: "confidence", basket: "", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "auto" },
+  t10i4d100k: { min_support: "0.01", min_threshold: "0.25", metric: "confidence", basket: "", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "eclat" },
+  synthetic_sparse_2000: { min_support: "0.05", min_threshold: "0.40", metric: "confidence", basket: "", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "auto" },
+  synthetic_dense_5000: { min_support: "0.50", min_threshold: "0.50", metric: "confidence", basket: "", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "auto" },
   mushroom: { min_support: "0.55", min_threshold: "0.85", metric: "confidence", basket: "", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "fpgrowth" },
+  chess: { min_support: "0.85", min_threshold: "0.85", metric: "confidence", basket: "", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "fpgrowth" },
+  adult_census: { min_support: "0.20", min_threshold: "0.60", metric: "confidence", basket: "", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "auto" },
+  tic_tac_toe: { min_support: "0.25", min_threshold: "0.70", metric: "confidence", basket: "", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "eclat" },
+  car_evaluation: { min_support: "0.20", min_threshold: "0.60", metric: "confidence", basket: "", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "auto" },
+  balance_scale: { min_support: "0.15", min_threshold: "0.35", metric: "confidence", basket: "", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "auto" },
+  docword_nips: { min_support: "0.65", min_threshold: "0.70", metric: "confidence", basket: "", max_candidates: "5000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "auto" },
+  pumsb_star: { min_support: "0.55", min_threshold: "0.80", metric: "confidence", basket: "", max_candidates: "2000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "auto" },
   custom: { min_support: "0.3", min_threshold: "0.5", metric: "confidence", basket: "milk", max_candidates: "100000", max_len: "", vip_item: "", vip_multiplier: "1", algorithm: "auto" },
+};
+
+const DATASET_FILE_MAP = {
+  groceries: "groceries.csv",
+  market_basket: "market_basket.csv",
+  bms_webview_1: "Transactional_BMS-WebView-1.csv",
+  bms_webview_2: "BMS-WebView-2.dat",
+  t10i4d100k: "T10I4D100K.dat",
 };
 
 const DEMO_PRESETS = {
@@ -164,7 +186,7 @@ function updateLivePythonSnippet() {
     ? 'transactions = [["milk", "bread"], ["beer", "diapers"]]'
     : dataset === "demo"
       ? 'transactions = [["milk", "bread", "butter"], ["beer", "diapers"], ...]'
-      : `from skarm.datasets import load_transactions\ntransactions = load_transactions("data/${dataset === "market_basket" ? "market_basket.csv" : dataset === "groceries" ? "groceries.csv" : dataset + ".dat"}")`;
+      : `from skarm.datasets import load_transactions\ntransactions = load_transactions("data/${DATASET_FILE_MAP[dataset] || (dataset + ".dat")}")`;
 
   const lenLine = maxLen ? `\n    max_len=${maxLen},` : "";
   const wPrep = vipItem && vipMult > 1
@@ -719,6 +741,16 @@ function renderCampaignTable() {
     if (winFilter === "fpgrowth" && r.fastest_skarm !== "fpgrowth") return;
     if (winFilter === "mlxtend_issue" && r.mlxtend?.status === "ok") return;
 
+    const actionTd = el("td", "py-2 px-3 text-right");
+    if (Object.prototype.hasOwnProperty.call(DATASET_DEFAULTS, r.dataset)) {
+      const runBtn = el("button", "sk-viva-btn", "Run Live ▶");
+      runBtn.type = "button";
+      runBtn.addEventListener("click", () => launchDatasetLive(r.dataset));
+      actionTd.appendChild(runBtn);
+    } else {
+      actionTd.appendChild(el("span", "text-[11px] text-slate-400", "Batch Campaign"));
+    }
+
     const tr = el("tr", "hover:bg-slate-50/70");
     tr.append(
       el("td", "py-2 px-3 font-medium text-slate-900", r.dataset),
@@ -728,7 +760,8 @@ function renderCampaignTable() {
       el("td", `py-2 px-3 text-right ${r.fastest_skarm === "fpgrowth" ? "font-bold text-blue-700" : "text-slate-700"}`, fmtCell(r.fpgrowth)),
       el("td", `py-2 px-3 text-right ${r.fastest_skarm === "eclat" ? "font-bold text-cyan-700" : "text-slate-700"}`, fmtCell(r.eclat)),
       el("td", `py-2 px-3 text-right ${r.mlxtend?.status === "ok" ? "text-slate-600" : "text-rose-700"}`, fmtCell(r.mlxtend)),
-      el("td", "py-2 px-3 text-right font-semibold text-emerald-700 uppercase", r.fastest_skarm)
+      el("td", "py-2 px-3 text-right font-semibold text-emerald-700 uppercase", r.fastest_skarm),
+      actionTd
     );
     tbody.appendChild(tr);
   });
@@ -887,6 +920,30 @@ async function runMining(compareEngines = false) {
   }
 }
 
+async function launchDatasetLive(val) {
+  switchTab("explorer");
+  document.querySelectorAll(".sk-preset-btn").forEach((b) => b.classList.remove("active"));
+  const datasetSelect = document.getElementById("dataset-select");
+  datasetSelect.value = val;
+  document.getElementById("custom-txns-wrapper").classList.toggle("hidden", val !== "custom");
+  const p = DATASET_DEFAULTS[val];
+  if (p) {
+    document.getElementById("min-support").value = p.min_support;
+    document.getElementById("min-threshold").value = p.min_threshold;
+    document.getElementById("metric-select").value = p.metric;
+    document.getElementById("basket-input").value = p.basket;
+    document.getElementById("max-candidates").value = p.max_candidates;
+    document.getElementById("max-len").value = p.max_len;
+    document.getElementById("vip-item").value = p.vip_item;
+    document.getElementById("vip-multiplier").value = p.vip_multiplier;
+    document.getElementById("algorithm-select").value = p.algorithm;
+  }
+  updateLivePythonSnippet();
+  if (val !== "custom") {
+    await runMining(false);
+  }
+}
+
 async function applyDemoPreset(presetKey) {
   const p = DEMO_PRESETS[presetKey];
   if (!p) return;
@@ -998,23 +1055,7 @@ async function init() {
   }
 
   const datasetSelect = document.getElementById("dataset-select");
-  datasetSelect.addEventListener("change", () => {
-    const val = datasetSelect.value;
-    document.getElementById("custom-txns-wrapper").classList.toggle("hidden", val !== "custom");
-    const p = DATASET_DEFAULTS[val];
-    if (p) {
-      document.getElementById("min-support").value = p.min_support;
-      document.getElementById("min-threshold").value = p.min_threshold;
-      document.getElementById("metric-select").value = p.metric;
-      document.getElementById("basket-input").value = p.basket;
-      document.getElementById("max-candidates").value = p.max_candidates;
-      document.getElementById("max-len").value = p.max_len;
-      document.getElementById("vip-item").value = p.vip_item;
-      document.getElementById("vip-multiplier").value = p.vip_multiplier;
-      document.getElementById("algorithm-select").value = p.algorithm;
-    }
-    updateLivePythonSnippet();
-  });
+  datasetSelect.addEventListener("change", () => launchDatasetLive(datasetSelect.value));
 
   ["algorithm-select", "metric-select", "min-support", "min-threshold", "max-candidates", "max-len", "vip-item", "vip-multiplier"].forEach((id) => {
     document.getElementById(id)?.addEventListener("change", updateLivePythonSnippet);

@@ -183,14 +183,36 @@
 
             <div class="p-4 space-y-3">
               <div>
-                <label for="dataset-select" class="block text-xs font-medium text-slate-700 mb-1">Dataset Corpus</label>
+                <label for="dataset-select" class="block text-xs font-medium text-slate-700 mb-1">Dataset Corpus (Select to Run Live)</label>
                 <select id="dataset-select" name="dataset" class="w-full h-9 px-2.5 text-sm bg-white border border-slate-300 rounded-sm text-slate-900 focus:outline-none focus:border-blue-600">
-                  <option value="groceries">Groceries Market Basket (9,835 txns)</option>
-                  <option value="demo">Classroom Toy Matrix (10 txns)</option>
-                  <option value="market_basket">Market Basket Optimisation (7,501 txns)</option>
-                  <option value="tic_tac_toe">UCI Tic-Tac-Toe Endgame (958 txns)</option>
-                  <option value="mushroom">UCI Mushroom (8,124 txns · Dense)</option>
-                  <option value="custom">Custom Transactions</option>
+                  <optgroup label="Retail &amp; Market Basket">
+                    <option value="groceries">Groceries Market Basket (9,835 txns)</option>
+                    <option value="market_basket">Market Basket Optimisation (7,501 txns)</option>
+                    <option value="retail">Belgian Retail Store (88,162 txns)</option>
+                    <option value="online_retail">Online Retail UK (20,728 txns)</option>
+                    <option value="online_retail_ii">Online Retail II (22,103 txns)</option>
+                    <option value="demo">Classroom Toy Matrix (10 txns)</option>
+                  </optgroup>
+                  <optgroup label="Clickstreams &amp; Synthetic Benchmarks">
+                    <option value="bms_webview_1">BMS-WebView-1 Clickstream (59,009 txns)</option>
+                    <option value="bms_webview_2">BMS-WebView-2 Clickstream (77,512 txns)</option>
+                    <option value="t10i4d100k">IBM Quest T10I4D100K (100,000 txns)</option>
+                    <option value="synthetic_sparse_2000">Synthetic Sparse Control (2,000 txns)</option>
+                    <option value="synthetic_dense_5000">Synthetic Dense Control (5,000 txns)</option>
+                  </optgroup>
+                  <optgroup label="Dense &amp; Categorical UCI Corpora">
+                    <option value="mushroom">UCI Mushroom (8,124 txns · Dense)</option>
+                    <option value="chess">UCI Chess King-Rook (3,196 txns · Dense)</option>
+                    <option value="adult_census">UCI Adult Census (32,561 txns)</option>
+                    <option value="tic_tac_toe">UCI Tic-Tac-Toe Endgame (958 txns)</option>
+                    <option value="car_evaluation">UCI Car Evaluation (1,728 txns)</option>
+                    <option value="balance_scale">UCI Balance Scale (625 txns)</option>
+                    <option value="docword_nips">UCI Docword NIPS (1,500 docs · Bounded)</option>
+                    <option value="pumsb_star">Pumsb-Star Census (49,046 txns · Bounded)</option>
+                  </optgroup>
+                  <optgroup label="Interactive Custom Entry">
+                    <option value="custom">Custom Transactions (Type Own Baskets)</option>
+                  </optgroup>
                 </select>
               </div>
 
@@ -547,6 +569,7 @@ beer, diapers</textarea>
                 <th class="py-2 px-3 text-right">Eclat (s)</th>
                 <th class="py-2 px-3 text-right">mlxtend (s)</th>
                 <th class="py-2 px-3 text-right">Fastest skarm</th>
+                <th class="py-2 px-3 text-right">Live Demo</th>
               </tr>
             </thead>
             <tbody id="campaign-tbody" class="divide-y divide-slate-100 text-xs font-mono tabular-nums"></tbody>
