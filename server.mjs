@@ -14,9 +14,14 @@ const HOST = "0.0.0.0";
 const PUBLIC_DIR = path.resolve(__dirname, "public");
 const PAPER_FIGURES_DIR = path.resolve(__dirname, "paper", "figures");
 const PAPER_PDF_PATH = path.resolve(__dirname, "paper", "paper-ieee.pdf");
+const REPORT_PDF_PATH = path.resolve(__dirname, "report", "KL_Capstone_Final_Report_KLCAP-2026-00340.pdf");
 const BRIDGE_SCRIPT = path.resolve(__dirname, "scripts", "web_bridge.py");
 const ACCEPTANCE_SCRIPT = path.resolve(__dirname, "tests", "run_acceptance.py");
 const BENCHMARK_JSON = path.resolve(__dirname, "benchmarks", "benchmark_results.json");
+const BASELINE_JSON = path.resolve(__dirname, "benchmarks", "baseline_results.json");
+const ABLATION_JSON = path.resolve(__dirname, "benchmarks", "ablation_results.json");
+const CAMPAIGN_JSON = path.resolve(__dirname, "benchmarks", "campaign_results.json");
+const THRESHOLDS_JSON = path.resolve(__dirname, "benchmarks", "thresholds.json");
 const E2E_JSON = path.resolve(__dirname, "tests", "e2e", "e2e_results.json");
 const MAX_BODY_BYTES = 256 * 1024;
 
@@ -184,6 +189,85 @@ async function readJsonSafe(filePath) {
   }
 }
 
+function buildCampaignSummary(campaign, thresholds) {
+  if (!campaign || !Array.isArray(campaign.records) || !thresholds?.datasets) {
+    return null;
+  }
+
+  const byKey = new Map();
+  for (const rec of campaign.records) {
+    const k = `${rec.dataset}|${rec.threshold}|${rec.engine}`;
+    if (!byKey.has(k)) byKey.set(k, []);
+    byKey.get(k).push(rec);
+  }
+
+  const datasets = [];
+  let winEclat = 0;
+  let winFp = 0;
+  let winApriori = 0;
+
+  for (const [name, meta] of Object.entries(thresholds.datasets)) {
+    const primaryThr = Array.isArray(meta.thresholds) ? meta.thresholds[0] : null;
+    if (primaryThr === null) continue;
+    const stats = {};
+    for (const eng of ["apriori", "fpgrowth", "eclat", "mlxtend"]) {
+      const recs = byKey.get(`${name}|${primaryThr}|${eng}`) || [];
+      const okRecs = recs.filter((r) => r.status === "ok" && typeof r.seconds === "number");
+      if (okRecs.length > 0) {
+        const meanS = okRecs.reduce((a, b) => a + b.seconds, 0) / okRecs.length;
+        const maxMem = Math.max(...okRecs.map((r) => Number(r.peak_mem_mb || 0)));
+        stats[eng] = { status: "ok", mean_s: Number(meanS.toFixed(4)), max_mem_mb: Number(maxMem.toFixed(2)) };
+      } else {
+        const skipObj = (campaign.skips || []).find(
+          (s) => s.dataset === name && Number(s.threshold) === Number(primaryThr) && s.engine === eng
+        );
+        const failRec = recs.find((r) => r.status && r.status !== "ok");
+        stats[eng] = {
+          status: failRec?.status || (skipObj ? "skipped" : "missing"),
+          reason: failRec?.error || skipObj?.reason || "",
+        };
+      }
+    }
+
+    const skarmOk = ["apriori", "fpgrowth", "eclat"]
+      .filter((e) => stats[e]?.status === "ok")
+      .sort((a, b) => stats[a].mean_s - stats[b].mean_s);
+    const fastestSkarm = skarmOk[0] || "none";
+    if (fastestSkarm === "eclat") winEclat += 1;
+    else if (fastestSkarm === "fpgrowth") winFp += 1;
+    else if (fastestSkarm === "apriori") winApriori += 1;
+
+    datasets.push({
+      dataset: name,
+      expected_n: meta.expected_n,
+      primary_thr: primaryThr,
+      apriori: stats.apriori,
+      fpgrowth: stats.fpgrowth,
+      eclat: stats.eclat,
+      mlxtend: stats.mlxtend,
+      fastest_skarm: fastestSkarm,
+    });
+  }
+
+  let pairCount = 0;
+  let pairMatches = 0;
+  for (const cellPairs of Object.values(campaign.correctness || {})) {
+    for (const pair of Object.values(cellPairs || {})) {
+      pairCount += 1;
+      if (pair.match && Number(pair.max_support_diff || 0) === 0) pairMatches += 1;
+    }
+  }
+
+  return {
+    total_trials: campaign.records.length,
+    total_datasets: datasets.length,
+    pair_matches: pairMatches,
+    pair_total: pairCount,
+    wins: { eclat: winEclat, fpgrowth: winFp, apriori: winApriori },
+    datasets,
+  };
+}
+
 async function serveFileConfined(baseDir, relPath, res, downloadName = null) {
   const normalized = path.resolve(baseDir, `.${relPath}`);
 
@@ -240,15 +324,21 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (pathname === "/api/overview" && req.method === "GET") {
-      const [benchmarks, e2e] = await Promise.all([
+      const [benchmarks, e2e, baselines, ablation, campaign, thresholds] = await Promise.all([
         readJsonSafe(BENCHMARK_JSON),
         readJsonSafe(E2E_JSON),
+        readJsonSafe(BASELINE_JSON),
+        readJsonSafe(ABLATION_JSON),
+        readJsonSafe(CAMPAIGN_JSON),
+        readJsonSafe(THRESHOLDS_JSON),
       ]);
 
       sendJson(res, 200, {
         project: {
           name: "skarm",
           id: "KLCAP-2026-00340",
+          team_no: "C2C-25",
+          supervisor: "Dr. Dudigam Ramya, Assistant Professor",
           version: "0.1.0",
           positioning: "Independent, third-party scikit-learn-compatible library",
           upstream_issue: {
@@ -269,6 +359,9 @@ const server = http.createServer(async (req, res) => {
         },
         benchmarks,
         e2e,
+        baselines,
+        ablation,
+        campaign_summary: buildCampaignSummary(campaign, thresholds),
       });
       return;
     }
@@ -318,6 +411,11 @@ const server = http.createServer(async (req, res) => {
 
     if ((req.method === "GET" || req.method === "HEAD") && (pathname === "/paper/paper-ieee.pdf" || pathname === "/paper/paper-ieee-graphical.pdf")) {
       await serveFileConfined(path.dirname(PAPER_PDF_PATH), `/${path.basename(PAPER_PDF_PATH)}`, res, "skarm-ieee-research-paper.pdf");
+      return;
+    }
+
+    if ((req.method === "GET" || req.method === "HEAD") && pathname === "/report/KL_Capstone_Final_Report_KLCAP-2026-00340.pdf") {
+      await serveFileConfined(path.dirname(REPORT_PDF_PATH), `/${path.basename(REPORT_PDF_PATH)}`, res, "KL_Capstone_Final_Report_KLCAP-2026-00340.pdf");
       return;
     }
 
