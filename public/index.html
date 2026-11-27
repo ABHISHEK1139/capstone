@@ -3,18 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>skarm — Association-Rule Mining Workbench &amp; Empirical Suite</title>
-  <meta name="description" content="Interactive verification workbench, architecture explorer, and benchmark suite for skarm (KLCAP-2026-00340, Team C2C-25)." />
+  <title>skarm — IEEE Research &amp; Association-Rule Mining Workbench</title>
+  <meta name="description" content="Conference research showcase, interactive mining workbench, and empirical verification suite for skarm (KLCAP-2026-00340)." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
   <style>
-    .sk-hero-banner { border: 1px solid #bfdbfe; background: #eff6ff; padding: 10px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; border-radius: 3px; }
-    .sk-hero-text { font-size: 12.5px; color: #1e293b; }
-    .sk-hero-title { font-weight: 700; color: #172554; }
-    .sk-demo-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; padding: 10px 14px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 3px; }
-    .sk-preset-btn { padding: 5px 10px; font-size: 12px; font-weight: 500; border: 1px solid #cbd5e1; background: #fff; color: #1e293b; border-radius: 3px; cursor: pointer; transition: all .15s; }
+    body { font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f8fafc; }
+    .sk-conf-hero {
+      background: linear-gradient(135deg, #0b162c 0%, #132a52 55%, #1a3b70 100%);
+      color: #f8fafc;
+      border-radius: 4px;
+      padding: 20px 24px;
+      border: 1px solid #1e3a8a;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .sk-conf-hero.hidden { display: none; }
+    .sk-conf-meta-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+    .sk-conf-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .sk-badge-ieee { padding: 3px 8px; font-size: 10px; font-family: "IBM Plex Mono", monospace; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; background: rgba(59, 130, 246, 0.22); color: #bfdbfe; border: 1px solid rgba(147, 197, 253, 0.35); border-radius: 2px; }
+    .sk-badge-green { padding: 3px 8px; font-size: 10px; font-family: "IBM Plex Mono", monospace; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; background: rgba(16, 185, 129, 0.20); color: #a7f3d0; border: 1px solid rgba(110, 231, 183, 0.35); border-radius: 2px; }
+    .sk-conf-title { font-size: 20px; line-height: 1.3; font-weight: 700; color: #ffffff; margin: 0; letter-spacing: -0.01em; }
+    .sk-conf-authors { font-size: 12.5px; color: #cbd5e1; line-height: 1.5; }
+    .sk-conf-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding-top: 8px; border-top: 1px solid rgba(148, 163, 184, 0.22); }
+    .sk-conf-subtext { font-size: 12px; font-family: "IBM Plex Mono", monospace; color: #cbd5e1; }
+    .sk-conf-btn { padding: 5px 11px; font-size: 11.5px; font-family: "IBM Plex Mono", monospace; font-weight: 500; border-radius: 3px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: all .15s; }
+    .sk-conf-btn-dark { background: rgba(255, 255, 255, 0.10); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.20); }
+    .sk-conf-btn-dark:hover { background: rgba(255, 255, 255, 0.20); color: #ffffff; }
+    .sk-conf-btn-accent { background: #2563eb; color: #ffffff; border: 1px solid #3b82f6; }
+    .sk-conf-btn-accent:hover { background: #1d4ed8; }
+    .sk-kpi-accent-blue { border-top: 3px solid #2563eb; }
+    .sk-kpi-accent-emerald { border-top: 3px solid #059669; }
+    .sk-kpi-accent-cyan { border-top: 3px solid #0891b2; }
+    .sk-kpi-accent-amber { border-top: 3px solid #d97706; }
+    .sk-card-panel { border: 1px solid #e2e8f0; background: #ffffff; border-radius: 3px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04); }
+    .sk-4col { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width: 768px) { .sk-4col { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (min-width: 1120px) { .sk-4col { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    .sk-highlight-card { border: 1px solid #e2e8f0; background: #ffffff; border-left: 3px solid #2563eb; padding: 12px 14px; border-radius: 2px; }
+    .sk-demo-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; padding: 10px 14px; border: 1px solid #cbd5e1; background: #ffffff; border-radius: 3px; }
+    .sk-preset-btn { padding: 5px 10px; font-size: 12px; font-weight: 500; border: 1px solid #cbd5e1; background: #f8fafc; color: #1e293b; border-radius: 3px; cursor: pointer; transition: all .15s; }
     .sk-preset-btn:hover { border-color: #2563eb; color: #1d4ed8; background: #eff6ff; }
     .sk-preset-btn.active { background: #1e3a8a; color: #fff; border-color: #1e3a8a; }
     .sk-chip-btn { padding: 2px 7px; font-size: 11px; font-family: "IBM Plex Mono", monospace; border: 1px solid #cbd5e1; background: #fff; color: #334155; border-radius: 2px; cursor: pointer; }
@@ -27,6 +59,7 @@
     @media (min-width: 768px) { .sk-3col { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
     .sk-studio-grid { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
     @media (min-width: 1024px) { .sk-studio-grid { grid-template-columns: 356px minmax(0, 1fr); } }
+    .sk-studio-grid.expanded { grid-template-columns: 1fr; }
     .sk-pt-4 { padding-top: 16px; }
     .sk-mt-2 { margin-top: 8px; }
     .sk-ml-1 { margin-left: 4px; }
@@ -35,7 +68,7 @@
     .sk-btn-secondary { height: 36px; border: 1px solid #2563eb; background: #eff6ff; color: #1d4ed8; font-size: 13px; font-weight: 600; border-radius: 3px; cursor: pointer; }
     .sk-btn-secondary:hover { background: #dbeafe; }
     .sk-btn-secondary:disabled { opacity: .6; cursor: not-allowed; }
-    .sk-info-banner { padding: 10px 14px; border-left: 4px solid #2563eb; background: #eff6ff; border-top: 1px solid #bfdbfe; border-right: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe; font-size: 12.5px; color: #1e293b; line-height: 1.5; }
+    .sk-info-banner { padding: 10px 14px; border-left: 4px solid #2563eb; background: #eff6ff; border-top: 1px solid #bfdbfe; border-right: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe; font-size: 12.5px; color: #1e293b; line-height: 1.5; border-radius: 2px; }
     .sk-info-banner.degraded { border-left-color: #d97706; background: #fffbeb; border-color: #fde68a; border-left-width: 4px; color: #78350f; }
     .sk-rule-row { cursor: pointer; transition: background .12s; }
     .sk-rule-row.selected { background: #eff6ff !important; outline: 1px solid #93c5fd; }
@@ -49,7 +82,7 @@
     .sk-bar-fill { height: 100%; border-radius: 99px; transition: width .25s; }
     .sk-copy-btn { padding: 3px 8px; font-size: 11px; font-family: "IBM Plex Mono", monospace; border: 1px solid #cbd5e1; background: #fff; border-radius: 2px; cursor: pointer; color: #334155; }
     .sk-copy-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
-    .sk-fig-card { border: 1px solid #e2e8f0; background: #fff; padding: 14px; }
+    .sk-fig-card { border: 1px solid #e2e8f0; background: #fff; padding: 14px; border-radius: 3px; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03); }
     .sk-fig-card img { width: 100%; height: auto; border: 1px solid #f1f5f9; }
     .sk-bit { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 20px; font-family: "IBM Plex Mono", monospace; font-size: 11px; border: 1px solid #cbd5e1; border-radius: 2px; }
     .sk-bit.on { background: #1d4ed8; color: #fff; border-color: #1e40af; font-weight: 600; }
@@ -61,10 +94,11 @@
     .sk-action-btn:hover { background: #dbeafe; }
     .sk-degraded-text { color: #b45309; font-weight: 600; }
     .sk-doc-frame { width: 100%; height: 820px; border: 0; display: block; background: #ffffff; }
+    .sk-bibtex-box { background: #0f172a; color: #e2e8f0; padding: 12px 14px; border-radius: 3px; font-family: "IBM Plex Mono", monospace; font-size: 11.5px; line-height: 1.5; overflow-x: auto; }
   </style>
 </head>
-<body class="bg-white text-slate-900 min-h-screen flex flex-col">
-  <!-- Top Bar -->
+<body class="text-slate-900 min-h-screen flex flex-col">
+  <!-- Sticky Top Navigation Bar -->
   <header class="sticky top-0 z-30 h-14 bg-white border-b border-slate-200">
     <div class="max-w-[1440px] mx-auto h-full px-4 sm:px-6 flex items-center justify-between gap-4">
       <div class="flex items-center gap-2.5 shrink-0">
@@ -76,7 +110,7 @@
           <line x1="8.3" y1="13.1" x2="15.7" y2="16.4" />
         </svg>
         <span class="font-bold tracking-tight text-slate-900 text-base">skarm</span>
-        <span class="hidden sm:inline font-mono text-xs text-slate-400">v0.1.0</span>
+        <span class="hidden sm:inline font-mono text-xs text-slate-400">v0.1.0 · MIT</span>
       </div>
 
       <nav aria-label="Workbench Views" role="tablist" class="flex items-center gap-1 overflow-x-auto">
@@ -91,13 +125,14 @@
           Charter Gates</button>
         <button id="tab-ecosystem" type="button" role="tab" aria-selected="false" aria-controls="panel-ecosystem" data-tab="ecosystem"
           class="tab-btn whitespace-nowrap px-2.5 py-1.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition-colors cursor-pointer">
-          Architecture &amp; Team</button>
+          Architecture &amp; Citations</button>
         <button id="tab-paper" type="button" role="tab" aria-selected="false" aria-controls="panel-paper" data-tab="paper"
           class="tab-btn whitespace-nowrap px-2.5 py-1.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition-colors cursor-pointer">
-          Report &amp; IEEE PDF</button>
+          IEEE Paper &amp; Report</button>
       </nav>
 
       <div class="shrink-0 flex items-center gap-2">
+        <button id="toggle-projector-btn" type="button" class="sk-copy-btn hidden sm:inline">Wide Stage</button>
         <button id="header-run-acceptance" type="button"
           class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-sm transition-colors cursor-pointer whitespace-nowrap">
           Run Acceptance</button>
@@ -106,62 +141,86 @@
   </header>
 
   <main class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-5 space-y-4">
-    <!-- Identity Banner + O1..O5 Quick Jump -->
-    <section class="sk-hero-banner">
-      <div class="sk-hero-text">
-        <span class="sk-hero-title">KL University Cluster A Capstone Project:</span>
-        <span class="font-mono text-blue-700 font-semibold">KLCAP-2026-00340</span> ·
-        Guide: <strong class="text-slate-900">Dr. Dudigam Ramya, Assistant Professor</strong> (Dept. of CSE, KLEF) ·
-        Team <strong class="font-mono text-slate-900">C2C-25</strong>
+    <!-- Conference Research Hero Banner -->
+    <section id="conference-hero" class="sk-conf-hero">
+      <div class="sk-conf-meta-row">
+        <div class="sk-conf-badges">
+          <span class="sk-badge-ieee">IEEE Research Software Showcase</span>
+          <span class="sk-badge-ieee">Artifact ID: KLCAP-2026-00340</span>
+          <span class="sk-badge-green">25 Corpora · 1,650 Trials · Δsupp = 0.0</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-1.5">
+          <button type="button" class="sk-conf-btn sk-conf-btn-dark obj-jump" data-preset="groceries">O1–O2 Sparse Miners</button>
+          <button type="button" class="sk-conf-btn sk-conf-btn-dark obj-jump" data-preset="safety_degraded">O3 Safe Pruning</button>
+          <button type="button" class="sk-conf-btn sk-conf-btn-dark obj-jump" data-preset="pipeline_transform">O4 Pipeline API</button>
+          <button type="button" class="sk-conf-btn sk-conf-btn-dark obj-jump" data-tab-jump="benchmarks">O5 SPMF Baselines</button>
+        </div>
       </div>
-      <div class="flex flex-wrap items-center gap-1.5 text-[11px] font-mono">
-        <button type="button" class="sk-chip-btn obj-jump" data-preset="groceries" title="Jump to O1/O2 live market-basket mining">O1–O2 Sparse Miners</button>
-        <button type="button" class="sk-chip-btn obj-jump" data-preset="safety_degraded" title="Trigger PruningPolicy DEGRADED guard">O3 Safe Pruning</button>
-        <button type="button" class="sk-chip-btn obj-jump" data-preset="pipeline_transform" title="Inspect scikit-learn transform() vector">O4 Pipeline API</button>
-        <button type="button" class="sk-chip-btn obj-jump" data-tab-jump="benchmarks" title="Inspect 25-corpus campaign and Java SPMF baselines">O5 25-Corpus &amp; SPMF</button>
+
+      <div>
+        <h1 class="sk-conf-title">skarm: A scikit-learn-Compatible Estimator for Association-Rule Mining with Auditable Pruning</h1>
+        <p class="sk-conf-authors mt-1">
+          <strong>Dr. Dudigam Ramya</strong><sup>1*</sup> (Assistant Professor &amp; Supervisor),
+          <strong>Gontla Venkata Anvitha</strong><sup>1</sup>,
+          <strong>Abhishek Kumar</strong><sup>1</sup>,
+          <strong>Kamma Giridhar</strong><sup>1</sup>, and
+          <strong>Paladagula Venkata Rajeev</strong><sup>1</sup>
+          · <sup>1</sup>Dept. of Computer Science &amp; Engineering, Koneru Lakshmaiah Education Foundation (KL University), India
+        </p>
+      </div>
+
+      <div class="sk-conf-actions">
+        <div class="sk-conf-subtext">
+          Addresses <span class="text-white font-semibold">scikit-learn/scikit-learn#32712</span> (closed not_planned) · Tri-engine C-level POPCNT Eclat &amp; FP-Array FP-Growth vs Apriori &amp; Java 21 SPMF
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="hero-copy-bib-btn" type="button" class="sk-conf-btn sk-conf-btn-dark">Copy BibTeX</button>
+          <a href="/paper/paper-ieee.pdf" target="_blank" rel="noopener" class="sk-conf-btn sk-conf-btn-accent">IEEE Paper PDF (17p) ↗</a>
+          <a href="/report/KL_Capstone_Final_Report_KLCAP-2026-00340.pdf" target="_blank" rel="noopener" class="sk-conf-btn sk-conf-btn-dark">Full Report PDF (48p) ↗</a>
+        </div>
       </div>
     </section>
 
     <!-- Calibrated Telemetry Summary Strip -->
-    <section aria-label="Verification Summary" class="grid grid-cols-2 lg:grid-cols-4 border border-slate-200 divide-x divide-slate-200 bg-slate-50/70">
-      <div class="p-3.5 sm:p-4">
-        <div class="text-[11px] font-mono uppercase tracking-wider text-slate-500">Automated Test Suite</div>
+    <section aria-label="Verification Summary" class="grid grid-cols-2 lg:grid-cols-4 border border-slate-200 divide-x divide-slate-200 bg-white">
+      <div class="p-3.5 sm:p-4 sk-kpi-accent-emerald">
+        <div class="text-[11px] font-mono uppercase tracking-wider text-slate-500">Verification &amp; E2E Suite</div>
         <div class="mt-1 flex items-baseline gap-1.5">
           <span id="kpi-tests" class="text-2xl font-mono font-semibold text-slate-900 tabular-nums">264 / 264</span>
-          <span class="text-xs font-mono uppercase text-emerald-700">PASS</span>
+          <span class="text-xs font-mono uppercase text-emerald-700 font-semibold">PASS</span>
         </div>
         <div id="kpi-e2e-sub" class="mt-1 text-xs font-mono text-slate-500 tabular-nums">88 / 88 E2E · 5 Tiers</div>
       </div>
 
-      <div class="p-3.5 sm:p-4">
-        <div class="text-[11px] font-mono uppercase tracking-wider text-slate-500">Strict KPI-4 Engine p95</div>
+      <div class="p-3.5 sm:p-4 sk-kpi-accent-blue">
+        <div class="text-[11px] font-mono uppercase tracking-wider text-slate-500">Strict 30-Trial KPI-4 p95</div>
         <div class="mt-1 flex items-baseline gap-1.5">
           <span id="kpi-fp-ratio" class="text-2xl font-mono font-semibold text-slate-900 tabular-nums">--</span>
           <span class="text-xs font-mono uppercase text-slate-500">vs Apriori</span>
         </div>
-        <div id="kpi-eclat-sub" class="mt-1 text-xs font-mono text-emerald-700 tabular-nums">30 trials · 0 exemptions</div>
+        <div id="kpi-eclat-sub" class="mt-1 text-xs font-mono text-emerald-700 tabular-nums">Eclat ≤ 0.37× · 0 exemptions</div>
       </div>
 
-      <div class="p-3.5 sm:p-4">
-        <div class="text-[11px] font-mono uppercase tracking-wider text-slate-500">Bit-Exact Equivalence</div>
+      <div class="p-3.5 sm:p-4 sk-kpi-accent-cyan">
+        <div class="text-[11px] font-mono uppercase tracking-wider text-slate-500">Bit-Exact Cross Parity</div>
         <div class="mt-1 flex items-baseline gap-1.5">
           <span id="kpi-delta" class="text-2xl font-mono font-semibold text-slate-900 tabular-nums">0.00e+00</span>
           <span class="text-xs font-mono uppercase text-slate-500">max Δsupp</span>
         </div>
-        <div id="kpi-err-sub" class="mt-1 text-xs font-mono text-slate-500 tabular-nums">157/157 + 25/25 parity · 2.22e-16</div>
+        <div id="kpi-err-sub" class="mt-1 text-xs font-mono text-slate-500 tabular-nums">157/157 + 25/25 SPMF · 2.22e-16</div>
       </div>
 
-      <div class="p-3.5 sm:p-4">
+      <div class="p-3.5 sm:p-4 sk-kpi-accent-amber">
         <div class="text-[11px] font-mono uppercase tracking-wider text-slate-500">Bounded Safety &amp; API</div>
         <div class="mt-1 flex items-baseline gap-1.5">
           <span id="kpi-api" class="text-2xl font-mono font-semibold text-slate-900 tabular-nums">17.14×</span>
-          <span class="text-xs font-mono uppercase text-slate-500">DEGRADED Speedup</span>
+          <span class="text-xs font-mono uppercase text-slate-500">Dense Speedup</span>
         </div>
-        <div id="kpi-api-sub" class="mt-1 text-xs font-mono text-slate-500">7 / 7 API · #32712 Standalone</div>
+        <div id="kpi-api-sub" class="mt-1 text-xs font-mono text-slate-500">Kosarak 76.0 MB vs 40.9 GB · 7/7 API</div>
       </div>
     </section>
 
-    <!-- PANEL 1: INTERACTIVE RULE & PIPELINE STUDIO -->
+    <!-- PANEL 1: LIVE STUDIO -->
     <section id="panel-explorer" role="tabpanel" aria-labelledby="tab-explorer" class="space-y-4">
       <div class="sk-demo-bar" aria-label="Benchmark Presets">
         <span class="text-xs font-mono uppercase tracking-wider text-slate-600 font-semibold mr-1">Quick Presets:</span>
@@ -172,13 +231,13 @@
         <button type="button" class="sk-preset-btn" data-preset="pipeline_transform">5. Pipeline transform() (Toy Matrix)</button>
       </div>
 
-      <div class="sk-studio-grid">
+      <div id="studio-grid" class="sk-studio-grid">
         <!-- Left Parameter Console -->
-        <div class="space-y-4">
-          <form id="mine-form" class="border border-slate-200 bg-slate-50/50 divide-y divide-slate-200" novalidate>
-            <div class="p-4">
-              <h1 class="text-sm font-semibold text-slate-900 tracking-tight">Estimator &amp; Safety Console</h1>
-              <p class="mt-1 text-xs text-slate-500 leading-relaxed">Run <span class="font-mono text-slate-700">AssociationRulesEstimator</span> live or click <strong>Compare 3 Engines</strong> for real-time parity (<span class="font-mono">Δsupp=0</span>).</p>
+        <div id="studio-console-col" class="space-y-4">
+          <form id="mine-form" class="sk-card-panel divide-y divide-slate-200" novalidate>
+            <div class="p-4 bg-slate-50/60">
+              <h2 class="text-sm font-semibold text-slate-900 tracking-tight">Estimator &amp; Safety Console</h2>
+              <p class="mt-1 text-xs text-slate-500 leading-relaxed">Select any corpus to execute live or run <strong>Compare 3 Engines</strong> for real-time parity (<span class="font-mono">Δsupp=0</span>).</p>
             </div>
 
             <div class="p-4 space-y-3">
@@ -272,8 +331,7 @@ beer, diapers</textarea>
                 </div>
               </div>
 
-              <!-- Eq. 2.1 Sample Weight Control -->
-              <div class="border border-slate-200 bg-white p-2.5 rounded-sm space-y-2">
+              <div class="border border-slate-200 bg-slate-50/50 p-2.5 rounded-sm space-y-2">
                 <div class="flex items-center justify-between">
                   <span class="text-[11px] font-mono uppercase text-slate-600 font-semibold">Weighted Support (Eq. 2.1)</span>
                   <span class="text-[11px] font-mono text-blue-700">sample_weight</span>
@@ -302,9 +360,9 @@ beer, diapers</textarea>
             </div>
           </form>
 
-          <div class="border border-slate-200 bg-white">
+          <div class="sk-card-panel">
             <div class="px-4 py-2.5 border-b border-slate-200 bg-slate-50/60 flex items-center justify-between">
-              <h2 class="text-xs font-mono uppercase tracking-wider text-slate-700">Live Python Code</h2>
+              <h2 class="text-xs font-mono uppercase tracking-wider text-slate-700">Equivalent Python API</h2>
               <button id="copy-python-btn" type="button" class="sk-copy-btn">Copy</button>
             </div>
             <pre id="live-python-code" class="p-3 text-[11px] font-mono text-slate-800 bg-slate-50/40 overflow-x-auto leading-relaxed"></pre>
@@ -313,7 +371,7 @@ beer, diapers</textarea>
 
         <!-- Right Live Results Stage -->
         <div class="space-y-4 min-w-0">
-          <div class="border border-slate-200 bg-white px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+          <div class="sk-card-panel px-4 py-3 flex flex-wrap items-center justify-between gap-3">
             <div class="min-w-0">
               <div id="result-dataset" class="text-sm font-semibold text-slate-900 truncate">Loading Groceries corpus...</div>
               <div id="result-meta" class="mt-0.5 text-xs font-mono text-slate-500 tabular-nums">Waiting for skarm engine...</div>
@@ -325,28 +383,26 @@ beer, diapers</textarea>
             Initializing runtime telemetry and adaptive dispatch diagnostics...
           </div>
 
-          <!-- Live CSR Memory, Operations & Score Cards -->
           <div id="telemetry-strip" class="sk-3col">
-            <div class="border border-slate-200 bg-white p-3">
+            <div class="sk-card-panel p-3">
               <div class="text-[11px] font-mono uppercase text-slate-500">SciPy CSR vs Dense Float64</div>
               <div id="csr-saving-val" class="mt-1 text-base font-mono font-semibold text-slate-900 tabular-nums">--</div>
               <div class="sk-bar-track"><div id="csr-bar" class="sk-bar-fill bg-blue-600" style="width: 15%"></div></div>
               <div id="csr-detail" class="mt-1 text-[11px] font-mono text-slate-500">Measuring sparse matrix layout...</div>
             </div>
-            <div class="border border-slate-200 bg-white p-3">
+            <div class="sk-card-panel p-3">
               <div class="text-[11px] font-mono uppercase text-slate-500">Engine Operation Counters</div>
               <div id="ops-main-val" class="mt-1 text-base font-mono font-semibold text-slate-900 tabular-nums">--</div>
               <div id="ops-detail" class="mt-1 text-[11px] font-mono text-slate-500 leading-relaxed">Awaiting telemetry counters...</div>
             </div>
-            <div class="border border-slate-200 bg-white p-3">
+            <div class="sk-card-panel p-3">
               <div class="text-[11px] font-mono uppercase text-slate-500">scikit-learn Score &amp; Weighting</div>
               <div id="score-main-val" class="mt-1 text-base font-mono font-semibold text-slate-900 tabular-nums">--</div>
               <div id="score-detail" class="mt-1 text-[11px] font-mono text-slate-500 leading-relaxed">est.score(X) &amp; Eq. 2.1 weights</div>
             </div>
           </div>
 
-          <!-- Tri-Engine Comparison Card -->
-          <div id="comparison-panel" class="hidden border border-slate-200 bg-white">
+          <div id="comparison-panel" class="hidden sk-card-panel">
             <div class="px-4 py-2.5 border-b border-slate-200 bg-slate-50/60 flex flex-wrap items-center justify-between gap-2">
               <h2 class="text-xs font-mono uppercase tracking-wider text-slate-700">Live Tri-Engine Head-to-Head Comparison (Apriori vs FP-Growth vs Eclat)</h2>
               <span id="comparison-verdict" class="text-xs font-mono text-emerald-700 font-semibold">BIT-EXACT PARITY</span>
@@ -354,8 +410,7 @@ beer, diapers</textarea>
             <div id="comparison-cards" class="p-4 sk-3col"></div>
           </div>
 
-          <!-- Live Pipeline transform() & get_feature_names_out() Card -->
-          <div id="transform-panel" class="hidden border border-slate-200 bg-white">
+          <div id="transform-panel" class="hidden sk-card-panel">
             <div class="px-4 py-2.5 border-b border-slate-200 bg-slate-50/60 flex flex-wrap items-center justify-between gap-2">
               <h2 class="text-xs font-mono uppercase tracking-wider text-slate-700">Live <span class="font-mono">Pipeline</span> Inspection: <span class="font-mono">est.transform([basket])</span> &amp; <span class="font-mono">get_feature_names_out()</span></h2>
               <span id="transform-summary" class="text-xs font-mono text-blue-700 font-semibold">--</span>
@@ -366,18 +421,16 @@ beer, diapers</textarea>
             </div>
           </div>
 
-          <!-- Click-to-Inspect Interactive Rule Explainer -->
-          <div id="rule-explainer-panel" class="hidden border border-slate-200 bg-white">
+          <div id="rule-explainer-panel" class="hidden sk-card-panel">
             <div class="px-4 py-2.5 border-b border-slate-200 bg-slate-50/60 flex flex-wrap items-center justify-between gap-2">
-              <h2 class="text-xs font-mono uppercase tracking-wider text-slate-700">Selected Rule Mathematical &amp; Business Explanation (Click Any Row)</h2>
+              <h2 class="text-xs font-mono uppercase tracking-wider text-slate-700">Selected Rule Mathematical &amp; Business Breakdown (Click Any Row)</h2>
               <span id="explainer-badge" class="text-xs font-mono text-blue-700 font-semibold">Rule #1</span>
             </div>
             <div id="explainer-narrative" class="px-4 py-3 border-b border-slate-200 text-sm text-slate-800 leading-relaxed bg-white"></div>
             <div id="explainer-metrics" class="sk-explainer-grid"></div>
           </div>
 
-          <!-- Basket Recommendations -->
-          <div id="recommendations-panel" class="hidden border border-slate-200 bg-slate-50/40">
+          <div id="recommendations-panel" class="hidden sk-card-panel bg-slate-50/40">
             <div class="px-4 py-2.5 border-b border-slate-200 flex items-center justify-between">
               <h2 class="text-xs font-mono uppercase tracking-wider text-slate-700">Basket Recommendations (<span class="font-mono">predict()</span> Output)</h2>
               <span id="recommendations-count" class="text-xs font-mono text-slate-500 tabular-nums">0 matches</span>
@@ -398,10 +451,9 @@ beer, diapers</textarea>
             </div>
           </div>
 
-          <!-- Association Rules Table -->
-          <div class="border border-slate-200 bg-white">
+          <div class="sk-card-panel">
             <div class="px-4 py-2.5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 bg-slate-50/60">
-              <h2 class="text-xs font-mono uppercase tracking-wider text-slate-700">Discovered Association Rules (Click Row to Explain 6 Metrics)</h2>
+              <h2 class="text-xs font-mono uppercase tracking-wider text-slate-700">Discovered Association Rules (Click Row for 6-Metric Math)</h2>
               <span id="rules-showing" class="text-xs font-mono text-slate-500 tabular-nums">0 rules</span>
             </div>
             <div class="overflow-x-auto">
@@ -424,8 +476,7 @@ beer, diapers</textarea>
             </div>
           </div>
 
-          <!-- Top Frequent Itemsets -->
-          <div class="border border-slate-200 bg-white">
+          <div class="sk-card-panel">
             <div class="px-4 py-2.5 border-b border-slate-200 flex items-center justify-between bg-slate-50/60">
               <h2 class="text-xs font-mono uppercase tracking-wider text-slate-700">Top Frequent Itemsets</h2>
               <span id="itemsets-showing" class="text-xs font-mono text-slate-500 tabular-nums">0 itemsets</span>
@@ -436,9 +487,33 @@ beer, diapers</textarea>
       </div>
     </section>
 
-    <!-- PANEL 2: CAMPAIGN, SPMF & ABLATION -->
+    <!-- PANEL 2: BENCHMARKS, SPMF & ABLATION -->
     <section id="panel-benchmarks" role="tabpanel" aria-labelledby="tab-benchmarks" class="hidden space-y-5">
-      <div class="border border-slate-200 bg-white p-5">
+      <!-- Empirical Takeaways Conference Highlights -->
+      <div class="sk-4col">
+        <div class="sk-highlight-card">
+          <div class="text-[11px] font-mono uppercase text-slate-500">Clickstream Memory Proof</div>
+          <div class="mt-1 text-base font-mono font-bold text-slate-900">76.0 MB vs 40.9 GB</div>
+          <p class="mt-1 text-xs text-slate-600">Kosarak (990k txns): <span class="font-mono">mlxtend</span> skipped dense cap while <span class="font-mono">skarm</span> FP-Growth finished clean.</p>
+        </div>
+        <div class="sk-highlight-card">
+          <div class="text-[11px] font-mono uppercase text-slate-500">Dense RSS Compression</div>
+          <div class="mt-1 text-base font-mono font-bold text-slate-900">90.4 MB vs 1,860 MB</div>
+          <p class="mt-1 text-xs text-slate-600">Accidents@0.60: FP-tree suffix compression slashes peak RSS by &gt;95% vs level-wise Apriori.</p>
+        </div>
+        <div class="sk-highlight-card">
+          <div class="text-[11px] font-mono uppercase text-slate-500">Java 21 SPMF Parity</div>
+          <div class="mt-1 text-base font-mono font-bold text-slate-900">25 / 25 Exact Match</div>
+          <p class="mt-1 text-xs text-slate-600">FIN, PrePost+, LCMFreq &amp; FP-Growth confirm <span class="font-mono">Δsupp=0.0</span>; Adult Eclat leads at <span class="font-mono">0.031s</span>.</p>
+        </div>
+        <div class="sk-highlight-card">
+          <div class="text-[11px] font-mono uppercase text-slate-500">Bounded Pruning Guard</div>
+          <div class="mt-1 text-base font-mono font-bold text-slate-900">17.14× Speedup (Chess)</div>
+          <p class="mt-1 text-xs text-slate-600">Caps halt combinatorial blowup explicitly under <span class="font-mono">DEGRADED</span> before RAM/OOM risk.</p>
+        </div>
+      </div>
+
+      <div class="sk-card-panel p-5">
         <div class="flex flex-wrap items-baseline justify-between gap-2 pb-4 border-b border-slate-200">
           <div>
             <h2 class="text-base font-semibold text-slate-900">Live <span class="font-mono">HEAD</span> Strict 30-Trial KPI-4 Scaling (p95, ms)</h2>
@@ -474,12 +549,11 @@ beer, diapers</textarea>
         </div>
       </div>
 
-      <!-- Bounded vs Exact Ablation Explorer -->
-      <div class="border border-slate-200 bg-white p-5 space-y-4">
+      <div class="sk-card-panel p-5 space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
           <div>
             <h2 class="text-base font-semibold text-slate-900">Bounded-vs-Exact Pruning Ablation Explorer (<span class="font-mono text-sm">ablation_results.json</span>)</h2>
-            <p class="mt-0.5 text-xs text-slate-500">Proves transparent <span class="font-mono">DEGRADED → EXACT</span> transitions &amp; up to <strong>17.14×</strong> dense speedup under candidate caps.</p>
+            <p class="mt-0.5 text-xs text-slate-500">Visualizes transparent <span class="font-mono">DEGRADED → EXACT</span> transitions &amp; up to <strong>17.14×</strong> dense speedup.</p>
           </div>
           <div class="flex flex-wrap gap-1.5">
             <button type="button" class="sk-subpill active abl-btn" data-abl="chess">Chess (Dense · Apriori)</button>
@@ -508,8 +582,7 @@ beer, diapers</textarea>
         </div>
       </div>
 
-      <!-- Cross-Framework Baselines -->
-      <div class="border border-slate-200 bg-white p-5 space-y-4">
+      <div class="sk-card-panel p-5 space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
           <div>
             <h2 class="text-base font-semibold text-slate-900">Cross-Framework Baselines: <span class="font-mono">skarm</span> vs <span class="font-mono">mlxtend 0.25.0</span> vs Java 21 SPMF</h2>
@@ -540,8 +613,7 @@ beer, diapers</textarea>
         </div>
       </div>
 
-      <!-- 25-Corpus Primary Campaign Summary -->
-      <div class="border border-slate-200 bg-white p-5 space-y-4">
+      <div class="sk-card-panel p-5 space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
           <div>
             <h2 class="text-base font-semibold text-slate-900">25-Corpus Primary Threshold Campaign (<span class="font-mono text-sm">ea5bff5d</span> · 1,650 Trials)</h2>
@@ -557,6 +629,7 @@ beer, diapers</textarea>
             </select>
           </div>
         </div>
+        <div id="campaign-winner-bar" class="overflow-x-auto"></div>
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
@@ -569,7 +642,7 @@ beer, diapers</textarea>
                 <th class="py-2 px-3 text-right">Eclat (s)</th>
                 <th class="py-2 px-3 text-right">mlxtend (s)</th>
                 <th class="py-2 px-3 text-right">Fastest skarm</th>
-                <th class="py-2 px-3 text-right">Live Demo</th>
+                <th class="py-2 px-3 text-right">Live Action</th>
               </tr>
             </thead>
             <tbody id="campaign-tbody" class="divide-y divide-slate-100 text-xs font-mono tabular-nums"></tbody>
@@ -578,12 +651,12 @@ beer, diapers</textarea>
       </div>
     </section>
 
-    <!-- PANEL 3: CHARTER GATES & TRACEABILITY -->
+    <!-- PANEL 3: CHARTER GATES -->
     <section id="panel-acceptance" role="tabpanel" aria-labelledby="tab-acceptance" class="hidden space-y-5">
-      <div class="border border-slate-200 bg-white p-5 flex flex-wrap items-center justify-between gap-4">
+      <div class="sk-card-panel p-5 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 class="text-base font-semibold text-slate-900">Strict Acceptance Gate Runner (<span class="font-mono">tests/run_acceptance.py</span>)</h2>
-          <p class="mt-0.5 text-xs text-slate-500">Runs AC-1..AC-4, KPI-1..KPI-6, IEEE-754 Oracle accuracy (2.22e-16), held-out 70/30 split, 30-trial scaling, and NT-1..NT-6 negative cases live.</p>
+          <p class="mt-0.5 text-xs text-slate-500">Executes AC-1..AC-4, KPI-1..KPI-6, IEEE-754 Oracle accuracy (2.22e-16), held-out 70/30 split, 30-trial scaling, and NT-1..NT-6 negative cases live.</p>
         </div>
         <button id="panel-run-acceptance" type="button"
           class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-sm transition-colors cursor-pointer">
@@ -592,7 +665,7 @@ beer, diapers</textarea>
 
       <div id="acceptance-error" role="alert" aria-live="polite" class="hidden border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-700"></div>
 
-      <div id="acceptance-results" class="border border-slate-200 bg-white">
+      <div id="acceptance-results" class="sk-card-panel">
         <div class="px-4 py-3 border-b border-slate-200 bg-slate-50/60 flex flex-wrap items-center justify-between gap-2">
           <h3 class="text-xs font-mono uppercase tracking-wider text-slate-700">Live Acceptance Gate Results</h3>
           <span id="acceptance-verdict" class="text-xs font-mono uppercase text-slate-500">Click "Run Strict Acceptance Gate" to run live</span>
@@ -607,13 +680,13 @@ beer, diapers</textarea>
               </tr>
             </thead>
             <tbody id="acceptance-tbody" class="divide-y divide-slate-100 text-xs font-mono">
-              <tr><td colspan="3" class="py-6 px-4 text-slate-500 font-sans">Click <strong>Run Strict Acceptance Gate</strong> above to run Python verification live during your demo.</td></tr>
+              <tr><td colspan="3" class="py-6 px-4 text-slate-500 font-sans">Click <strong>Run Strict Acceptance Gate</strong> above to execute Python verification live.</td></tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <div class="border border-slate-200 bg-white">
+      <div class="sk-card-panel">
         <div class="px-4 py-3 border-b border-slate-200 bg-slate-50/60 flex flex-wrap items-center justify-between gap-2">
           <h3 class="text-xs font-mono uppercase tracking-wider text-slate-700">5-Tier Opaque-Box E2E Suite (<span class="font-mono">tests/e2e/e2e_results.json</span>)</h3>
           <span id="e2e-summary-label" class="text-xs font-mono text-emerald-700 tabular-nums">88 / 88 PASSED</span>
@@ -622,7 +695,7 @@ beer, diapers</textarea>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <div class="border border-slate-200 bg-white p-5 space-y-3">
+        <div class="sk-card-panel p-5 space-y-3">
           <h3 class="text-sm font-semibold text-slate-900 border-b border-slate-200 pb-3">Official <span class="font-mono">scikit-learn check_estimator</span> Audit</h3>
           <p class="text-xs text-slate-600 leading-relaxed">Executed via <span class="font-mono text-slate-800">sklearn.utils.estimator_checks.check_estimator</span> (docs/SKLEARN_COMPATIBILITY_REPORT.md) with zero unexpected failures:</p>
           <ul class="text-xs text-slate-700 space-y-2 font-mono">
@@ -632,7 +705,7 @@ beer, diapers</textarea>
             <li>• <strong class="text-emerald-700">7 / 7 PASS (KPI-6)</strong>: Pipeline, GridSearchCV, transform, predict, get_feature_names_out, joblib</li>
           </ul>
         </div>
-        <div class="border border-slate-200 bg-white p-5 space-y-3">
+        <div class="sk-card-panel p-5 space-y-3">
           <h3 class="text-sm font-semibold text-slate-900 border-b border-slate-200 pb-3">Mandatory Negative &amp; Safety Matrix (NT-1 to NT-6)</h3>
           <ul class="text-xs text-slate-700 space-y-2">
             <li><strong>NT-1 Candidate Explosion:</strong> 22 items, 100% density bounded at 500 → explicit <span class="font-mono">status_="DEGRADED"</span></li>
@@ -646,19 +719,19 @@ beer, diapers</textarea>
       </div>
     </section>
 
-    <!-- PANEL 4: ARCHITECTURE, TEAM & DESIGN RATIONALE -->
+    <!-- PANEL 4: ARCHITECTURE & CITATIONS -->
     <section id="panel-ecosystem" role="tabpanel" aria-labelledby="tab-ecosystem" class="hidden space-y-5">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <div class="border border-slate-200 bg-white p-5 space-y-4">
+        <div class="sk-card-panel p-5 space-y-4">
           <div class="pb-3 border-b border-slate-200">
-            <h2 class="text-base font-semibold text-slate-900">Team C2C-25 &amp; Contribution Matrix (Report Appendix G)</h2>
-            <p class="mt-0.5 text-xs text-slate-500">KL University · Cluster A — Software Systems Engineering · Supervisor: <strong>Dr. Dudigam Ramya, Assistant Professor</strong></p>
+            <h2 class="text-base font-semibold text-slate-900">Research Team &amp; Contribution Matrix (Team C2C-25)</h2>
+            <p class="mt-0.5 text-xs text-slate-500">KL University · Dept. of CSE · Supervised by <strong>Dr. Dudigam Ramya, Assistant Professor</strong></p>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="border-b border-slate-200 text-[11px] font-mono uppercase text-slate-500">
-                  <th class="py-2 px-2">Team Member (ID)</th>
+                  <th class="py-2 px-2">Contributor (ID)</th>
                   <th class="py-2 px-2">Obj.</th>
                   <th class="py-2 px-2">Core Engineering Ownership</th>
                 </tr>
@@ -687,9 +760,18 @@ beer, diapers</textarea>
               </tbody>
             </table>
           </div>
+
+          <!-- Machine-Readable Citation Card from CITATION.cff -->
+          <div class="border-t border-slate-200 sk-pt-4 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase text-slate-700 font-semibold">IEEE Citation &amp; BibTeX (CITATION.cff)</span>
+              <button id="panel-copy-bib-btn" type="button" class="sk-copy-btn">Copy BibTeX</button>
+            </div>
+            <pre id="bibtex-preview" class="sk-bibtex-box"></pre>
+          </div>
         </div>
 
-        <div class="border border-slate-200 bg-white p-5 space-y-3">
+        <div class="sk-card-panel p-5 space-y-3">
           <div class="pb-3 border-b border-slate-200">
             <h2 class="text-base font-semibold text-slate-900">Design Rationale &amp; Interactive Proof Explorer</h2>
             <p class="mt-0.5 text-xs text-slate-500">Select any architectural guarantee below to run its live empirical verification inside the workbench.</p>
@@ -699,30 +781,30 @@ beer, diapers</textarea>
       </div>
 
       <div class="space-y-3">
-        <h3 class="text-sm font-semibold text-slate-900">Architecture, Engine &amp; Publication Diagrams (From 48-Page Report &amp; IEEE Paper)</h3>
+        <h3 class="text-sm font-semibold text-slate-900">Publication Architecture &amp; Benchmark Diagrams</h3>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div class="sk-fig-card">
-            <div class="text-xs font-mono uppercase tracking-wider text-slate-600 py-1">Fig P.1 · End-to-End Mechanism &amp; Quantitative Summary</div>
+            <div class="text-xs font-mono uppercase tracking-wider text-slate-600 py-1">Fig 1 · Graphical Abstract &amp; Quantitative Overview</div>
             <img src="/paper/figures/graphical_abstract.png" alt="Graphical Abstract of skarm" loading="lazy" />
           </div>
           <div class="sk-fig-card">
-            <div class="text-xs font-mono uppercase tracking-wider text-slate-600 py-1">Fig 4.1 · Five-Layer Modular Software Architecture</div>
+            <div class="text-xs font-mono uppercase tracking-wider text-slate-600 py-1">Fig 2 · Five-Layer Modular System Architecture</div>
             <img src="/paper/figures/architecture.png" alt="Five-layer skarm software architecture diagram" loading="lazy" />
           </div>
           <div class="sk-fig-card">
-            <div class="text-xs font-mono uppercase tracking-wider text-slate-600 py-1">Fig 4.2 · Tri-Engine Algorithmic Execution Pipelines</div>
+            <div class="text-xs font-mono uppercase tracking-wider text-slate-600 py-1">Fig 3 · Tri-Engine Execution Flows (Apriori, FP-Array, Bitset Eclat)</div>
             <img src="/paper/figures/engines.png" alt="Tri-engine execution pipelines comparison diagram" loading="lazy" />
           </div>
           <div class="sk-fig-card">
-            <div class="text-xs font-mono uppercase tracking-wider text-slate-600 py-1">Fig 7.8 · Bounded vs Exact Pruning Ablation Curves (Chess 17.14×)</div>
+            <div class="text-xs font-mono uppercase tracking-wider text-slate-600 py-1">Fig 4 · Bounded vs Exact Pruning Ablation Curves (17.14× Speedup)</div>
             <img src="/paper/figures/ablation.png" alt="Bounded vs exact pruning ablation curves" loading="lazy" />
           </div>
           <div class="sk-fig-card">
-            <div class="text-xs font-mono uppercase tracking-wider text-slate-600 py-1">Fig 7.9 · Cross-Framework Baseline Comparison (skarm vs mlxtend vs Java SPMF)</div>
+            <div class="text-xs font-mono uppercase tracking-wider text-slate-600 py-1">Fig 5 · Cross-Framework Baselines (skarm vs mlxtend vs Java SPMF)</div>
             <img src="/paper/figures/baselines.png" alt="Cross-framework baseline chart" loading="lazy" />
           </div>
           <div class="sk-fig-card">
-            <div class="text-xs font-mono uppercase tracking-wider text-slate-600 py-1">Fig 7.3 · Sparse CSR Peak RSS Memory Savings vs mlxtend</div>
+            <div class="text-xs font-mono uppercase tracking-wider text-slate-600 py-1">Fig 6 · 25-Corpus Sparse CSR Peak RSS Memory Profile</div>
             <img src="/paper/figures/memory.png" alt="Peak RSS memory savings chart" loading="lazy" />
           </div>
         </div>
@@ -731,10 +813,10 @@ beer, diapers</textarea>
 
     <!-- PANEL 5: REPORT & IEEE PDF VIEWER -->
     <section id="panel-paper" role="tabpanel" aria-labelledby="tab-paper" class="hidden space-y-4">
-      <div class="border border-slate-200 bg-white p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
+      <div class="sk-card-panel p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 class="text-base font-semibold text-slate-900">Canonical Project Documentation &amp; Papers</h2>
-          <p class="mt-0.5 text-xs text-slate-500">Switch between the <strong>Web Reader</strong>, <strong>17-page IEEE Transactions Paper</strong>, and <strong>48-page KL Final Report</strong>.</p>
+          <h2 class="text-base font-semibold text-slate-900">Canonical Project Manuscripts &amp; Technical Report</h2>
+          <p class="mt-0.5 text-xs text-slate-500">Switch between the <strong>IEEE Conference Web Edition</strong>, <strong>17-page IEEE Transactions PDF</strong>, and <strong>48-page KL Technical Report</strong>.</p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <button type="button" class="sk-subpill active doc-view-btn" data-doc="/ieee-paper.html">View Web Edition</button>
@@ -749,16 +831,16 @@ beer, diapers</textarea>
         </div>
       </div>
 
-      <div class="border border-slate-200 bg-white overflow-hidden">
+      <div class="sk-card-panel overflow-hidden">
         <iframe id="ieee-paper-frame" src="/ieee-paper.html" title="skarm IEEE Paper and KL Report Viewer"
           class="sk-doc-frame h-[820px]" style="width:100%; height:820px; border:0; display:block;"></iframe>
       </div>
     </section>
   </main>
 
-  <footer class="border-t border-slate-200 bg-slate-50/50 py-3 px-4 sm:px-6 text-xs text-slate-500">
+  <footer class="border-t border-slate-200 bg-white py-3 px-4 sm:px-6 text-xs text-slate-500">
     <div class="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-2 font-mono">
-      <span>skarm v0.1.0 · Team C2C-25 · Guide: Dr. Dudigam Ramya (Assistant Professor) · KL University KLCAP-2026-00340</span>
+      <span>skarm v0.1.0 (MIT) · Team C2C-25 · Dr. Dudigam Ramya (Assistant Professor) · KL University · KLCAP-2026-00340</span>
       <span>264 pytest · 88 E2E · 157/157 + 25/25 Bit-Exact Parity</span>
     </div>
   </footer>

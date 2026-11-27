@@ -806,6 +806,63 @@ function renderDesignRationale() {
   });
 }
 
+const BIBTEX_CITATION = `@software{ramya2026skarm,
+  author       = {Ramya, Dudigam and Anvitha, Gontla Venkata and Kumar, Abhishek and Giridhar, Kamma and Rajeev, Paladagula Venkata},
+  title        = {skarm: A scikit-learn-Compatible Estimator for Association-Rule Mining with Auditable Pruning},
+  year         = {2026},
+  version      = {0.1.0},
+  license      = {MIT},
+  institution  = {Koneru Lakshmaiah Education Foundation (KL University)},
+  url          = {https://github.com/ABHISHEK1139/capstone},
+  note         = {Artifact ID: KLCAP-2026-00340; independent library addressing scikit-learn/scikit-learn#32712}
+}`;
+
+function renderCampaignWinnerBar(cs) {
+  const wrap = document.getElementById("campaign-winner-bar");
+  if (!wrap || !cs) return;
+  wrap.textContent = "";
+  const total = Math.max(1, cs.total_datasets || 25);
+  const wEc = cs.wins?.eclat || 0;
+  const wFp = cs.wins?.fpgrowth || 0;
+  const wAp = cs.wins?.apriori || 0;
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  const w = 720, h = 44;
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  svg.setAttribute("class", "w-full max-w-[820px] h-auto block");
+
+  const segments = [
+    { label: `Eclat Fast Wins (${wEc}/${total})`, count: wEc, color: "#0891b2" },
+    { label: `FP-Growth Wins (${wFp}/${total})`, count: wFp, color: "#2563eb" },
+    { label: `Apriori Wins (${wAp}/${total})`, count: wAp, color: "#94a3b8" },
+  ];
+
+  let curX = 0;
+  segments.forEach((seg) => {
+    if (seg.count <= 0) return;
+    const segW = Math.max(24, (seg.count / total) * w);
+    const rect = document.createElementNS(svgNS, "rect");
+    rect.setAttribute("x", String(curX));
+    rect.setAttribute("y", "0");
+    rect.setAttribute("width", String(segW));
+    rect.setAttribute("height", "18");
+    rect.setAttribute("fill", seg.color);
+    svg.appendChild(rect);
+    curX += segW;
+  });
+
+  const leg = document.createElementNS(svgNS, "text");
+  leg.setAttribute("x", "0");
+  leg.setAttribute("y", "36");
+  leg.setAttribute("fill", "#334155");
+  leg.setAttribute("font-size", "11");
+  leg.setAttribute("font-family", "IBM Plex Mono, monospace");
+  leg.textContent = segments.map((s) => `${s.label}`).join("   ·   ");
+  svg.appendChild(leg);
+  wrap.appendChild(svg);
+}
+
 function renderOverview(data) {
   state.overview = data;
   const tests = data?.project?.tests;
@@ -843,6 +900,7 @@ function renderOverview(data) {
     const optFp = document.getElementById("opt-fp-win");
     if (optEc) optEc.textContent = `Eclat Fastest (${cs.wins.eclat})`;
     if (optFp) optFp.textContent = `FP-Growth Fastest (${cs.wins.fpgrowth})`;
+    renderCampaignWinnerBar(cs);
     renderCampaignTable();
   }
 }
@@ -1016,6 +1074,40 @@ async function runAcceptance() {
 
 async function init() {
   renderDesignRationale();
+  const bibBox = document.getElementById("bibtex-preview");
+  if (bibBox) bibBox.textContent = BIBTEX_CITATION;
+
+  const wireCopy = (btnId, getter, idleTxt) => {
+    const b = document.getElementById(btnId);
+    if (!b) return;
+    b.addEventListener("click", async () => {
+      const txt = getter();
+      if (txt && navigator.clipboard) {
+        await navigator.clipboard.writeText(txt);
+        b.textContent = "Copied!";
+        setTimeout(() => { b.textContent = idleTxt; }, 1300);
+      }
+    });
+  };
+  wireCopy("copy-python-btn", () => document.getElementById("live-python-code")?.textContent || "", "Copy");
+  wireCopy("hero-copy-bib-btn", () => BIBTEX_CITATION, "Copy BibTeX");
+  wireCopy("panel-copy-bib-btn", () => BIBTEX_CITATION, "Copy BibTeX");
+
+  const projBtn = document.getElementById("toggle-projector-btn");
+  if (projBtn) {
+    projBtn.addEventListener("click", () => {
+      const hero = document.getElementById("conference-hero");
+      const consoleCol = document.getElementById("studio-console-col");
+      const grid = document.getElementById("studio-grid");
+      const isWide = projBtn.dataset.wide === "1";
+      projBtn.dataset.wide = isWide ? "0" : "1";
+      projBtn.textContent = isWide ? "Wide Stage" : "Show Console";
+      if (hero) hero.classList.toggle("hidden", !isWide);
+      if (consoleCol) consoleCol.classList.toggle("hidden", !isWide);
+      if (grid) grid.classList.toggle("expanded", !isWide);
+    });
+  }
+
   document.querySelectorAll(".tab-btn").forEach((btn) => btn.addEventListener("click", () => switchTab(btn.dataset.tab)));
   document.querySelectorAll(".sk-preset-btn").forEach((btn) => btn.addEventListener("click", () => applyDemoPreset(btn.dataset.preset)));
   document.querySelectorAll(".obj-jump").forEach((btn) => {
@@ -1041,18 +1133,6 @@ async function init() {
   document.getElementById("campaign-winner-filter")?.addEventListener("change", renderCampaignTable);
   document.getElementById("header-run-acceptance").addEventListener("click", runAcceptance);
   document.getElementById("panel-run-acceptance").addEventListener("click", runAcceptance);
-
-  const copyBtn = document.getElementById("copy-python-btn");
-  if (copyBtn) {
-    copyBtn.addEventListener("click", async () => {
-      const text = document.getElementById("live-python-code")?.textContent || "";
-      if (text && navigator.clipboard) {
-        await navigator.clipboard.writeText(text);
-        copyBtn.textContent = "Copied";
-        setTimeout(() => { copyBtn.textContent = "Copy"; }, 1200);
-      }
-    });
-  }
 
   const datasetSelect = document.getElementById("dataset-select");
   datasetSelect.addEventListener("change", () => launchDatasetLive(datasetSelect.value));
