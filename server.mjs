@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PORT = Number(process.env.PORT) || 3000;
-const HOST = "0.0.0.0";
+const HOST = process.env.HOST || "";
 const PUBLIC_DIR = path.resolve(__dirname, "public");
 const PAPER_FIGURES_DIR = path.resolve(__dirname, "paper", "figures");
 const PAPER_PDF_PATH = path.resolve(__dirname, "paper", "paper-ieee.pdf");
@@ -435,6 +435,13 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, HOST, () => {
-  console.log(`skarm workbench listening on http://${HOST}:${PORT}`);
-});
+const onListening = () => {
+  const displayHost = HOST || "localhost";
+  console.log(`skarm workbench listening on http://${displayHost}:${PORT}`);
+};
+
+if (HOST) {
+  server.listen(PORT, HOST, onListening);
+} else {
+  server.listen(PORT, onListening);
+}
