@@ -92,29 +92,29 @@ const DEMO_PRESETS = {
   },
 };
 
-const VIVA_QA = [
+const DESIGN_RATIONALE = [
   {
-    q: "1. Why did scikit-learn close #32712, and how does skarm satisfy scikit-learn contracts?",
+    q: "1. Standalone Package Positioning (scikit-learn #32712)",
     a: "Core scikit-learn focuses on supervised/embedding estimators (#32712 closed Nov 2025 as not planned). skarm acts as an independent package inheriting BaseEstimator + TransformerMixin: supporting clone(), fit/predict/transform(), get_feature_names_out(), score() for GridSearchCV, sparse SciPy CSR inputs, and 7/7 KPI-6 checks.",
-    btnLabel: "Show Live Pipeline transform()",
+    btnLabel: "Verify Live Pipeline transform()",
     action: () => applyDemoPreset("pipeline_transform"),
   },
   {
-    q: "2. How do you prevent memory/CPU hangs when dense datasets explode exponentially?",
+    q: "2. Bounded Pruning & Memory Safety Governor (PruningPolicy)",
     a: "PruningPolicy guards candidate count (max_candidates), runtime, and 10 ms RSS memory polling (MemorySampler). When crossed, instead of crashing or silently dropping patterns, skarm halts safely, sets status_='DEGRADED' & is_degraded_=True, and delivers up to 17.14× speedup on Chess.",
-    btnLabel: "Trigger Live DEGRADED Mode",
+    btnLabel: "Run Bounded DEGRADED Guard",
     action: () => applyDemoPreset("safety_degraded"),
   },
   {
-    q: "3. Does Apriori ever beat FP-Growth/Eclat, and why benchmark Java SPMF?",
-    a: "Across 25 corpora (1,650 trials), Apriori won 0/25; Bitset Eclat (POPCNT) leads sparse/medium corpora (21/25 at thresholds[0], 20/25 in lower-support full sweep); FP-Growth leads dense/long-row sets (e.g. accidents RSS drops 1,860 MB → 90.4 MB). Java SPMF (FIN, PrePost+, LCMFreq) proved 25/25 exact parity while showing mlxtend hits an 814.8 MB dense skip on BMS-POS.",
+    q: "3. Multi-Regime Scaling & Java 21 SPMF Parity",
+    a: "Across 25 corpora (1,650 trials), Apriori won 0/25; Bitset Eclat (POPCNT) leads sparse/medium corpora (21/25 at thresholds[0], 20/25 in lower-support full sweep); FP-Growth leads dense/long-row sets (e.g. accidents RSS drops 1,860 MB → 90.4 MB). Java SPMF (FIN, PrePost+, LCMFreq) proved 25/25 exact parity while mlxtend hit an 814.8 MB dense skip on BMS-POS.",
     btnLabel: "Inspect 25-Corpus & SPMF Data",
     action: () => switchTab("benchmarks"),
   },
   {
-    q: "4. How is weighted transaction support (Eq. 2.1) & math oracle precision verified?",
+    q: "4. Weighted Support (Eq. 2.1) & IEEE-754 Oracle Accuracy",
     a: "Weighted support sums normalized weights over positive binary samples and is tested in NT-3 (rejecting negative weights with ValueError). All 6 rule metrics (Support, Confidence, Lift, Leverage, Conviction, Zhang's metric) hit ≤ 2.22×10⁻¹⁶ max error against closed-form analytical fixtures.",
-    btnLabel: "Run Live Weighted Support (3.5×)",
+    btnLabel: "Run Weighted Support (3.5×)",
     action: () => applyDemoPreset("weighted_vip"),
   },
 ];
@@ -743,7 +743,7 @@ function renderCampaignTable() {
 
     const actionTd = el("td", "py-2 px-3 text-right");
     if (Object.prototype.hasOwnProperty.call(DATASET_DEFAULTS, r.dataset)) {
-      const runBtn = el("button", "sk-viva-btn", "Run Live ▶");
+      const runBtn = el("button", "sk-action-btn", "Run Live ▶");
       runBtn.type = "button";
       runBtn.addEventListener("click", () => launchDatasetLive(r.dataset));
       actionTd.appendChild(runBtn);
@@ -785,17 +785,17 @@ function renderE2ETiers(e2e) {
   });
 }
 
-function renderVivaQA() {
-  const grid = document.getElementById("viva-qa-grid");
+function renderDesignRationale() {
+  const grid = document.getElementById("rationale-grid");
   if (!grid) return;
   grid.textContent = "";
-  VIVA_QA.forEach((item) => {
-    const card = el("div", "sk-viva-card rounded-sm");
+  DESIGN_RATIONALE.forEach((item) => {
+    const card = el("div", "sk-rationale-card rounded-sm");
     card.append(
       el("div", "text-xs font-semibold text-slate-900", item.q),
       el("p", "text-xs text-slate-600 leading-relaxed", item.a)
     );
-    const btn = el("button", "sk-viva-btn", `${item.btnLabel} →`);
+    const btn = el("button", "sk-action-btn", `${item.btnLabel} →`);
     btn.type = "button";
     btn.addEventListener("click", () => {
       switchTab("explorer");
@@ -1015,7 +1015,7 @@ async function runAcceptance() {
 }
 
 async function init() {
-  renderVivaQA();
+  renderDesignRationale();
   document.querySelectorAll(".tab-btn").forEach((btn) => btn.addEventListener("click", () => switchTab(btn.dataset.tab)));
   document.querySelectorAll(".sk-preset-btn").forEach((btn) => btn.addEventListener("click", () => applyDemoPreset(btn.dataset.preset)));
   document.querySelectorAll(".obj-jump").forEach((btn) => {

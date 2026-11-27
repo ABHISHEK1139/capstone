@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>skarm — KL University Capstone Defense Cockpit &amp; Mining Workbench</title>
-  <meta name="description" content="Interactive verification workbench, viva defense cockpit, and benchmark explorer for skarm (KLCAP-2026-00340, Team C2C-25)." />
+  <title>skarm — Association-Rule Mining Workbench &amp; Empirical Suite</title>
+  <meta name="description" content="Interactive verification workbench, architecture explorer, and benchmark suite for skarm (KLCAP-2026-00340, Team C2C-25)." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -56,9 +56,9 @@
     .sk-bit.off { background: #f8fafc; color: #94a3b8; }
     .sk-subpill { padding: 4px 10px; font-size: 12px; font-weight: 500; border: 1px solid #cbd5e1; background: #fff; color: #334155; border-radius: 3px; cursor: pointer; }
     .sk-subpill.active { background: #0f172a; color: #fff; border-color: #0f172a; }
-    .sk-viva-card { border: 1px solid #e2e8f0; background: #fff; padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; border-radius: 2px; }
-    .sk-viva-btn { align-self: flex-start; padding: 4px 10px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 11px; font-family: "IBM Plex Mono", monospace; font-weight: 600; border-radius: 2px; cursor: pointer; }
-    .sk-viva-btn:hover { background: #dbeafe; }
+    .sk-rationale-card { border: 1px solid #e2e8f0; background: #fff; padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; border-radius: 2px; }
+    .sk-action-btn { align-self: flex-start; padding: 4px 10px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 11px; font-family: "IBM Plex Mono", monospace; font-weight: 600; border-radius: 2px; cursor: pointer; }
+    .sk-action-btn:hover { background: #dbeafe; }
     .sk-degraded-text { color: #b45309; font-weight: 600; }
     .sk-doc-frame { width: 100%; height: 820px; border: 0; display: block; background: #ffffff; }
   </style>
@@ -91,7 +91,7 @@
           Charter Gates</button>
         <button id="tab-ecosystem" type="button" role="tab" aria-selected="false" aria-controls="panel-ecosystem" data-tab="ecosystem"
           class="tab-btn whitespace-nowrap px-2.5 py-1.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition-colors cursor-pointer">
-          Viva &amp; Architecture</button>
+          Architecture &amp; Team</button>
         <button id="tab-paper" type="button" role="tab" aria-selected="false" aria-controls="panel-paper" data-tab="paper"
           class="tab-btn whitespace-nowrap px-2.5 py-1.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition-colors cursor-pointer">
           Report &amp; IEEE PDF</button>
@@ -109,7 +109,7 @@
     <!-- Identity Banner + O1..O5 Quick Jump -->
     <section class="sk-hero-banner">
       <div class="sk-hero-text">
-        <span class="sk-hero-title">KL University Cluster A Capstone Defence:</span>
+        <span class="sk-hero-title">KL University Cluster A Capstone Project:</span>
         <span class="font-mono text-blue-700 font-semibold">KLCAP-2026-00340</span> ·
         Guide: <strong class="text-slate-900">Dr. Dudigam Ramya, Assistant Professor</strong> (Dept. of CSE, KLEF) ·
         Team <strong class="font-mono text-slate-900">C2C-25</strong>
@@ -163,8 +163,8 @@
 
     <!-- PANEL 1: INTERACTIVE RULE & PIPELINE STUDIO -->
     <section id="panel-explorer" role="tabpanel" aria-labelledby="tab-explorer" class="space-y-4">
-      <div class="sk-demo-bar" aria-label="Guided Mentor Demo Scenarios">
-        <span class="text-xs font-mono uppercase tracking-wider text-slate-600 font-semibold mr-1">Mentor Scenarios:</span>
+      <div class="sk-demo-bar" aria-label="Benchmark Presets">
+        <span class="text-xs font-mono uppercase tracking-wider text-slate-600 font-semibold mr-1">Quick Presets:</span>
         <button type="button" class="sk-preset-btn active" data-preset="groceries">1. Market Basket (Groceries 9.8k)</button>
         <button type="button" class="sk-preset-btn" data-preset="safety_degraded">2. Safety Governor (Mushroom DEGRADED)</button>
         <button type="button" class="sk-preset-btn" data-preset="sparse_eclat">3. Bitset Eclat (Tic-Tac-Toe)</button>
@@ -646,7 +646,7 @@ beer, diapers</textarea>
       </div>
     </section>
 
-    <!-- PANEL 4: DEFENSE COCKPIT & VIVA Q&A -->
+    <!-- PANEL 4: ARCHITECTURE, TEAM & DESIGN RATIONALE -->
     <section id="panel-ecosystem" role="tabpanel" aria-labelledby="tab-ecosystem" class="hidden space-y-5">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <div class="border border-slate-200 bg-white p-5 space-y-4">
@@ -691,10 +691,10 @@ beer, diapers</textarea>
 
         <div class="border border-slate-200 bg-white p-5 space-y-3">
           <div class="pb-3 border-b border-slate-200">
-            <h2 class="text-base font-semibold text-slate-900">Examiner Viva Q&amp;A + Interactive Proof Triggers</h2>
-            <p class="mt-0.5 text-xs text-slate-500">Click any <strong>Show Live Proof</strong> button to demonstrate the answer live in front of examiners.</p>
+            <h2 class="text-base font-semibold text-slate-900">Design Rationale &amp; Interactive Proof Explorer</h2>
+            <p class="mt-0.5 text-xs text-slate-500">Select any architectural guarantee below to run its live empirical verification inside the workbench.</p>
           </div>
-          <div id="viva-qa-grid" class="grid grid-cols-1 gap-2.5"></div>
+          <div id="rationale-grid" class="grid grid-cols-1 gap-2.5"></div>
         </div>
       </div>
 
